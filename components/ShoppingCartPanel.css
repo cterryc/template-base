@@ -1,0 +1,81 @@
+.cartPanel {
+  @apply fixed inset-y-0 right-0 w-72 sm:w-96 bg-white shadow-xl px-2 py-6 overflow-y-auto;
+  @apply transform transition-all duration-300 ease-in-out z-50 border-l;
+}
+
+.shoppingCartItem {
+  @apply grid bg-gray-50 py-4 rounded-lg shadow-sm;
+  grid-template-columns: 70px 1fr;
+  grid-template-rows: 40px 40px;
+}
+
+.imageCartPanel {
+  @apply h-[80px] w-[70px] object-cover;
+  grid-area: 1 / 1;
+}
+
+.containerItemTitleCartPanel {
+  @apply flex justify-between items-center mb-2 pl-2;
+  grid-area: 1 / 2;
+}
+
+.containerItemPriceCuantitiCartPanel {
+  @apply flex justify-between items-center text-sm pl-2;
+  grid-area: 2 / 2;
+}
+
+.cardFormCaontainer {
+  @apply fixed flex justify-center p-2 z-50 h-full;
+  bottom: 0px;
+  right: 0px;
+  width: 100vw;
+  background-color: rgba(26, 26, 26, 0.349);
+}
+
+.formContainer {
+  @apply flex flex-col gap-4 px-2 py-4 bg-background rounded-lg w-full md:px-10 md:py-8 md:w-[800px] overflow-y-auto;
+  -webkit-animation: scaleUpCenter 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) both;
+  animation: scaleUpCenter 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) both;
+}
+
+@-webkit-keyframes scaleUpCenter {
+  0% {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@keyframes scaleUpCenter {
+  0% {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+.buttonShowCardClientName {
+  @apply w-full flex text-white justify-center items-center rounded-lg px-4 transition-all duration-200 hover:opacity-90 hover:shadow-md;
+  @apply h-11 gap-2;
+}
+
+.labelClientName {
+  @apply text-base font-medium text-sidebar-foreground;
+}
+
+.inputinputClientName {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-[#00d95f];
+}
+
+.linkWhatsapp {
+  @apply w-full flex text-white justify-center items-center rounded-lg px-4 transition-all duration-200 hover:opacity-90 hover:shadow-md;
+  @apply h-11 gap-2 bg-blue-600;
+}
+
+.buttonCloseCardClientName {
+  @apply absolute top-2 right-2 rounded-full h-6 w-6;
+}

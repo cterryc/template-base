@@ -1,0 +1,16 @@
+.fromFeatured {
+  /* @apply 2xl:h-[567px] xl:h-[467px] lg:h-[400px] md:h-[300px] sm:h-[400px] max-[400px]:h-[220px] h-[300px]; */
+  position: relative;
+  aspect-ratio: 354 / 424;
+  width: 100%;
+}
+
+.fromBestSellers {
+  /* @apply relative 2xl:h-[500px] xl:h-[300px] lg:h-[275px] md:h-[300px] sm:h-[300px] max-[400px]:h-[150px] h-[200px]; */
+  position: relative;
+  aspect-ratio: 400/390;
+  width: 100%;
+}
+.fromBestSellersh3 {
+  @apply text-sm text-[#787671] border-b border-[#787671] flex;
+}
