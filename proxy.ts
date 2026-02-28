@@ -20,7 +20,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/categories(.*)',
   '/api/colecciones(.*)',
   '/api/sign-in',
-  '/api/sign-up'
+  '/api/sign-up',
+  '/api/config(.*)'
 ])
 
 // ─── Rutas exclusivas de administrador ───────────────────────────────────────
@@ -28,7 +29,6 @@ const isAdminRoute = createRouteMatcher([
   '/admin-panel(.*)',
   '/api/cupones(.*)',
   '/api/settings(.*)',
-  '/api/config(.*)',
   '/api/users(.*)',
   '/api/updateuser(.*)',
   '/api/agencias(.*)',

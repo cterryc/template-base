@@ -9,7 +9,7 @@ const HeroFooterSection = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/settings')
+        const response = await fetch('/api/config')
 
         if (!response.ok) throw new Error(`Error ${response.status}`)
 

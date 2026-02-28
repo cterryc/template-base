@@ -35,7 +35,7 @@ const HeroSection = () => {
     const fetchSettings = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/settings')
+        const response = await fetch('/api/config')
 
         if (!response.ok) throw new Error(`Error ${response.status}`)
 
@@ -43,7 +43,7 @@ const HeroSection = () => {
         setSettings(data.data || {})
         setError(null)
       } catch (error) {
-        console.error('Error cargando settings:', error)
+        console.error('Error cargando config:', error)
         setError('No se pudieron cargar las imágenes')
         setSettings({})
       } finally {

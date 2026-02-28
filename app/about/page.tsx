@@ -9,14 +9,14 @@ export default function About() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/settings')
+        const response = await fetch('/api/config')
 
         if (!response.ok) throw new Error(`Error ${response.status}`)
 
         const data = await response.json()
         setSettings(data.data || {})
       } catch (error) {
-        console.error('Error cargando settings:', error)
+        console.error('Error cargando config:', error)
         setSettings({ fotoTienda: '' })
       }
     }
