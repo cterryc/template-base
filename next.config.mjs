@@ -2,7 +2,7 @@ import { fileURLToPath } from 'url'
 
 /**
  * Next.js Configuration
- * 
+ *
  * Bundle analyzer: Run with `ANALYZE=true npm run build`
  * Docs: https://nextjs.org/docs/app/api-reference/next-config-js
  */
@@ -55,10 +55,12 @@ const nextConfig = {
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
-    parallelServerCompiles: true,
+    parallelServerCompiles: true
     // PPR (Partial Prerendering) - Cache Components
-    cacheComponents: true
+    // DESHABILITADO TEMPORALMENTE: Clerk auth pages tienen conflicto con cacheComponents
+    // Ver: https://github.com/clerk/clerk-nextjs/issues
   },
+  // cacheComponents: true,  // Deshabilitado temporalmente por conflicto con Clerk
 
   // Server external packages - don't bundle these
   serverExternalPackages: ['@prisma/client'],
@@ -93,8 +95,9 @@ if (userConfig) {
 }
 
 // Bundle analyzer - wrap config if enabled
-const withBundleAnalyzer = process.env.ANALYZE === 'true' 
-  ? (await import('@next/bundle-analyzer')).default({ enabled: true })
-  : (config) => config
+const withBundleAnalyzer =
+  process.env.ANALYZE === 'true'
+    ? (await import('@next/bundle-analyzer')).default({ enabled: true })
+    : (config) => config
 
 export default withBundleAnalyzer(nextConfig)

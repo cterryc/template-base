@@ -16,18 +16,20 @@ export async function GET(req: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'asc'
 
     // Construir filtros
-    const where: Prisma.ProductosWhereInput = {}
+    const where: Prisma.ColeccionWhereInput = {}
 
     if (search) {
       where.name = { contains: search, mode: 'insensitive' }
     }
 
-    if (minPrice) {
-      where.price = { gte: parseFloat(minPrice) }
-    }
-
-    if (maxPrice) {
-      where.price = { ...where.price, lte: parseFloat(maxPrice) }
+    if (minPrice || maxPrice) {
+      where.price = {}
+      if (minPrice) {
+        where.price.gte = parseFloat(minPrice)
+      }
+      if (maxPrice) {
+        where.price.lte = parseFloat(maxPrice)
+      }
     }
 
     // Ordenamiento

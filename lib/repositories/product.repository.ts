@@ -15,20 +15,20 @@ export interface FindProductsParams {
 }
 
 export interface ProductRepository {
-  findById(id: number): Promise<Piezas | null>
+  findById(id: number): Promise<Productos & { destacados: any[]; orderItems: any[] } | null>
   findAll(params: FindProductsParams): Promise<{
     products: Productos[]
     totalCount: number
   }>
-  create(data: Prisma.ProductosCreateInput): Promise<Piezas>
-  update(id: number, data: Prisma.ProductosUpdateInput): Promise<Piezas>
+  create(data: Prisma.ProductosCreateInput): Promise<Productos>
+  update(id: number, data: Prisma.ProductosUpdateInput): Promise<Productos>
   delete(id: number): Promise<void>
-  findFeatured(): Promise<Piezas[]>
+  findFeatured(): Promise<Productos[]>
   count(): Promise<number>
 }
 
 export class PrismaProductRepository implements ProductRepository {
-  async findById(id: number): Promise<Piezas | null> {
+  async findById(id: number): Promise<Productos & { destacados: any[]; orderItems: any[] } | null> {
     return prisma.productos.findUnique({
       where: { id },
       include: {
@@ -88,7 +88,7 @@ export class PrismaProductRepository implements ProductRepository {
     return { products, totalCount }
   }
 
-  async create(data: Prisma.ProductosCreateInput): Promise<Piezas> {
+  async create(data: Prisma.ProductosCreateInput): Promise<Productos> {
     return prisma.productos.create({
       data,
       include: {
@@ -100,7 +100,7 @@ export class PrismaProductRepository implements ProductRepository {
   async update(
     id: number,
     data: Prisma.ProductosUpdateInput
-  ): Promise<Piezas> {
+  ): Promise<Productos> {
     return prisma.productos.update({
       where: { id },
       data,
@@ -116,7 +116,7 @@ export class PrismaProductRepository implements ProductRepository {
     })
   }
 
-  async findFeatured(): Promise<Piezas[]> {
+  async findFeatured(): Promise<Productos[]> {
     const destacados = await prisma.productosDestacados.findMany({
       include: {
         producto: true

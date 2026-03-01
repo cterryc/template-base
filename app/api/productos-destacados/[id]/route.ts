@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export async function DELETE(
   req: NextRequest,
@@ -45,6 +45,7 @@ export async function DELETE(
     // Invalidar caché de productos destacados
     revalidatePath('/api/productos-destacados')
     revalidatePath('/api/products')
+    revalidatePath('/collection')
 
     return NextResponse.json({
       message: 'Producto removido de destacados exitosamente',

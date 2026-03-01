@@ -23,7 +23,9 @@ export interface CreateProductDTO {
   destacado?: boolean
 }
 
-export interface UpdateProductDTO extends Partial<CreateProductDTO> {}
+export interface UpdateProductDTO extends Partial<Omit<CreateProductDTO, 'destacado'>> {
+  destacado?: boolean
+}
 
 export class ProductService {
   constructor(private repository = productRepository) {}
@@ -40,7 +42,7 @@ export class ProductService {
 
     return {
       ...product,
-      destacado: product.destacados.length > 0
+      destacado: product.destacados?.length > 0 || false
     }
   }
 
@@ -52,7 +54,7 @@ export class ProductService {
 
     const transformedProducts = products.map((product) => ({
       ...product,
-      destacado: product.destacados.length > 0
+      destacado: (product as any).destacados?.length > 0 || false
     }))
 
     return {

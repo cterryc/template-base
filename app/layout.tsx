@@ -143,29 +143,27 @@ export default function RootLayout({
 }) {
   const SIGN_OUT_URL = '/cleanup-session'
   return (
-    <Suspense>
-      <ClerkProvider
-        localization={customEs}
-        afterSignOutUrl={SIGN_OUT_URL}
-        appearance={clerkAppearance}
-      >
-        <html lang='es' suppressHydrationWarning>
-          <body className={`${inter.className} body`}>
-            <ThemeProvider attribute='class' defaultTheme='light' enableSystem>
-              <CartProvider>
-                <AuthProvider>
-                  <ConfigProvider>
-                    <Header />
-                    <main className='pt-[72px]'>{children}</main>
-                    <Footer />
-                  </ConfigProvider>
-                </AuthProvider>
-              </CartProvider>
-            </ThemeProvider>
-            <Toaster />
-          </body>
-        </html>
-      </ClerkProvider>
-    </Suspense>
+    <ClerkProvider
+      localization={customEs}
+      afterSignOutUrl={SIGN_OUT_URL}
+      appearance={clerkAppearance}
+    >
+      <html lang='es' suppressHydrationWarning>
+        <body className={`${inter.className} body`}>
+          <ThemeProvider attribute='class' defaultTheme='light' enableSystem>
+            <CartProvider>
+              <AuthProvider>
+                <ConfigProvider>
+                  <Header />
+                  <main className='pt-[72px]'>{children}</main>
+                  <Footer />
+                </ConfigProvider>
+              </AuthProvider>
+            </CartProvider>
+          </ThemeProvider>
+          <Toaster />
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

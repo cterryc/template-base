@@ -35,6 +35,7 @@ model User {
   name             String?
   deliveryLocation DeliveryLocation @default(Null)
   orders           Orders[]
+  reviews          Review[]
   clerkId          String?          @unique
   role             Role             @default(USER)
 
@@ -107,6 +108,7 @@ model Productos {
 
   destacados ProductosDestacados[]
   orderItems OrderItem[]
+  reviews    Review[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -185,4 +187,21 @@ model Categories {
 model Setting {
   key   String @id
   value String
+}
+
+model Review {
+  id         Int       @id @default(autoincrement())
+  rating     Int       // 1-5 estrellas
+  comment    String?
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productoId Int
+  producto   Productos @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  verified   Boolean   @default(false) // ¿Compró el producto?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([productoId])
+  @@index([userId])
+  @@index([verified])
 }

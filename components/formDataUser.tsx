@@ -50,7 +50,7 @@ export default function FormDataUser() {
       reset({
         name: user.fullName || '',
         email: user.emailAddresses[0]?.emailAddress || '',
-        phone: user.phoneNumber || '',
+        phone: user.phoneNumbers[0]?.phoneNumber || '',
         dni: '',
         address: '',
         department: '',

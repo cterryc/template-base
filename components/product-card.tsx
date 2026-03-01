@@ -57,7 +57,7 @@ export default function ProductCard({
   if (from === 'bestSellers') {
     return (
       <div className='bg-white overflow-hidden w-full dark:bg-[#0a0a0a]'>
-        <Link href={`/collection?category=${product.name.toLowerCase()}`}>
+        <Link href={`/collection?category=${product.name}`}>
           <div className='cardAspectRatioBestSellers'>
             <Image
               src={image || '/placeholder.svg'}
@@ -71,11 +71,7 @@ export default function ProductCard({
             />
           </div>
           <div className='px-2 pt-4 pb-0 flex mb-2'>
-            <h3
-              className={
-                'cardBestSellersTitle dark:text-white'
-              }
-            >
+            <h3 className={'cardBestSellersTitle dark:text-white'}>
               Ver {product.name}
             </h3>
           </div>
@@ -86,36 +82,42 @@ export default function ProductCard({
 
   return (
     <div className='bg-white shadow-md rounded-sm overflow-hidden w-full'>
-      <div
-        className={`relative ${
-          from === 'featured'
-            ? 'cardAspectRatioFeatured'
-            : 'lg:h-80 max-[400px]:h-[400px] max-[460px]:h-[400px] h-[450px] 2xl:h-[450px]'
-        }`}
-      >
-        <Image
-          src={image || '/placeholder.svg'}
-          alt={product.name}
-          fill
-          className='object-cover transition-opacity duration-300 ease-in-out'
-          onMouseEnter={() =>
-            setImage(product.image2 ? product.image2 : product.image)
-          }
-          onMouseLeave={() => setImage(product.image)}
-        />
-      </div>
+      {/* Imagen con link a detalle */}
+      <Link href={`/collection/${product.id}`} className='block'>
+        <div
+          className={`relative ${
+            from === 'featured'
+              ? 'cardAspectRatioFeatured'
+              : 'lg:h-80 max-[400px]:h-[400px] max-[460px]:h-[400px] h-[450px] 2xl:h-[450px]'
+          }`}
+        >
+          <Image
+            src={image || '/placeholder.svg'}
+            alt={product.name}
+            fill
+            className='object-cover transition-opacity duration-300 ease-in-out'
+            onMouseEnter={() =>
+              setImage(product.image2 ? product.image2 : product.image)
+            }
+            onMouseLeave={() => setImage(product.image)}
+          />
+        </div>
+      </Link>
       <div
         className={`${
           from === 'featured' ? 'px-2 pt-2 pb-0' : 'pt-1 pb-2 px-2'
         }`}
       >
-        <h3
-          className={`${
-            from === 'featured' ? 'text-sm' : 'text-lg'
-          } font-semibold text-sm mb-0 text-[#31302e]`}
-        >
-          {product.name}
-        </h3>
+        {/* Título con link a detalle */}
+        <Link href={`/collection/${product.id}`}>
+          <h3
+            className={`${
+              from === 'featured' ? 'text-sm' : 'text-lg'
+            } font-semibold text-sm mb-0 text-[#31302e] hover:underline`}
+          >
+            {product.name}
+          </h3>
+        </Link>
         {
           <div className='text-gray-600 mb-1 w-full flex justify-between'>
             <p className='text-sm'>S/ {Number(product.price).toFixed(2)}</p>
@@ -144,11 +146,16 @@ export default function ProductCard({
             </div>
           </div>
         }
+        {/* Botón de carrito - SIN LINK, con stopPropagation */}
         <Button
           className={`w-full ${
             from === 'featured' ? 'mb-2' : 'mb-0'
           } flex items-center justify-center gap-2 text-white bg-black hover:bg-gray-700`}
-          onClick={handleAddToCart}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            handleAddToCart()
+          }}
           disabled={
             product.estado === 'NO DISPONIBLE' || product.stock == 0
               ? true

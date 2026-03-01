@@ -232,6 +232,7 @@ export async function POST(req: NextRequest) {
 
     // Invalidar caché de productos
     revalidatePath('/api/products')
+    revalidatePath('/collection')
 
     return NextResponse.json(
       {

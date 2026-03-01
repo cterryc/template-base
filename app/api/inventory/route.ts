@@ -35,16 +35,17 @@ export async function GET(req: NextRequest) {
       where.estado = estado
     }
 
-    if (minStock) {
-      where.stock = { gte: parseInt(minStock) }
-    }
-
-    if (maxStock) {
-      where.stock = { ...where.stock, lte: parseInt(maxStock) }
-    }
-
-    if (lowStockOnly) {
-      where.stock = { ...where.stock, lte: 10 } // Considerar bajo stock <= 10 unidades
+    if (minStock || maxStock || lowStockOnly) {
+      where.stock = {}
+      if (minStock) {
+        where.stock.gte = parseInt(minStock)
+      }
+      if (maxStock) {
+        where.stock.lte = parseInt(maxStock)
+      }
+      if (lowStockOnly) {
+        where.stock.lte = 10
+      }
     }
 
     // Ordenamiento

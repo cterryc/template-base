@@ -112,8 +112,7 @@ export class UserService {
 
     return this.upsert(clerkId, {
       email: clerkData.email,
-      name: name || null,
-      imageUrl: clerkData.imageUrl || null
+      name: name || null
     })
   }
 }

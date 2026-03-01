@@ -31,7 +31,7 @@ export default function Collection() {
   const category = searchParams.get('category')
   const [filter, setFilter] = useState(category || '')
   const [sort, setSort] = useState('name')
-  const [showCategory, setShowCategory] = useState('')
+  const [showCategory, setShowCategory] = useState(category || 'all')
   const [isVisible, setIsVisible] = useState(false)
   const [products, setProducts] = useState<ProductsProps[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
@@ -85,11 +85,16 @@ export default function Collection() {
   const pathname = usePathname() // Obtenemos la ruta actual
   const router = useRouter()
   const handleFilterChange = (value: string) => {
-    // Solo hace push si NO estamos en /collection
-    if (category) {
-      router.push('/collection')
+    // Actualizar URL con query param
+    const newParams = new URLSearchParams(searchParams)
+    if (value && value !== 'all') {
+      newParams.set('category', value)
+    } else {
+      newParams.delete('category')
     }
-    setFilter(value)
+    router.push(`/collection?${newParams}`)
+    
+    setFilter(value === 'all' ? '' : value)
     setShowCategory(value)
     setPage(1)
   }
@@ -111,17 +116,16 @@ export default function Collection() {
         />
         <Select value={showCategory} onValueChange={handleFilterChange}>
           <SelectTrigger className='md:w-48 border border-border'>
-            <SelectValue placeholder='Ver todos' />
+            <SelectValue placeholder='Todas las categorías' />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value='all'>Todas las categorías</SelectItem>
             {categories && categories.length >= 1
-              ? categories.map((ele) => {
-                  return (
-                    <SelectItem key={ele.name} value={ele.name}>
-                      {ele.name}
-                    </SelectItem>
-                  )
-                })
+              ? categories.map((ele) => (
+                  <SelectItem key={ele.name} value={ele.name}>
+                    {ele.name}
+                  </SelectItem>
+                ))
               : null}
           </SelectContent>
         </Select>

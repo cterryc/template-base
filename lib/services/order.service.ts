@@ -1,5 +1,6 @@
 import { orderRepository } from '@/lib/repositories/order.repository'
-import { productService } from './product.service'
+import { productRepository } from '@/lib/repositories/product.repository'
+import prisma from '@/lib/prisma'
 
 /**
  * Order Service
@@ -76,7 +77,11 @@ export class OrderService {
 
     // Validar stock de productos
     for (const product of data.products) {
-      const productData = await productService.getById(product.productoId)
+      const productData = await productRepository.findById(product.productoId)
+      
+      if (!productData) {
+        throw new Error(`Producto no encontrado`)
+      }
       
       if (productData.stock < product.quantity) {
         throw new Error(
@@ -133,9 +138,12 @@ export class OrderService {
 
     // Actualizar stock de productos
     for (const product of data.products) {
-      await productService.update(product.productoId, {
-        stock: {
-          decrement: product.quantity
+      await prisma.productos.update({
+        where: { id: product.productoId },
+        data: {
+          stock: {
+            decrement: product.quantity
+          }
         }
       })
     }
@@ -179,12 +187,22 @@ export class OrderService {
 
     // Revertir stock si estaba confirmado
     if (['Confirmado', 'En preparación', 'Enviado'].includes(order.status)) {
-      for (const item of order.orderItems) {
-        await productService.update(item.productoId, {
-          stock: {
-            increment: item.quantity
-          }
-        })
+      const orderWithItems = await prisma.orders.findUnique({
+        where: { id },
+        include: { orderItems: true }
+      })
+      
+      if (orderWithItems?.orderItems) {
+        for (const item of orderWithItems.orderItems) {
+          await prisma.productos.update({
+            where: { id: item.productoId },
+            data: {
+              stock: {
+                increment: item.quantity
+              }
+            }
+          })
+        }
       }
     }
 

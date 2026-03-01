@@ -76,9 +76,8 @@ export class PrismaUserRepository implements UserRepository {
       update: data,
       create: {
         clerkId,
-        email: data.email as string,
-        name: data.name as string,
-        ...data
+        email: String(data.email || ''),
+        name: String(data.name || '')
       },
       include: {
         orders: true
