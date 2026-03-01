@@ -221,8 +221,12 @@ export default function InteractiveMap({
       // Manejar clicks en el mapa
       map.on('click', (e: any) => {
         const { lat, lng } = e.latlng
-        // setDestinationPosition({ lat, lng })
         setGetlocation({ lat, lng })
+
+        // Prevenir propagación al formulario padre
+        if (e.originalEvent) {
+          e.originalEvent.stopPropagation()
+        }
       })
 
       let initialDestinationMarker = null

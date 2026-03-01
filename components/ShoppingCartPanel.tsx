@@ -230,15 +230,13 @@ export default function ShoppingCartPanel({
                 >
                   Limpiar Carrito
                 </Button>
-                <SheetClose asChild>
-                  <button
-                    style={{ backgroundColor: '#262626', marginTop: '10px' }}
-                    className='buttonShowCardClientName'
-                    onClick={() => setShowCardClientName(true)}
-                  >
-                    Continuar
-                  </button>
-                </SheetClose>
+                <button
+                  style={{ backgroundColor: '#262626', marginTop: '10px' }}
+                  className='buttonShowCardClientName'
+                  onClick={() => setShowCardClientName(true)}
+                >
+                  Continuar
+                </button>
               </div>
             </>
           )}

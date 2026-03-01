@@ -530,7 +530,7 @@ ${totalInfo}${locationLink}
       <form
         className='formContainer'
         onClick={(e) => e.stopPropagation()}
-        onMouseUp={(e) => e.stopPropagation()}
+        // onMouseUp={(e) => e.stopPropagation()}
       >
         {/* Nombre del Cliente */}
         <div>
@@ -595,24 +595,31 @@ ${totalInfo}${locationLink}
                   <RiLoader4Line className='animate-spin h-8 w-8 text-green-500' />
                 </div>
               ) : (
-                <InteractiveMap
-                  setDeliveryCost={(cost: number) => {
-                    const adjustedCost =
-                      cost > maximoDelivery
-                        ? maximoDelivery
-                        : cost < minimoDelivery
-                          ? minimoDelivery
-                          : cost
-                    setValue('deliveryCost', adjustedCost)
-                    saveToLocalStorage()
-                  }}
-                  setGetlocation={(loc: { lat: number; lng: number }) => {
-                    setValue('getlocation', loc)
-                    setMarkedLocation(loc)
-                    saveToLocalStorage()
-                  }}
-                  locationToSend={watchedGetlocation}
-                />
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  // onMouseDown={(e) => e.stopPropagation()}
+                  // onMouseUp={(e) => e.stopPropagation()}
+                  className='h-full'
+                >
+                  <InteractiveMap
+                    setDeliveryCost={(cost: number) => {
+                      const adjustedCost =
+                        cost > maximoDelivery
+                          ? maximoDelivery
+                          : cost < minimoDelivery
+                            ? minimoDelivery
+                            : cost
+                      setValue('deliveryCost', adjustedCost)
+                      saveToLocalStorage()
+                    }}
+                    setGetlocation={(loc: { lat: number; lng: number }) => {
+                      setValue('getlocation', loc)
+                      setMarkedLocation(loc)
+                      saveToLocalStorage()
+                    }}
+                    locationToSend={watchedGetlocation}
+                  />
+                </div>
               )}
               {errors.getlocation && (
                 <span className='text-orange-600 text-sm'>
