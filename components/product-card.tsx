@@ -6,9 +6,9 @@ import { useCart } from '@/contexts/CartContext'
 import { useState } from 'react'
 import Link from 'next/link'
 import { MdOutlineShoppingCart } from 'react-icons/md'
-// import { FiMinusCircle, FiPlusCircle } from 'react-icons/fi'
 import { FiCheckCircle } from 'react-icons/fi'
 import { ImSpinner2 } from 'react-icons/im'
+import { optimizeCloudinaryUrl } from '@/lib/utils/image-optimizer'
 
 interface Product {
   id: number
@@ -60,7 +60,7 @@ export default function ProductCard({
         <Link href={`/collection?category=${product.name}`}>
           <div className='cardAspectRatioBestSellers'>
             <Image
-              src={image || '/placeholder.svg'}
+              src={optimizeCloudinaryUrl(image, 600, 85) || '/placeholder.svg'}
               alt={product.name}
               fill
               className='object-cover transition-opacity duration-300 ease-in-out shadow-md'
@@ -92,7 +92,7 @@ export default function ProductCard({
           }`}
         >
           <Image
-            src={image || '/placeholder.svg'}
+            src={optimizeCloudinaryUrl(image, 600, 85) || '/placeholder.svg'}
             alt={product.name}
             fill
             className='object-cover transition-opacity duration-300 ease-in-out'

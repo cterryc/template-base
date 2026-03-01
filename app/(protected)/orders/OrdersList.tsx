@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Info
 } from 'lucide-react'
+import { calculateTotalWithDiscount } from '@/lib/utils/order-calculations'
 
 interface OrderItem {
   id: number
@@ -211,18 +212,6 @@ export default function OrdersList({
     }
   }
 
-  // Función para calcular el total con descuento
-  const calculateTotalWithDiscount = (order: Order) => {
-    const subtotal = parseFloat(order.totalPrice) || 0
-    const delivery = order.deliveryCost ? parseFloat(order.deliveryCost) : 0
-    const calculateDiscount = order.discount
-      ? (subtotal * parseFloat(order.discount)) / 100
-      : 0
-    const discount = Math.ceil(calculateDiscount * 10) / 10
-
-    return ((subtotal * 100 + delivery * 100 - discount * 100) / 100).toFixed(2)
-  }
-
   return (
     <div className='space-y-4 md:space-y-6 max-w-screen-2xl w-full'>
       {' '}
@@ -375,7 +364,12 @@ export default function OrdersList({
                       Total a pagar
                     </p>
                     <span className='text-base font-black text-foreground'>
-                      S/. {calculateTotalWithDiscount(order)}
+                      S/.{' '}
+                      {calculateTotalWithDiscount(
+                        parseFloat(order.totalPrice.toString()),
+                        parseFloat(order.deliveryCost?.toString() || '0'),
+                        parseFloat(order.discount?.toString() || '0')
+                      )}
                     </span>
                   </div>
                   <div className='flex gap-2 w-1/2'>
@@ -471,7 +465,12 @@ export default function OrdersList({
                         </td>
                         <td className='p-4'>
                           <div className='font-bold text-foreground'>
-                            S/. {calculateTotalWithDiscount(order)}
+                            S/.{' '}
+                            {calculateTotalWithDiscount(
+                              parseFloat(order.totalPrice.toString()),
+                              parseFloat(order.deliveryCost?.toString() || '0'),
+                              parseFloat(order.discount?.toString() || '0')
+                            )}
                           </div>
                         </td>
                         <td className='p-4'>

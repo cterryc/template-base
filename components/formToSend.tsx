@@ -19,15 +19,15 @@ import {
   DeliverySchema,
   type DeliveryFormData
 } from '@/lib/schemas/delivery.schema'
+import {
+  calculateOrderTotals,
+  generateWhatsAppOrderMessage,
+  FREE_DELIVERY_THRESHOLD
+} from '@/lib/utils/order-calculations'
 
 // --- Constantes ---
 const COUNTRY_CODE = '51'
-const PHONE_NUMBER = '907679229'
 const LOCAL_STORAGE_KEY = 'dataDeliverySend'
-const FREE_DELIVERY_THRESHOLD = 150
-const MIN_DNI_LENGTH = 8
-const MIN_PHONE_LENGTH = 7
-const MIN_ADDRESS_LENGTH = 3
 
 // --- Interfaces ---
 interface ProsItemsProduct {
@@ -79,8 +79,6 @@ const FormToSend = ({
     lat: number
     lng: number
   } | null>(null)
-
-  const subTotalNumber = useMemo(() => Number(subTotal), [subTotal])
 
   // React Hook Form setup
   const form: UseFormReturn<DeliveryFormData> = useForm<DeliveryFormData>({
@@ -206,7 +204,7 @@ const FormToSend = ({
         ),
         discount: discountPercentage,
         deliveryCost:
-          subTotalNumber >= FREE_DELIVERY_THRESHOLD
+          getCartTotal() >= FREE_DELIVERY_THRESHOLD
             ? 0
             : formDataValues.deliveryCost
       }
@@ -230,114 +228,74 @@ const FormToSend = ({
     user,
     itemsProducts,
     getCartTotal,
+    discountPercentage
+  ])
+
+  // --- Cálculos usando función compartida ---
+  const calculations = useMemo(() => {
+    // Usar getCartTotal() como subtotal SIN descuento
+    // calculateOrderTotals aplicará el descuento correctamente
+    return calculateOrderTotals({
+      subtotal: getCartTotal(),
+      deliveryCost: watchedDeliveryCost,
+      discountPercentage: discountPercentage,
+      locationToSend: watchedLocationToSend,
+      minimoDelivery,
+      maximoDelivery
+    })
+  }, [
+    watchedDeliveryCost,
     discountPercentage,
-    subTotalNumber
-  ])
-
-  // --- Cálculo del Total ---
-  const calculateTotal = useMemo((): string => {
-    // Validar que subTotalNumber sea un número válido
-    if (isNaN(subTotalNumber)) {
-      return '0.00'
-    }
-
-    // Envío gratis si el subtotal es >= 150
-    if (subTotalNumber >= FREE_DELIVERY_THRESHOLD) {
-      return subTotalNumber.toFixed(2)
-    }
-
-    // Para Provincia: el recargo no se suma al total (se paga al recibir)
-    if (watchedLocationToSend === 'provincia') {
-      return subTotalNumber.toFixed(2)
-    }
-
-    // Para Lima Metropolitana: aplicar costo de delivery
-    const safeCost = Number(watchedDeliveryCost) || 0
-
-    if (safeCost === 0) {
-      return subTotalNumber.toFixed(2)
-    }
-
-    // Aplicar límites de delivery
-    let finalDeliveryCost = safeCost
-    if (safeCost > 0 && safeCost < minimoDelivery) {
-      finalDeliveryCost = minimoDelivery
-    }
-    if (safeCost > maximoDelivery) {
-      finalDeliveryCost = maximoDelivery
-    }
-
-    const total = Number(subTotalNumber) + Number(finalDeliveryCost)
-    return total.toFixed(2)
-  }, [
-    subTotalNumber,
     watchedLocationToSend,
-    watchedDeliveryCost,
     minimoDelivery,
-    maximoDelivery
+    maximoDelivery,
+    getCartTotal
   ])
 
-  // --- Cálculo del Delivery a Mostrar ---
-  const deliveryDisplay = useMemo((): string | number => {
-    if (watchedLocationToSend === 'provincia') {
-      return 'Recargo según agencia (S/ 10.00 - S/ 15.00)'
-    }
-
-    if (subTotalNumber >= FREE_DELIVERY_THRESHOLD) {
-      return 0
-    }
-
-    const safeCost = Number(watchedDeliveryCost) || 0
-
-    if (safeCost === 0) {
-      return 0
-    }
-
-    if (safeCost > 0 && safeCost < minimoDelivery) {
-      return minimoDelivery
-    }
-
-    if (safeCost > maximoDelivery) {
-      return maximoDelivery
-    }
-
-    return safeCost
-  }, [
-    subTotalNumber,
-    watchedLocationToSend,
-    watchedDeliveryCost,
-    minimoDelivery,
-    maximoDelivery
-  ])
+  const { total, displayDelivery, subtotal: subtotalCalculado } = calculations
 
   // --- Validación del Formulario ---
   const formValidation = useMemo(() => {
-    // Usar isValid de react-hook-form que ya valida con Zod
+    // Verificar si hay errores de validación de Zod
     const hasErrors = Object.keys(errors).length > 0
 
-    // Validaciones adicionales no cubiertas por Zod
+    // Validar que el carrito no esté vacío
     if (itemsProducts.length === 0) {
       return { isValid: false, message: 'El carrito está vacío' }
     }
 
-    // Para Lima Metropolitana con subtotal >= 150, no se requiere mapa
-    if (
-      watchedLocationToSend === 'lima_metropolitana' &&
-      subTotalNumber >= FREE_DELIVERY_THRESHOLD
-    ) {
-      return {
-        isValid: !hasErrors,
-        message: hasErrors ? (Object.values(errors)[0]?.message as string) : ''
-      }
-    }
-
-    // Para Lima Metropolitana con subtotal < 150, se requiere mapa marcado
+    // Validaciones según tipo de envío
     if (watchedLocationToSend === 'lima_metropolitana') {
+      // Lima: requiere nombre, dirección y mapa (SIEMPRE)
+      if (!watchedClientName || watchedClientName.trim() === '') {
+        return { isValid: false, message: 'Ingresa tu nombre' }
+      }
+      if (!watchedAddress || watchedAddress.trim() === '') {
+        return { isValid: false, message: 'Ingresa tu dirección' }
+      }
+      // Mapa SIEMPRE requerido para Lima
       if (
         !markedLocation ||
         (markedLocation.lat === 0 && markedLocation.lng === 0)
       ) {
         return { isValid: false, message: 'Marca tu ubicación en el mapa' }
+      }
+    } else if (watchedLocationToSend === 'provincia') {
+      // Provincia: requiere nombre, dirección, agencia, DNI y teléfono
+      if (!watchedClientName || watchedClientName.trim() === '') {
+        return { isValid: false, message: 'Ingresa tu nombre' }
+      }
+      if (!watchedAddress || watchedAddress.trim() === '') {
+        return { isValid: false, message: 'Ingresa departamento/provincia' }
+      }
+      if (!watchedAgencia || watchedAgencia.trim() === '') {
+        return { isValid: false, message: 'Selecciona una agencia' }
+      }
+      if (!watchedDni || watchedDni.length < 8) {
+        return { isValid: false, message: 'Ingresa un DNI válido (8 dígitos)' }
+      }
+      if (!watchedPhone || watchedPhone.length < 7) {
+        return { isValid: false, message: 'Ingresa un teléfono válido' }
       }
     }
 
@@ -349,7 +307,11 @@ const FormToSend = ({
     errors,
     itemsProducts.length,
     watchedLocationToSend,
-    subTotalNumber,
+    watchedClientName,
+    watchedAddress,
+    watchedAgencia,
+    watchedDni,
+    watchedPhone,
     markedLocation
   ])
 
@@ -366,61 +328,31 @@ const FormToSend = ({
       getlocation
     } = formDataValues
 
-    const clientInfo = `🙍🏻Cliente: ${clientName}.
-${
-  locationToSend === 'provincia'
-    ? `🪪DNI: ${dni}.
-📞Teléfono: ${clientPhone}.
-📍Departamento/Provincia: ${address}.
-🚌Agencia: ${agencia}.`
-    : `📍Dirección: ${address}.`
-}`
-
-    const productList = itemsProducts
-      .map((item) => {
-        const sizeInfo = item.size ? `\n↕️Talla: ${item.size}.` : ''
-        return `📌Producto: ${item.name}.
-#️⃣Cantidad: ${item.quantity}.${sizeInfo}
-💲Precio: S/ ${Number(item.price).toFixed(2)}.
-\n`
-      })
-      .join('')
-
-    const shippingType = locationToSend === 'provincia' ? '🏍️' : '🚚'
-    const deliveryLabel =
-      locationToSend === 'provincia' ? 'Recargo de agencia' : 'Delivery'
-    const deliveryPrice =
-      typeof deliveryDisplay === 'number'
-        ? `S/ ${deliveryDisplay.toFixed(2)}`
-        : deliveryDisplay
-
-    const discountInfo =
-      discountCode === codigoCupon
-        ? `🏷️Descuento: ${discountPercentage}%
-💰Subtotal: S/ ${subTotal}.`
-        : `💰Subtotal: S/ ${subTotal}`
-
-    const totalInfo = `✅TOTAL: S/ ${calculateTotal}`
-
-    const locationLink =
-      getlocation.lat && locationToSend === 'lima_metropolitana'
-        ? `\n📍Ubicación: http://maps.google.com/?q=${getlocation.lat},${getlocation.lng}&z=17&hl=es`
-        : ''
-
-    return `${clientInfo}
-${productList}
-${shippingType}${deliveryLabel}: ${deliveryPrice}
-${discountInfo}
-${totalInfo}${locationLink}
-`
+    return generateWhatsAppOrderMessage({
+      clientName,
+      locationToSend,
+      address,
+      dni,
+      clientPhone,
+      agencia,
+      items: itemsProducts,
+      subtotal: subtotalCalculado,  // Usar subtotal calculado (sin descuento)
+      deliveryDisplay: displayDelivery,
+      discountPercentage,
+      discountCode,
+      codigoCupon,
+      total,
+      getlocation
+    })
   }, [
     form,
     itemsProducts,
-    discountCode,
+    subtotalCalculado,
+    displayDelivery,
     discountPercentage,
-    subTotal,
-    calculateTotal,
-    deliveryDisplay
+    discountCode,
+    codigoCupon,
+    total
   ])
 
   // --- Manejadores ---
@@ -546,6 +478,7 @@ ${totalInfo}${locationLink}
                 if (!hasFullNameOverride) {
                   setHasFullNameOverride(true)
                 }
+                saveToLocalStorage()
               }
             })}
           />
@@ -635,7 +568,9 @@ ${totalInfo}${locationLink}
                 className='inputinputClientName'
                 id='inputAddress'
                 placeholder='Calle / N° de Casa / N° de Departamento'
-                {...register('address')}
+                {...register('address', {
+                  onChange: () => saveToLocalStorage()
+                })}
               />
               {errors.address && (
                 <span className='text-orange-600 text-sm'>
@@ -688,7 +623,9 @@ ${totalInfo}${locationLink}
                 <input
                   className='inputinputClientName'
                   placeholder='Ingrese su DNI'
-                  {...register('dni')}
+                  {...register('dni', {
+                    onChange: () => saveToLocalStorage()
+                  })}
                   maxLength={8}
                 />
                 {errors.dni && (
@@ -703,7 +640,9 @@ ${totalInfo}${locationLink}
                 <input
                   className='inputinputClientName'
                   placeholder='Ingrese su teléfono'
-                  {...register('clientPhone')}
+                  {...register('clientPhone', {
+                    onChange: () => saveToLocalStorage()
+                  })}
                 />
                 {errors.clientPhone && (
                   <span className='text-orange-600 text-sm'>
@@ -721,7 +660,9 @@ ${totalInfo}${locationLink}
                 className='inputinputClientName'
                 id='inputDeptProv'
                 placeholder='Escribe el Departamento y Provincia'
-                {...register('address')}
+                {...register('address', {
+                  onChange: () => saveToLocalStorage()
+                })}
               />
               {errors.address && (
                 <span className='text-orange-600 text-sm'>
@@ -740,7 +681,7 @@ ${totalInfo}${locationLink}
         >
           <div
             className={
-              subTotalNumber >= FREE_DELIVERY_THRESHOLD
+              getCartTotal() >= FREE_DELIVERY_THRESHOLD
                 ? 'text-green-500'
                 : !formValidation.isValid
                   ? 'text-orange-500'
@@ -754,9 +695,9 @@ ${totalInfo}${locationLink}
                 <span>Delivery: </span>
                 <span>
                   S/{' '}
-                  {typeof deliveryDisplay === 'number'
-                    ? deliveryDisplay.toFixed(2)
-                    : deliveryDisplay}
+                  {typeof displayDelivery === 'number'
+                    ? displayDelivery.toFixed(2)
+                    : displayDelivery}
                 </span>
               </>
             )}
@@ -767,7 +708,7 @@ ${totalInfo}${locationLink}
           </div>
           <div className='font-bold text-lg'>
             <span>Total: </span>
-            <span>S/ {calculateTotal}</span>
+            <span>S/ {total}</span>
           </div>
         </div>
 

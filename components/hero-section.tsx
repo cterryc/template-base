@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import { optimizeCloudinaryUrl } from '@/lib/utils/image-optimizer'
 
 interface Settings {
   imagenIzquierda?: string
@@ -58,10 +59,7 @@ const HeroSection = () => {
   // Skeleton con altura DINÁMICA
   if (loading) {
     return (
-      <section
-        className='heroSection'
-        style={{ height: containerHeight }}
-      >
+      <section className='heroSection' style={{ height: containerHeight }}>
         <div className='w-full h-full relative'>
           <Image
             src='/CargandoImagen.png'
@@ -86,20 +84,28 @@ const HeroSection = () => {
 
   // Versión final CORREGIDA
   return (
-    <section className='heroSection' style={{ height: containerHeight }}>
+    <section className='heroSection' style={{ height: '90vh' }}>
       <div className='w-full h-full relative'>
         <Image
-          src={settings.imagenIzquierda || '/placeholder.svg'}
+          src={
+            settings.imagenIzquierda
+              ? optimizeCloudinaryUrl(settings.imagenIzquierda, 1200)
+              : '/placeholder.svg'
+          }
           alt='Imagen izquierda'
           fill
-          className='object-cover h-[60vh]'
+          className='object-cover'
           sizes='50vw'
           priority
         />
       </div>
       <div className='w-full h-full relative'>
         <Image
-          src={settings.imagenDerecha || '/placeholder.svg'}
+          src={
+            settings.imagenDerecha
+              ? optimizeCloudinaryUrl(settings.imagenDerecha, 1200)
+              : '/placeholder.svg'
+          }
           alt='Imagen derecha'
           fill
           className='object-cover'

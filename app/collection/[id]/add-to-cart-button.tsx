@@ -20,22 +20,27 @@ export function AddToCartButton({ product }: { product: Product }) {
   const { addToCart } = useCart()
   const [selectedSize, setSelectedSize] = useState('')
   const [quantity, setQuantity] = useState(1)
-  const [buttonState, setButtonState] = useState<'idle' | 'loading' | 'success'>('idle')
+  const [buttonState, setButtonState] = useState<
+    'idle' | 'loading' | 'success'
+  >('idle')
 
   const handleAddToCart = async () => {
     setButtonState('loading')
-    
+
     setTimeout(() => {
       addToCart({
         id: product.id,
         name: product.name,
-        price: typeof product.price === 'number' ? product.price : product.price.toNumber(),
+        price:
+          typeof product.price === 'number'
+            ? product.price
+            : product.price.toNumber(),
         quantity,
         image: product.image,
         size: selectedSize || undefined
       })
       setButtonState('success')
-      
+
       setTimeout(() => {
         setButtonState('idle')
       }, 2000)
@@ -44,7 +49,12 @@ export function AddToCartButton({ product }: { product: Product }) {
 
   const isOutOfStock = product.stock === 0
   const hasSizes = !!(product.size && String(product.size).trim() !== '')
-  const sizes = hasSizes && product.size ? String(product.size).split('-').map(s => s.trim()) : []
+  const sizes =
+    hasSizes && product.size
+      ? String(product.size)
+          .split('-')
+          .map((s) => s.trim())
+      : []
 
   return (
     <div className='space-y-4'>
@@ -79,20 +89,19 @@ export function AddToCartButton({ product }: { product: Product }) {
 
       {/* Selector de cantidad */}
       <div>
-        <label className='block text-sm font-medium mb-2'>
-          Cantidad:
-        </label>
+        <label className='block text-sm font-medium mb-2'>Cantidad:</label>
         <div className='flex items-center space-x-2'>
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className='w-10 h-10 border rounded-md flex items-center justify-center hover:bg-muted'
+            className={`w-10 h-10 border rounded-md flex items-center justify-center ${quantity <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}`}
+            disabled={quantity <= 1}
           >
             -
           </button>
           <span className='w-12 text-center'>{quantity}</span>
           <button
             onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-            className='w-10 h-10 border rounded-md flex items-center justify-center hover:bg-muted'
+            className={`w-10 h-10 border rounded-md flex items-center justify-center ${quantity >= product.stock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}`}
             disabled={quantity >= product.stock}
           >
             +

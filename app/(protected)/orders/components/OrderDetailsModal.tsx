@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { X } from 'lucide-react'
+import { usePDFGenerator } from './usePDFGenerator'
 
 interface OrderItem {
   id: number
@@ -43,6 +44,27 @@ export default function OrderDetailsModal({
 }: OrderDetailsModalProps) {
   if (!isOpen || !order) return null
 
+  const { generatePDF, isGenerating } = usePDFGenerator()
+
+  const handleGeneratePDF = async (order: Order) => {
+    const pdfData = {
+      orderId: order.id,
+      clientName: order.clientName,
+      status: order.status,
+      totalPrice: order.totalPrice,
+      createdAt: order.createdAt,
+      orderItems: order.orderItems,
+      address: order.address,
+      agencia: order.agencia,
+      clientPhone: order.clientPhone,
+      dni: order.dni,
+      deliveryCost: order.deliveryCost,
+      discount: order.discount
+    }
+
+    await generatePDF(pdfData)
+  }
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'entregado':
@@ -58,8 +80,29 @@ export default function OrderDetailsModal({
     }
   }
 
+  const mouseDownTarget = React.useRef<EventTarget | null>(null)
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Guardamos dónde se inició el clic
+    mouseDownTarget.current = e.target
+  }
+
+  const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Solo cerramos si el clic inició en el overlay Y terminó en el overlay
+    if (
+      mouseDownTarget.current === e.currentTarget &&
+      e.target === e.currentTarget
+    ) {
+      onClose()
+    }
+  }
+
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+    <div
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'
+    >
       <div className='relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-card rounded-lg border border-border'>
         {/* Header */}
         <div className='sticky top-0 flex items-center justify-between p-6 border-b border-border bg-card z-10'>
@@ -253,7 +296,7 @@ export default function OrderDetailsModal({
                   <div className='flex justify-between'>
                     <span className='text-foreground'>Envío:</span>
                     <span className='font-medium text-foreground'>
-                      S/. {order.deliveryCost}
+                      + S/. {order.deliveryCost}
                     </span>
                   </div>
                 )}
@@ -296,15 +339,11 @@ export default function OrderDetailsModal({
           {order.status === 'Entregado' && (
             <button
               onClick={() => {
-                // Llamar a la función para generar PDF
-                window.dispatchEvent(
-                  new CustomEvent('generate-pdf', { detail: order.id })
-                )
-                onClose()
+                handleGeneratePDF(order)
               }}
               className='px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity'
             >
-              Generar PDF
+              {isGenerating ? 'Generando PDF...' : 'Generar PDF'}
             </button>
           )}
         </div>

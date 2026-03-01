@@ -143,11 +143,7 @@ export default function RootLayout({
 }) {
   const SIGN_OUT_URL = '/cleanup-session'
   return (
-    <ClerkProvider
-      localization={customEs}
-      afterSignOutUrl={SIGN_OUT_URL}
-      appearance={clerkAppearance}
-    >
+    <ClerkProvider localization={customEs} afterSignOutUrl={SIGN_OUT_URL}>
       <html lang='es' suppressHydrationWarning>
         <body className={`${inter.className} body`}>
           <ThemeProvider attribute='class' defaultTheme='light' enableSystem>

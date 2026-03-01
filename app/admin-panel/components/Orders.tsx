@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import KpiCard from './KpiCard'
 import { useUser } from '@clerk/nextjs'
 import OrdersSkeleton from './skeleton/OrdersSkeleton'
+import { calculateTotalWithDiscount } from '@/lib/utils/order-calculations'
 interface Order {
   id: number
   clientName: string
@@ -269,19 +270,6 @@ const OdersManagement: React.FC = () => {
     return rangeWithDots
   }
 
-  const calculateTotalWithDiscount = (
-    totalPrice: number,
-    deliveryCost: number,
-    discoun: number
-  ) => {
-    const subtotal = totalPrice || 0
-    const delivery = deliveryCost ? deliveryCost : 0
-    const calculateDiscount = discoun ? (subtotal * discoun) / 100 : 0
-    const discount = Math.ceil(calculateDiscount * 10) / 10
-
-    return ((subtotal * 100 + delivery * 100 - discount * 100) / 100).toFixed(2)
-  }
-
   return (
     <>
       <main className='flex flex-1 flex-col bg-gray-50 dark:bg-gray-900  pb-12'>
@@ -458,7 +446,12 @@ const OdersManagement: React.FC = () => {
                             </div>
                           </td>
                           <td className='px-6 py-4 font-bold text-gray-900 dark:text-white'>
-                            S/ {Number(order.totalPrice).toFixed(2)}
+                            S/{' '}
+                            {calculateTotalWithDiscount(
+                              parseFloat(order.totalPrice.toString()),
+                              parseFloat(order.deliveryCost?.toString() || '0'),
+                              parseFloat(order.discount?.toString() || '0')
+                            )}
                           </td>
                           <td className='px-6 py-4'>
                             <span
@@ -466,12 +459,12 @@ const OdersManagement: React.FC = () => {
                                 order.status === 'Entregado'
                                   ? 'bg-emerald-100 text-green-500 dark:bg-green-600 dark:text-emerald-200'
                                   : order.status === 'Enviado'
-                                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                  : order.status === 'Pagado'
-                                  ? 'bg-sky-100 text-sky-700 dark:bg-sky-700/30 dark:text-sky-400'
-                                  : order.status === 'Cancelado'
-                                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' // Pendiente
+                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                    : order.status === 'Pagado'
+                                      ? 'bg-sky-100 text-sky-700 dark:bg-sky-700/30 dark:text-sky-400'
+                                      : order.status === 'Cancelado'
+                                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' // Pendiente
                               }`}
                             >
                               {order.status}
@@ -687,6 +680,23 @@ const OdersManagement: React.FC = () => {
                   </span>
                 </div>
 
+                {selectedOrder.discount && selectedOrder.discount > 0 && (
+                  <div className='flex justify-between items-center text-sm'>
+                    <span className='text-gray-600 dark:text-gray-400'>
+                      Descuento:
+                    </span>
+                    <span className='font-medium text-red-600 dark:text-red-400'>
+                      - {selectedOrder.discount} %{' = '} S /
+                      {(
+                        Math.ceil(
+                          ((selectedOrder.totalPrice * selectedOrder.discount) /
+                            100) *
+                            10
+                        ) / 10
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                )}
                 {selectedOrder.deliveryCost &&
                   selectedOrder.deliveryCost > 0 && (
                     <div className='flex justify-between items-center text-sm'>
@@ -699,33 +709,6 @@ const OdersManagement: React.FC = () => {
                     </div>
                   )}
 
-                {selectedOrder.discount && selectedOrder.discount > 0 && (
-                  <div className='flex justify-between items-center text-sm'>
-                    <span className='text-gray-600 dark:text-gray-400'>
-                      Descuento:
-                    </span>
-                    <span className='font-medium text-red-600 dark:text-red-400'>
-                      - % {Number(selectedOrder.discount).toFixed(2)}
-                      {' = '} S /
-                      {(
-                        Math.ceil(
-                          ((selectedOrder.totalPrice * selectedOrder.discount) /
-                            100) *
-                            10
-                        ) / 10
-                      ).toFixed(2)}
-                    </span>
-                  </div>
-                )}
-                <div className='flex justify-between items-center text-sm'>
-                  <span className='text-gray-600 dark:text-gray-400'>
-                    Subtotal:
-                  </span>
-                  <span className='font-medium dark:text-gray-300'>
-                    S/ {Number(selectedOrder.totalPrice).toFixed(2)}
-                  </span>
-                </div>
-
                 <div className='border-t pt-3 mt-3 border-gray-200 dark:border-gray-700'>
                   <div className='flex justify-between items-center'>
                     <span className='text-base font-bold text-gray-800 dark:text-gray-300'>
@@ -734,9 +717,11 @@ const OdersManagement: React.FC = () => {
                     <span className='text-base font-bold dark:text-white'>
                       S/{' '}
                       {calculateTotalWithDiscount(
-                        selectedOrder.totalPrice,
-                        selectedOrder.deliveryCost,
-                        selectedOrder.discount
+                        parseFloat(selectedOrder.totalPrice.toString()),
+                        parseFloat(
+                          selectedOrder.deliveryCost?.toString() || '0'
+                        ),
+                        parseFloat(selectedOrder.discount?.toString() || '0')
                       )}
                     </span>
                   </div>
@@ -749,12 +734,15 @@ const OdersManagement: React.FC = () => {
                 <span className='text-2xl font-black text-blue-600 dark:text-blue-400'>
                   Total: S/{' '}
                   {calculateTotalWithDiscount(
-                    selectedOrder.totalPrice,
-                    selectedOrder.deliveryCost,
-                    selectedOrder.discount
+                    parseFloat(selectedOrder.totalPrice.toString()),
+                    parseFloat(selectedOrder.deliveryCost?.toString() || '0'),
+                    parseFloat(selectedOrder.discount?.toString() || '0')
                   )}
                 </span>
                 <div className='flex gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400'>
+                  {selectedOrder.discount && selectedOrder.discount > 0 && (
+                    <span>Descuento: - % {selectedOrder.discount}</span>
+                  )}
                   {selectedOrder.deliveryCost &&
                     selectedOrder.deliveryCost > 0 && (
                       <span>
@@ -762,11 +750,6 @@ const OdersManagement: React.FC = () => {
                         {Number(selectedOrder.deliveryCost).toFixed(2)}
                       </span>
                     )}
-                  {selectedOrder.discount && selectedOrder.discount > 0 && (
-                    <span>
-                      Descuento: S/ {Number(selectedOrder.discount).toFixed(2)}
-                    </span>
-                  )}
                 </div>
               </div>
               <button

@@ -3,12 +3,10 @@ import { z } from 'zod'
 // Schema para formulario de delivery/orden
 export const DeliverySchema = z
   .object({
-    clientName: z
-      .string()
-      .min(3, 'Nombre completo requerido (mínimo 3 caracteres)'),
-    address: z.string().min(3, 'Dirección requerida (mínimo 3 caracteres)'),
+    clientName: z.string().min(3, 'Nombre completo requerido'),
+    address: z.string().min(3, 'Dirección requerida'),
     locationToSend: z.enum(['lima_metropolitana', 'provincia']),
-    deliveryCost: z.number().min(0, 'Costo de delivery inválido'),
+    deliveryCost: z.number().optional(),
     agencia: z.string().optional(),
     dni: z.string().optional(),
     clientPhone: z.string().optional(),
@@ -19,8 +17,18 @@ export const DeliverySchema = z
     email: z.string().email('Email inválido').optional()
   })
   .superRefine((data, ctx) => {
-    // Validaciones condicionales según tipo de envío
-    if (data.locationToSend === 'provincia') {
+    // Validaciones para Lima Metropolitana
+    if (data.locationToSend === 'lima_metropolitana') {
+      if (data.getlocation.lat === 0 && data.getlocation.lng === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Marca tu ubicación en el mapa',
+          path: ['getlocation']
+        })
+      }
+    }
+    // Validaciones para Provincia
+    else if (data.locationToSend === 'provincia') {
       if (!data.agencia || data.agencia.trim() === '') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -40,15 +48,6 @@ export const DeliverySchema = z
           code: z.ZodIssueCode.custom,
           message: 'Ingresa un teléfono válido (mínimo 7 dígitos)',
           path: ['clientPhone']
-        })
-      }
-    } else {
-      // Lima Metropolitana
-      if (data.getlocation.lat === 0 && data.getlocation.lng === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Marca tu ubicación en el mapa',
-          path: ['getlocation']
         })
       }
     }
