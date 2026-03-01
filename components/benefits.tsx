@@ -1,5 +1,4 @@
 import { Truck, HeadphonesIcon, ShieldCheck } from 'lucide-react'
-import styles from './benefits.module.css'
 
 const benefits = [
   {
@@ -21,7 +20,7 @@ const benefits = [
 
 export default function Benefits() {
   return (
-    <section className={styles.section}>
+    <section className='sectionCustomWidth'>
       <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
         {benefits.map((benefit, index) => (
           <div key={index} className='flex flex-col items-center text-center'>

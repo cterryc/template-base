@@ -20,7 +20,7 @@ export default function Contact() {
         if (!response.ok) throw new Error(`Error ${response.status}`)
 
         const data = await response.json()
-        setSettings(data.data || {})
+        setSettings(data.data.settings || {})
       } catch (error) {
         console.error('Error cargando config:', error)
         setSettings({ telefono: '', correo: '' })

@@ -1,14 +1,16 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id)
+    const { id } = await params
+    const idNum = parseInt(id)
 
-    if (isNaN(id)) {
+    if (isNaN(idNum)) {
       return NextResponse.json(
         { message: 'ID de producto destacado inválido' },
         { status: 400 }
@@ -17,7 +19,7 @@ export async function DELETE(
 
     // Verificar si el producto destacado existe
     const destacado = await prisma.productosDestacados.findUnique({
-      where: { id },
+      where: { id: idNum },
       include: {
         producto: {
           select: {
@@ -37,13 +39,17 @@ export async function DELETE(
 
     // Eliminar relación de producto destacado
     await prisma.productosDestacados.delete({
-      where: { id }
+      where: { id: idNum }
     })
+
+    // Invalidar caché de productos destacados
+    revalidatePath('/api/productos-destacados')
+    revalidatePath('/api/products')
 
     return NextResponse.json({
       message: 'Producto removido de destacados exitosamente',
       data: {
-        removedId: id,
+        removedId: idNum,
         productoId: destacado.producto.id,
         productoName: destacado.producto.name
       }

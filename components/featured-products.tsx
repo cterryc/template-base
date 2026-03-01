@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import ProductCard from './product-card'
-import styles from './featured-products.module.css'
 
 interface Product {
   id: number
@@ -62,9 +61,9 @@ export default function FeaturedProducts() {
   // Mostrar estado de carga CON SKELETONS
   if (loading) {
     return (
-      <section className={styles.customWidth}>
-        <h2 className={styles.h2}>Productos Destacados</h2>
-        <div className={styles.cardContainer}>
+      <section className='sectionCustomWidth'>
+        <h2 className='sectionTitle'>Productos Destacados</h2>
+        <div className='cardGrid'>
           {skeletonItems.map((item) => (
             <ProductCard
               key={`skeleton-${item}`}
@@ -86,8 +85,8 @@ export default function FeaturedProducts() {
   // Mostrar error
   if (error) {
     return (
-      <section className={styles.customWidth}>
-        <h2 className={styles.h2}>Productos Destacados</h2>
+      <section className='sectionCustomWidth'>
+        <h2 className='sectionTitle'>Productos Destacados</h2>
         <div className='text-center py-10'>
           <p className='text-red-600 mb-2'>{error}</p>
           <button
@@ -104,8 +103,8 @@ export default function FeaturedProducts() {
   // Si no hay datos
   if (data.length === 0) {
     return (
-      <section className={styles.customWidth}>
-        <h2 className={styles.h2}>Productos Destacados</h2>
+      <section className='sectionCustomWidth'>
+        <h2 className='sectionTitle'>Productos Destacados</h2>
         <p className='text-center py-10'>
           No hay productos destacados disponibles.
         </p>
@@ -114,9 +113,9 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <section className={styles.customWidth}>
-      <h2 className={styles.h2}>Productos Destacados</h2>
-      <div className={styles.cardContainer}>
+    <section className='sectionCustomWidth'>
+      <h2 className='sectionTitle'>Productos Destacados</h2>
+      <div className='cardGrid'>
         {data.map((product) => (
           <ProductCard key={product.id} product={product} from='featured' />
         ))}

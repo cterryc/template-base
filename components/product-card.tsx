@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/contexts/CartContext'
 import { useState } from 'react'
-import styles from './product-card.module.css'
 import Link from 'next/link'
 import { MdOutlineShoppingCart } from 'react-icons/md'
 // import { FiMinusCircle, FiPlusCircle } from 'react-icons/fi'
@@ -59,7 +58,7 @@ export default function ProductCard({
     return (
       <div className='bg-white overflow-hidden w-full dark:bg-[#0a0a0a]'>
         <Link href={`/collection?category=${product.name.toLowerCase()}`}>
-          <div className={styles.fromBestSellers}>
+          <div className='cardAspectRatioBestSellers'>
             <Image
               src={image || '/placeholder.svg'}
               alt={product.name}
@@ -74,7 +73,7 @@ export default function ProductCard({
           <div className='px-2 pt-4 pb-0 flex mb-2'>
             <h3
               className={
-                'text-sm text-[#787671] border-b border-[#787671] flex dark:text-white'
+                'cardBestSellersTitle dark:text-white'
               }
             >
               Ver {product.name}
@@ -90,7 +89,7 @@ export default function ProductCard({
       <div
         className={`relative ${
           from === 'featured'
-            ? styles.fromFeatured
+            ? 'cardAspectRatioFeatured'
             : 'lg:h-80 max-[400px]:h-[400px] max-[460px]:h-[400px] h-[450px] 2xl:h-[450px]'
         }`}
       >

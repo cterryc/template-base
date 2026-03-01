@@ -1,75 +1,167 @@
 /**
- * lib/auth.ts
- * Helpers de autenticación reutilizables para Server Components y Route Handlers.
- * Usa siempre `await auth()` desde @clerk/nextjs/server (nunca mezclar con hooks de cliente).
+ * Auth Helpers
+ * Helpers de autenticación reutilizables para Server Components y Route Handlers
  */
+
 import { auth } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
-
-// ─── Tipos ────────────────────────────────────────────────────────────────────
-
-interface SessionMetadata {
-  role?: 'admin' | 'user'
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+import { NextResponse } from 'next/server'
+import { userRepository } from '@/lib/repositories/user.repository'
 
 /**
- * Requiere que el usuario esté autenticado.
- * Si no lo está, redirige a /sign-in.
- * Retorna el userId para uso directo.
- *
- * @example
- * const userId = await requireAuth()
+ * Verificar si el usuario está autenticado
+ * Usar en Server Components
  */
-export async function requireAuth(): Promise<string> {
+export async function requireAuth() {
   const { userId } = await auth()
-  if (!userId) redirect('/sign-in')
+
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
   return userId
 }
 
 /**
- * Requiere que el usuario esté autenticado Y tenga rol 'admin'.
- * Si no lo está, redirige a /sign-in.
- * Si no es admin, redirige a /.
- *
- * @example
- * const userId = await requireAdmin()
+ * Verificar si el usuario es admin
+ * Usar en Server Components
  */
-export async function requireAdmin(): Promise<string> {
+export async function requireAdmin() {
   const { userId, sessionClaims } = await auth()
 
-  if (!userId) redirect('/sign-in')
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
 
-  const role = (sessionClaims?.metadata as SessionMetadata)?.role
-  if (role !== 'admin') redirect('/')
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+
+  if (role !== 'admin') {
+    throw new Error('Forbidden')
+  }
 
   return userId
 }
 
 /**
- * Obtiene el userId si el usuario está autenticado, o null si no lo está.
- * Útil para componentes que tienen comportamiento diferente según auth.
- *
- * @example
- * const userId = await getOptionalUser()
- * if (userId) { ... } // mostrar funciones autenticadas
+ * Verificar si el usuario es admin o editor
+ * Usar en Server Components
  */
-export async function getOptionalUser(): Promise<string | null> {
-  const { userId } = await auth()
+export async function requireAdminOrEditor() {
+  const { userId, sessionClaims } = await auth()
+
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+
+  if (role !== 'admin' && role !== 'editor') {
+    throw new Error('Forbidden')
+  }
+
   return userId
 }
 
 /**
- * Verifica si el usuario actual tiene rol de admin.
- * No redirige — solo retorna boolean. Útil para condicionales en UI.
- *
- * @example
- * const isAdmin = await isAdminUser()
- * if (isAdmin) { ... }
+ * Obtener usuario opcional (no requiere auth)
+ * Usar en Server Components
  */
-export async function isAdminUser(): Promise<boolean> {
-  const { sessionClaims } = await auth()
-  const role = (sessionClaims?.metadata as SessionMetadata)?.role
-  return role === 'admin'
+export async function getOptionalUser() {
+  try {
+    const { userId } = await auth()
+
+    if (!userId) {
+      return null
+    }
+
+    const user = await userRepository.findByClerkId(userId)
+    return user
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Verificar si el usuario es admin (para Route Handlers)
+ * Devuelve Response 401/403 si no tiene permisos
+ */
+export async function isAdminUser(request: Request) {
+  const { userId, sessionClaims } = await auth()
+
+  if (!userId) {
+    return {
+      error: NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+  }
+
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+
+  if (role !== 'admin') {
+    return {
+      error: NextResponse.json(
+        { message: 'Forbidden' },
+        { status: 403 }
+      )
+    }
+  }
+
+  return { userId }
+}
+
+/**
+ * Helper para envolver handlers que requieren auth
+ */
+export async function withAuth<T>(
+  handler: (userId: string) => Promise<T>
+): Promise<T | NextResponse> {
+  try {
+    const userId = await requireAuth()
+    return await handler(userId)
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json(
+          { message: 'Unauthorized' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Forbidden') {
+        return NextResponse.json(
+          { message: 'Forbidden' },
+          { status: 403 }
+        )
+      }
+    }
+    throw error
+  }
+}
+
+/**
+ * Helper para envolver handlers que requieren admin
+ */
+export async function withAdmin<T>(
+  handler: (userId: string) => Promise<T>
+): Promise<T | NextResponse> {
+  try {
+    const userId = await requireAdmin()
+    return await handler(userId)
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json(
+          { message: 'Unauthorized' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Forbidden') {
+        return NextResponse.json(
+          { message: 'Forbidden' },
+          { status: 403 }
+        )
+      }
+    }
+    throw error
+  }
 }

@@ -20,12 +20,13 @@ const updateAgenciasSchema = z.object({
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id)
+    const { id } = await params
+    const idNum = parseInt(id)
 
-    if (isNaN(id)) {
+    if (isNaN(idNum)) {
       return NextResponse.json(
         { message: 'ID de agencia inválido' },
         { status: 400 }
@@ -34,7 +35,7 @@ export async function PUT(
 
     // Verificar si la configuración existe
     const existingAgencia = await prisma.agencia.findUnique({
-      where: { id }
+      where: { id: idNum }
     })
 
     if (!existingAgencia) {
@@ -87,7 +88,7 @@ export async function PUT(
 
     // Actualizar configuración
     const agenciaActualizada = await prisma.agencia.update({
-      where: { id },
+      where: { id: idNum },
       data: {
         agencias: validatedData.agencias,
         minimoDelivery: validatedData.minimoDelivery,

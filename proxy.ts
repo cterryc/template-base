@@ -21,7 +21,10 @@ const isPublicRoute = createRouteMatcher([
   '/api/colecciones(.*)',
   '/api/sign-in',
   '/api/sign-up',
-  '/api/config(.*)'
+  '/api/config(.*)',
+  '/api/users(.*)',
+  // Webhooks de Clerk — deben ser públicos (Clerk los envía sin sesión)
+  '/api/webhooks(.*)'
 ])
 
 // ─── Rutas exclusivas de administrador ───────────────────────────────────────
@@ -29,7 +32,6 @@ const isAdminRoute = createRouteMatcher([
   '/admin-panel(.*)',
   '/api/cupones(.*)',
   '/api/settings(.*)',
-  '/api/users(.*)',
   '/api/updateuser(.*)',
   '/api/agencias(.*)',
   '/api/inventory(.*)',
@@ -50,7 +52,9 @@ export default clerkMiddleware(async (auth, req) => {
     const { sessionClaims } = await auth()
     const role = (sessionClaims?.metadata as { role?: string })?.role
 
-    if (role !== 'admin') {
+    console.log('role en proxy.ts', role)
+
+    if (role !== 'ADMIN' && role !== 'EDITOR') {
       // Redirigir a home si no es admin (en lugar de 403, mejor UX)
       const homeUrl = new URL('/', req.url)
       return NextResponse.redirect(homeUrl)

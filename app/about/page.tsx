@@ -14,7 +14,7 @@ export default function About() {
         if (!response.ok) throw new Error(`Error ${response.status}`)
 
         const data = await response.json()
-        setSettings(data.data || {})
+        setSettings(data.data.settings || {})
       } catch (error) {
         console.error('Error cargando config:', error)
         setSettings({ fotoTienda: '' })
@@ -44,10 +44,13 @@ export default function About() {
           </p>
         </div>
         <div className='relative min-h-96 md:h-full'>
-          <img
+          <Image
             src={settings.fotoTienda || '/CargandoImagen.png'}
             alt='Savior Showroom'
+            fill
             className='object-cover rounded-lg'
+            sizes='(max-width: 768px) 100vw, 50vw'
+            priority
           />
         </div>
       </div>

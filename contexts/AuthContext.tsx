@@ -1,6 +1,5 @@
 'use client'
 
-import type React from 'react'
 import {
   createContext,
   useContext,
@@ -19,7 +18,7 @@ interface UserData {
 
 interface AuthContextType {
   userData: UserData | null
-  isAdmin: boolean
+  isAdminOrEditor: boolean
   isLoading: boolean
   error: string | null
   refetchUserData: () => Promise<void>
@@ -30,7 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { userId, isSignedIn } = useAuth()
   const [userData, setUserData] = useState<UserData | null>(null)
-  const [isAdmin, setIsAdmin] = useState<boolean>(false)
+  const [isAdminOrEditor, setIsAdminOrEditor] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (signal?: AbortSignal) => {
       if (!isSignedIn || !userId) {
         setUserData(null)
-        setIsAdmin(false)
+        setIsAdminOrEditor(false)
         setIsLoading(false)
         return
       }
@@ -68,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ...data.data // Incluye todos los demás datos del usuario
         })
 
-        setIsAdmin(userRole === 'ADMIN')
+        setIsAdminOrEditor(userRole === 'ADMIN' || userRole === 'EDITOR')
       } catch (error) {
         // Solo manejar errores que no sean de aborto
         if (error instanceof Error && error.name !== 'AbortError') {
@@ -105,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         userData,
-        isAdmin,
+        isAdminOrEditor,
         isLoading,
         error,
         refetchUserData

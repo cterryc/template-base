@@ -1,22 +1,150 @@
+@import '@clerk/themes/shadcn.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   display: grid;
   min-height: 100dvh;
   grid-template-rows: auto 1fr auto;
 }
 
+/* ─── Utilidades Personalizadas ─────────────────────────────────────────── */
+
 .containerBenefits {
   width: calc(100vw - 15px);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Hero Section */
+.heroSection {
+  display: flex;
+  width: calc(100vw - 15px);
+  height: 100%;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media screen and (max-width: 990px) {
+  .heroSection {
+    justify-content: center;
+    width: 100dvw;
   }
+
+  .heroSection > div:nth-child(1) {
+    display: none;
+  }
+}
+
+/* Hero Footer Section (Mobile) */
+.heroFooterSection {
+  display: none;
+  width: calc(100vw - 15px);
+  height: 100%;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media screen and (max-width: 990px) {
+  .heroFooterSection {
+    display: flex;
+  }
+}
+
+@media (max-width: 500px) {
+  .heroFooterSection {
+    @apply w-screen;
+  }
+}
+
+/* Featured Products & Best Sellers */
+.sectionCustomWidth {
+  @apply px-10;
+  width: calc(100vw - 15px);
+  margin-top: 35px;
+  margin-bottom: 30px;
+}
+
+.sectionCustomWidthTight {
+  @apply px-10;
+  width: calc(100vw - 15px);
+  margin: 15px 0px;
+}
+
+.cardGrid {
+  @apply gap-2 grid grid-cols-4;
+}
+
+.cardGridPulse {
+  @apply gap-2 grid grid-cols-4 animate-pulse;
+}
+
+.sectionTitle {
+  @apply text-3xl font-bold mb-4 mx-auto;
+}
+
+.sectionTitleLeft {
+  @apply text-3xl font-bold mb-4;
+}
+
+@media (max-width: 990px) {
+  .cardGrid,
+  .cardGridPulse {
+    @apply grid-cols-2;
+  }
+
+  .sectionCustomWidth,
+  .sectionCustomWidthTight {
+    @apply px-4;
+  }
+
+  .sectionTitle,
+  .sectionTitleLeft {
+    @apply text-2xl;
+  }
+}
+
+@media (max-width: 600px) {
+  .sectionCustomWidth,
+  .sectionCustomWidthTight {
+    @apply w-screen;
+  }
+}
+
+/* Product Card Aspect Ratios */
+.cardAspectRatioFeatured {
+  position: relative;
+  aspect-ratio: 354 / 424;
+  width: 100%;
+}
+
+.cardAspectRatioBestSellers {
+  position: relative;
+  aspect-ratio: 400/390;
+  width: 100%;
+}
+
+.cardBestSellersTitle {
+  @apply text-sm text-[#787671] border-b border-[#787671] flex;
+}
+
+/* Skeleton Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeletonShimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
 }
 
 @layer base {

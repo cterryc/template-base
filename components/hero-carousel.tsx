@@ -52,10 +52,13 @@ export default function HeroCarousel() {
             index === currentSlide ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <img
+          <Image
             src={slide.image || '/placeholder.svg'}
             alt={slide.title}
+            fill
             className='object-cover'
+            priority={index === 0}
+            sizes='100vw'
           />
           <div className='absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center'>
             <div className='text-center text-white'>

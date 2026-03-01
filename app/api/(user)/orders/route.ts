@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
+import type { Prisma } from '@/app/generated/prisma/client'
 
 export async function POST(req: NextRequest) {
   const {
@@ -94,7 +95,7 @@ export async function GET(req: NextRequest) {
     const minTotal = searchParams.get('minTotal')
     const maxTotal = searchParams.get('maxTotal')
 
-    const where: any = {}
+    const where: Prisma.OrdersWhereInput = {}
 
     if (status) {
       where.status = status

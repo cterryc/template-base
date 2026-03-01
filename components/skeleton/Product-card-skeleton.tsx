@@ -1,11 +1,10 @@
 // components/product-card-skeleton.tsx
-import styles from '../product-card.module.css'
 
 export default function ProductCardSkeleton() {
   return (
     <div className='bg-white overflow-hidden w-full'>
       {/* Contenedor de imagen con skeleton */}
-      <div className={styles.fromBestSellers}>
+      <div className='cardAspectRatioBestSellers'>
         <div className='relative w-full h-full bg-gray-200 animate-pulse'>
           {/* Imagen skeleton */}
           <div className='absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200'></div>

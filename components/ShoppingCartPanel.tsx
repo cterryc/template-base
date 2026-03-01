@@ -11,6 +11,16 @@ import { LuLoaderCircle } from 'react-icons/lu'
 import { LatLng } from 'leaflet'
 import FormToSend from './formToSend'
 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose
+} from '@/components/ui/sheet'
+import { ScrollArea } from '@/components/ui/scroll-area'
+
 interface ShoppingCartPanelProps {
   isOpen: boolean
   onClose: () => void
@@ -102,45 +112,15 @@ export default function ShoppingCartPanel({
   }
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className='fixed inset-0 bg-black bg-opacity-50 z-auto'
-        onMouseDown={(e) => {
-          if (e.target === e.currentTarget) {
-            if (cuponError.length) {
-              setCuponError('')
-              setDescuento(0)
-              setCodigoCupon('')
-              setDiscount('')
-              setLoading(false)
-            }
-            onClose()
-          }
-        }}
-      >
-        {/* Cart Panel */}
-        <div className='cartPanel'>
-          <div className='flex justify-between items-center mb-6'>
-            <h2 className='text-xl font-semibold text-gray-800'>Tu Carrito</h2>
-            <button
-              onClick={() => {
-                if (cuponError.length) {
-                  setCuponError('')
-                  setDescuento(0)
-                  setCodigoCupon('')
-                  setDiscount('')
-                  setLoading(false)
-                }
-                setTimeout(() => {
-                  onClose()
-                }, 100)
-              }}
-              className='text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-full hover:bg-gray-100'
-            >
-              <X size={24} />
-            </button>
-          </div>
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className='w-full sm:max-w-md p-0 flex flex-col'>
+        <SheetHeader className='px-6 py-4 border-b'>
+          <SheetTitle className='text-xl font-semibold text-gray-800'>
+            Tu Carrito
+          </SheetTitle>
+        </SheetHeader>
+        
+        <ScrollArea className='flex-1 px-6 py-4'>
           {cartItems.length === 0 ? (
             <p className='text-gray-500 text-center py-8'>
               Tu carrito está vacío
@@ -250,17 +230,20 @@ export default function ShoppingCartPanel({
                 >
                   Limpiar Carrito
                 </Button>
-                <button
-                  style={{ backgroundColor: '#262626', marginTop: '10px' }}
-                  className='buttonShowCardClientName'
-                  onClick={() => setShowCardClientName(true)}
-                >
-                  Continuar
-                </button>
+                <SheetClose asChild>
+                  <button
+                    style={{ backgroundColor: '#262626', marginTop: '10px' }}
+                    className='buttonShowCardClientName'
+                    onClick={() => setShowCardClientName(true)}
+                  >
+                    Continuar
+                  </button>
+                </SheetClose>
               </div>
             </>
           )}
-        </div>
+        </ScrollArea>
+        
         {showCardClientName && (
           <FormToSend
             subTotal={subTotal}
@@ -271,7 +254,7 @@ export default function ShoppingCartPanel({
             discountPercentage={descuento}
           />
         )}
-      </div>
-    </>
+      </SheetContent>
+    </Sheet>
   )
 }

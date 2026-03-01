@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import type { Prisma } from '@/app/generated/prisma/client'
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'asc'
 
     // Construir filtros
-    const where: any = {}
+    const where: Prisma.ProductosWhereInput = {}
 
     if (search) {
       where.name = { contains: search, mode: 'insensitive' }
@@ -30,17 +31,17 @@ export async function GET(req: NextRequest) {
     }
 
     // Ordenamiento
-    const orderBy: any = {}
+    const orderBy: Prisma.ProductosOrderByWithRelationInput = {}
     if (sortBy === 'name') {
-      orderBy.name = sortOrder
+      orderBy.name = sortOrder as Prisma.SortOrder
     } else if (sortBy === 'price') {
-      orderBy.price = sortOrder
+      orderBy.price = sortOrder as Prisma.SortOrder
     } else if (sortBy === 'createdAt') {
-      orderBy.createdAt = sortOrder
+      orderBy.createdAt = sortOrder as Prisma.SortOrder
     } else if (sortBy === 'updatedAt') {
-      orderBy.updatedAt = sortOrder
+      orderBy.updatedAt = sortOrder as Prisma.SortOrder
     } else {
-      orderBy.createdAt = 'asc'
+      orderBy.createdAt = 'desc' as Prisma.SortOrder
     }
 
     // Paginación

@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { Role } from '@/app/generated/prisma/enums'
+import type { Prisma } from '@/app/generated/prisma/client'
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'desc'
 
     // Construir filtros
-    const where: any = {}
+    const where: Prisma.UserWhereInput = {}
 
     if (search) {
       where.OR = [
@@ -30,15 +31,15 @@ export async function GET(req: NextRequest) {
     }
 
     // Ordenamiento
-    const orderBy: any = {}
+    const orderBy: Prisma.UserOrderByWithRelationInput = {}
     if (sortBy === 'name') {
-      orderBy.name = sortOrder
+      orderBy.name = sortOrder as Prisma.SortOrder
     } else if (sortBy === 'email') {
-      orderBy.email = sortOrder
+      orderBy.email = sortOrder as Prisma.SortOrder
     } else if (sortBy === 'orders') {
       // Ordenar por número de órdenes (necesita subquery)
     } else {
-      orderBy.createdAt = sortOrder
+      orderBy.createdAt = sortOrder as Prisma.SortOrder
     }
 
     // Paginación

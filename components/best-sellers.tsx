@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import ProductCard from './product-card'
-import styles from './best-sellers.module.css'
 
 interface Product {
   id: number
@@ -53,9 +52,9 @@ export default function BestSellers() {
   // Mostrar estado de carga CON 4 SKELETONS
   if (loading) {
     return (
-      <section className={styles.customWidth}>
-        <h2 className={styles.h2}>Ver Colección</h2>
-        <div className={styles.cardContainer}>
+      <section className='sectionCustomWidthTight'>
+        <h2 className='sectionTitleLeft'>Ver Colección</h2>
+        <div className='cardGrid'>
           {skeletonItems.map((item) => (
             <ProductCard
               key={`skeleton-${item}`} // ✅ KEY AQUÍ
@@ -77,17 +76,17 @@ export default function BestSellers() {
   // Si no hay datos después de cargar
   if (data.length === 0) {
     return (
-      <section className={styles.customWidth}>
-        <h2 className={styles.h2}>Ver Colección</h2>
+      <section className='sectionCustomWidthTight'>
+        <h2 className='sectionTitleLeft'>Ver Colección</h2>
         <p className='text-center py-10'>Próximamente nuevas colecciones.</p>
       </section>
     )
   }
 
   return (
-    <section className={styles.customWidth}>
-      <h2 className={styles.h2}>Ver Colección</h2>
-      <div className={styles.cardContainer}>
+    <section className='sectionCustomWidthTight'>
+      <h2 className='sectionTitleLeft'>Ver Colección</h2>
+      <div className='cardGrid'>
         {data.map((product) => (
           <ProductCard key={product.id} product={product} from='bestSellers' />
         ))}

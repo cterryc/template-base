@@ -2,10 +2,10 @@
 import { useAuthContext } from '@/contexts/AuthContext'
 
 export function useUserRole() {
-  const { isAdmin, userData, isLoading } = useAuthContext()
+  const { isAdminOrEditor, userData, isLoading } = useAuthContext()
 
   return {
-    isAdmin,
+    isAdminOrEditor,
     userRole: userData?.role,
     isLoading,
     userData

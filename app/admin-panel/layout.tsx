@@ -1,7 +1,7 @@
 // app/admin-panel/layout.tsx - SERVER COMPONENT
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import { getIsAdmin } from '@/lib/admin' // Tu función para verificar admin
+import { getIsAdminOrEditor } from '@/lib/admin' // Tu función para verificar admin
 
 export default async function AdminLayout({
   children
@@ -17,10 +17,10 @@ export default async function AdminLayout({
   }
 
   // 3. Verificar si es admin (necesitas implementar esta lógica)
-  const isAdmin = await getIsAdmin(user.id)
+  const isAdminOrEditor = await getIsAdminOrEditor(user.id)
 
   // 4. Si no es admin, redirigir
-  if (!isAdmin) {
+  if (!isAdminOrEditor) {
     redirect('/')
   }
 

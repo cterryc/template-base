@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const endDate = searchParams.get('endDate')
 
     // Crear filtro de fecha si se proporciona
-    const dateFilter: any = {}
+    const dateFilter: Prisma.DateTimeFilter = {}
     if (startDate) {
       dateFilter.gte = new Date(startDate)
     }
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       dateFilter.lte = new Date(endDate)
     }
 
-    const whereCondition = startDate || endDate ? { createdAt: dateFilter } : {}
+    const whereCondition: Prisma.OrdersWhereInput = startDate || endDate ? { createdAt: dateFilter } : {}
 
     // Ejecutar todas las consultas en paralelo para mejor rendimiento
     const [

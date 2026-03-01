@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 
 // GET - Obtener un producto por ID
 export async function GET(
@@ -134,6 +135,9 @@ export async function PUT(
       }
     }
 
+    // Invalidar caché de productos
+    revalidatePath('/api/products')
+
     return NextResponse.json({
       message: 'Producto actualizado exitosamente',
       data: updatedProduct
@@ -206,6 +210,9 @@ export async function DELETE(
     await prisma.productos.delete({
       where: { id }
     })
+
+    // Invalidar caché de productos
+    revalidatePath('/api/products')
 
     return NextResponse.json({
       message: 'Producto eliminado exitosamente',

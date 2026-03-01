@@ -13,6 +13,7 @@ const envSchema = z.object({
 
   // Clerk (Privadas)
   CLERK_SECRET_KEY: z.string().min(1),
+  CLERK_WEBHOOK_SIGNING_SECRET: z.string().min(1),
 
   // Cloudinary
   CLOUDINARY_CLOUD_NAME: z.string().min(1),

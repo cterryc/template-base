@@ -1,8 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+//
+// Prisma v7: La conexión a la DB se configura en prisma.config.ts (no aquí).
+// Ver: https://pris.ly/d/config-datasource
 
 generator client {
   provider = "prisma-client"
@@ -12,6 +12,8 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
 
 enum DeliveryLocation {
   Lima
@@ -25,6 +27,8 @@ enum Role {
   EDITOR
 }
 
+// ─── Modelos ─────────────────────────────────────────────────────────────────
+
 model User {
   id               Int              @id @default(autoincrement())
   email            String           @unique
@@ -34,9 +38,8 @@ model User {
   clerkId          String?          @unique
   role             Role             @default(USER)
 
-  location Json?
-  address  String?
-
+  location   Json?
+  address    String?
   agencia    String?
   dni        String?
   phone      String?
@@ -44,6 +47,11 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Índices para autenticación y búsquedas frecuentes
+  @@index([clerkId]) // Búsqueda por Clerk ID (webhooks, auth)
+  @@index([email]) // Búsqueda por email (login, sync)
+  @@index([role]) // Filtrar admins/editors
 }
 
 model Agencia {
@@ -102,6 +110,11 @@ model Productos {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Índices para el catálogo: filtros frecuentes por categoría y estado
+  @@index([category])
+  @@index([estado])
+  @@index([category, estado])
 }
 
 model ProductosDestacados {
@@ -133,6 +146,13 @@ model Orders {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Índices para el panel admin: listar órdenes por usuario, filtrar por estado y fecha
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([createdAt(sort: Desc)])
+  @@index([status, createdAt]) // Para filtrar por estado + rango de fechas
 }
 
 model OrderItem {
@@ -147,6 +167,11 @@ model OrderItem {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Índices en FKs para JOINs eficientes + índice compuesto para queries combinadas
+  @@index([orderId])
+  @@index([productoId])
+  @@index([orderId, productoId])
 }
 
 model Categories {

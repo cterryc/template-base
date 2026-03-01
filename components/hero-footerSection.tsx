@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import styles from './hero-footerSection.module.css'
+import Image from 'next/image'
 // import { imagenIzquierda } from '../data/fotosPortada'
 
 const HeroFooterSection = () => {
@@ -14,7 +14,7 @@ const HeroFooterSection = () => {
         if (!response.ok) throw new Error(`Error ${response.status}`)
 
         const data = await response.json()
-        setSettings(data.data || {})
+        setSettings(data.data.settings || {})
       } catch (error) {
         console.error('Error cargando settings:', error)
         setSettings({ imagenIzquierda: '' })
@@ -24,12 +24,14 @@ const HeroFooterSection = () => {
     fetchSettings()
   }, [])
   return (
-    <section className={styles.heroSection}>
-      <div className='w-full'>
-        <img
+    <section className='heroFooterSection'>
+      <div className='w-full h-full relative'>
+        <Image
           src={settings.imagenIzquierda || '/CargandoImagen.png'}
-          alt='Image 2'
-          className='w-full h-full'
+          alt='Imagen footer'
+          fill
+          className='object-cover'
+          sizes='100vw'
         />
       </div>
     </section>

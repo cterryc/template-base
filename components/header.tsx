@@ -9,7 +9,7 @@ import { IoIosMailUnread } from 'react-icons/io'
 import { FaHome } from 'react-icons/fa'
 import { GrUserAdmin } from 'react-icons/gr'
 import { Button } from '@/components/ui/button'
-import ShoppingCartPanel from './ShoppingCartPanel'
+import dynamic from 'next/dynamic'
 import { useCart } from '@/contexts/CartContext'
 import { ThemeToggle } from './ThemeToggle'
 import {
@@ -25,8 +25,18 @@ import { SignedIn, UserButton, useUser } from '@clerk/nextjs'
 import { codigoCupon } from '@/data/cupon'
 import './header.css'
 import { dark } from '@clerk/themes'
-import { useTheme } from 'next-themes'
 import { useUserRole } from '@/hooks/useUserRole'
+import { useTheme } from 'next-themes'
+
+// Lazy load ShoppingCartPanel - no se necesita SSR
+const ShoppingCartPanel = dynamic(() => import('./ShoppingCartPanel'), {
+  ssr: false,
+  loading: () => (
+    <div className='fixed right-0 top-1/2 -translate-y-1/2 w-80 md:w-96 bg-background border-l p-4 z-50'>
+      <p className='text-muted-foreground text-center'>Cargando carrito...</p>
+    </div>
+  )
+})
 
 interface ProsItemsProduct {
   id: number
@@ -45,7 +55,7 @@ export default function Header() {
   const { isSignedIn, isLoaded, user } = useUser()
   const [disctount, setDiscount] = useState('')
   const { theme } = useTheme()
-  const { isAdmin } = useUserRole()
+  const { isAdminOrEditor } = useUserRole()
 
   const getDiscount = () => {
     if (disctount === codigoCupon) {
@@ -86,7 +96,7 @@ export default function Header() {
   // }, [isSignedIn])
 
   return (
-    <header className='header'>
+    <header className='header' role='banner'>
       <div className='container py-4 flex items-center justify-between mx-auto'>
         <div className='flex items-center ml-3'>
           <Link href='/' className='text-2xl font-bold flex items-center gap-1'>
@@ -108,7 +118,7 @@ export default function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className='hidden md:block'>
+        <nav className='hidden md:block' aria-label='Navegación principal'>
           <ul className='flex space-x-4'>
             <li>
               <Link
@@ -116,6 +126,7 @@ export default function Header() {
                 className={`hover:text-slate-400 ${
                   pathname === '/' || pathname === '' ? 'text-slate-500' : ''
                 }`}
+                aria-current={pathname === '/' || pathname === '' ? 'page' : undefined}
               >
                 Home
               </Link>
@@ -126,6 +137,7 @@ export default function Header() {
                 className={`hover:text-slate-400 ${
                   pathname === '/collection' ? 'text-slate-500' : ''
                 }`}
+                aria-current={pathname === '/collection' ? 'page' : undefined}
               >
                 Productos
               </Link>
@@ -136,6 +148,7 @@ export default function Header() {
                 className={`hover:text-slate-400 ${
                   pathname === '/about' ? 'text-slate-500' : ''
                 }`}
+                aria-current={pathname === '/about' ? 'page' : undefined}
               >
                 Nosotros
               </Link>
@@ -146,6 +159,7 @@ export default function Header() {
                 className={`hover:text-slate-400 ${
                   pathname === '/contact' ? 'text-slate-500' : ''
                 }`}
+                aria-current={pathname === '/contact' ? 'page' : undefined}
               >
                 Contactanos
               </Link>
@@ -158,12 +172,18 @@ export default function Header() {
           <button
             onClick={toggleCart}
             className='relative h-8 w-8 p-0 ml-2 md:ml-3'
+            aria-label='Abrir carrito'
           >
             <MdOutlineShoppingCart className='h-6 w-6' />
             {cartItems.length > 0 && (
-              <span className='absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs'>
-                {cartItems.reduce((total, item) => total + item.quantity, 0)}
-              </span>
+              <>
+                <span className='sr-only'>
+                  {cartItems.reduce((total, item) => total + item.quantity, 0)} productos en el carrito
+                </span>
+                <span className='absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs'>
+                  {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                </span>
+              </>
             )}
           </button>
 
@@ -184,7 +204,7 @@ export default function Header() {
                   }}
                 >
                   <UserButton.MenuItems>
-                    {isAdmin && (
+                    {isAdminOrEditor && (
                       <UserButton.Link
                         label='Admin Savior'
                         labelIcon={
@@ -248,7 +268,7 @@ export default function Header() {
           {!isSignedIn && isLoaded && (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant='ghost' size='icon' className='md:hidden'>
+                <Button variant='ghost' size='icon' className='md:hidden' aria-label='Abrir menú'>
                   <Menu className='h-6 w-6' />
                 </Button>
               </SheetTrigger>

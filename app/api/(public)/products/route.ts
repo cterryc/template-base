@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { products } from './products' // 👈 tu archivo con productos iniciales
 import { Prisma } from '@/app/generated/prisma/client'
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 
-export const revalidate = 60
+// Nota: Con cacheComponents: true, el caché se maneja vía lib/cache/products.ts
+// usando 'use cache' + cacheLife('hours'). Esta ruta es dinámica por defecto.
 
 export async function GET(req: NextRequest) {
   try {
@@ -227,6 +229,9 @@ export async function POST(req: NextRequest) {
         }
       })
     }
+
+    // Invalidar caché de productos
+    revalidatePath('/api/products')
 
     return NextResponse.json(
       {
