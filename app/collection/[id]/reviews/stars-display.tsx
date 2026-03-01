@@ -6,10 +6,10 @@ interface StarsDisplayProps {
   showNumber?: boolean
 }
 
-export function StarsDisplay({ 
-  rating, 
+export function StarsDisplay({
+  rating,
   size = 'md',
-  showNumber = true 
+  showNumber = true
 }: StarsDisplayProps) {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -18,20 +18,21 @@ export function StarsDisplay({
   }
 
   return (
-    <div className='flex items-center space-x-1'>
+    <div className='flex items-center space-x-0.5'>
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
           className={`${sizeClasses[size]} ${
             star <= rating
-              ? 'fill-yellow-400 text-yellow-400'
-              : 'fill-gray-200 text-gray-200'
+              ? 'fill-foreground text-foreground'
+              : 'fill-transparent text-foreground/10'
           }`}
+          strokeWidth={1}
         />
       ))}
       {showNumber && (
-        <span className='text-sm text-muted-foreground ml-1'>
-          ({rating.toFixed(1)})
+        <span className='text-[10px] font-bold text-foreground/40 ml-2 tracking-tighter'>
+          {rating.toFixed(1)}
         </span>
       )}
     </div>

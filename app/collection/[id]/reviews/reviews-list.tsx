@@ -1,4 +1,9 @@
-import { getProductReviews, canUserReview, createReview, type CreateReviewFormData } from './actions'
+import {
+  getProductReviews,
+  canUserReview,
+  createReview,
+  type CreateReviewFormData
+} from './actions'
 import { StarsDisplay } from './stars-display'
 import { VerifiedBadge } from './verified-badge'
 import { CreateReviewForm } from './create-review-form'
@@ -8,80 +13,102 @@ interface ProductReviewsProps {
 }
 
 export async function ProductReviews({ productId }: ProductReviewsProps) {
-  const { reviews, averageRating, totalReviews } = await getProductReviews(productId)
+  const { reviews, averageRating, totalReviews } =
+    await getProductReviews(productId)
   const { canReview, reason } = await canUserReview(productId)
 
   return (
-    <section className='border-t pt-8'>
-      <h2 className='text-2xl font-bold mb-6'>Opiniones de clientes</h2>
-
-      {/* Resumen */}
-      <div className='bg-muted rounded-lg p-6 mb-8'>
-        <div className='flex items-center space-x-4'>
-          <div className='text-5xl font-bold'>{averageRating.toFixed(1)}</div>
-          <div>
-            <StarsDisplay rating={averageRating} size='lg' showNumber={false} />
-            <p className='text-sm text-muted-foreground mt-1'>
-              {totalReviews} {totalReviews === 1 ? 'opinión' : 'opiniones'}
-            </p>
-          </div>
+    <div className='bg-background'>
+      {/* Resumen de Calificación */}
+      <div className='flex flex-col sm:flex-row items-center sm:items-end space-y-4 sm:space-y-0 sm:space-x-8 mb-16'>
+        <div className='text-7xl font-light tracking-tighter text-foreground'>
+          {averageRating.toFixed(1)}
+        </div>
+        <div className='flex flex-col items-center sm:items-start pb-2'>
+          <StarsDisplay rating={averageRating} size='lg' showNumber={false} />
+          <p className='text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/40 mt-3'>
+            Basado en {totalReviews}{' '}
+            {totalReviews === 1 ? 'opinión' : 'opiniones'}
+          </p>
         </div>
       </div>
 
-      {/* Formulario (si puede revisar) */}
-      {canReview ? (
-        <div className='mb-8'>
-          <CreateReviewForm productId={productId} />
-        </div>
-      ) : reason === 'already_reviewed' ? (
-        <div className='mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
-          <p className='text-sm text-blue-800'>Ya dejaste una opinión para este producto.</p>
-        </div>
-      ) : reason === 'auth_required' ? (
-        <div className='mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg'>
-          <p className='text-sm text-yellow-800'>Inicia sesión para dejar tu opinión.</p>
-        </div>
-      ) : null}
+      {/* Acciones de Review (Condicionales) */}
+      <div className='mb-16'>
+        {canReview ? (
+          <div className='max-w-2xl'>
+            <CreateReviewForm productId={productId} />
+          </div>
+        ) : reason === 'already_reviewed' ? (
+          <div className='inline-block border border-border px-6 py-4'>
+            <p className='text-[10px] uppercase tracking-widest text-foreground/60'>
+              Ya has compartido tu opinión sobre este producto.
+            </p>
+          </div>
+        ) : reason === 'auth_required' ? (
+          <div className='inline-block border border-border px-6 py-4'>
+            <p className='text-[10px] uppercase tracking-widest text-foreground/60'>
+              Inicia sesión para compartir tu experiencia.
+            </p>
+          </div>
+        ) : null}
+      </div>
 
-      {/* Lista de reviews */}
-      <div className='space-y-6'>
+      {/* Lista de Reviews */}
+      <div className='space-y-12'>
         {reviews.length === 0 ? (
-          <p className='text-muted-foreground text-center py-8'>
-            Aún no hay opiniones. ¡Sé el primero en opinar!
-          </p>
+          <div className='py-20 border-t border-border/50 text-center'>
+            <p className='text-[10px] uppercase tracking-[0.2em] text-foreground/30 italic'>
+              No hay opiniones disponibles para este artículo.
+            </p>
+          </div>
         ) : (
           reviews.map((review) => (
-            <div key={review.id} className='border-b pb-6'>
-              <div className='flex items-start justify-between mb-2'>
-                <div className='flex items-center space-x-3'>
-                  <div className='w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold'>
-                    {review.user.name?.charAt(0).toUpperCase() || 'C'}
-                  </div>
-                  <div>
-                    <div className='font-semibold'>
-                      {review.user.name || 'Cliente anónimo'}
+            <div
+              key={review.id}
+              className='border-t border-border/50 pt-12 first:border-t-0 first:pt-0'
+            >
+              <div className='flex flex-col space-y-4'>
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center space-x-4'>
+                    <div className='w-8 h-8 bg-foreground text-background flex items-center justify-center text-[10px] font-bold'>
+                      {review.user.name?.charAt(0).toUpperCase() || 'C'}
                     </div>
-                    <StarsDisplay rating={review.rating} size='sm' />
+                    <div className='space-y-1'>
+                      <div className='text-xs font-bold uppercase tracking-widest text-foreground'>
+                        {review.user.name || 'Cliente'}
+                      </div>
+                      <StarsDisplay
+                        rating={review.rating}
+                        size='sm'
+                        showNumber={false}
+                      />
+                    </div>
+                  </div>
+                  <div className='flex items-center space-x-6'>
+                    <span className='text-[10px] text-foreground/30 uppercase tracking-widest font-medium'>
+                      {new Date(review.createdAt).toLocaleDateString('es-PE', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </span>
+                    {review.verified && <VerifiedBadge />}
                   </div>
                 </div>
-                {review.verified && <VerifiedBadge />}
-              </div>
-              
-              {review.comment && (
-                <p className='text-muted-foreground mt-3'>{review.comment}</p>
-              )}
-              
-              <div className='text-xs text-muted-foreground mt-2'>
-                {new Date(review.createdAt).toLocaleDateString('es-PE', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+
+                {review.comment && (
+                  <div className='max-w-3xl'>
+                    <p className='text-sm leading-relaxed text-foreground/80 italic'>
+                      "{review.comment}"
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           ))
         )}
       </div>
-    </section>
+    </div>
   )
 }

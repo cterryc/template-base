@@ -57,87 +57,106 @@ export function AddToCartButton({ product }: { product: Product }) {
       : []
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-10'>
       {/* Selector de tallas */}
       {hasSizes && (
-        <div>
-          <label className='block text-sm font-medium mb-2'>
-            Selecciona tu talla:
-          </label>
-          <div className='flex flex-wrap gap-2'>
+        <div className='space-y-4'>
+          <div className='flex justify-between items-center'>
+            <label className='text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/80'>
+              Selecciona tu talla
+            </label>
+            {selectedSize && (
+              <button
+                onClick={() => setSelectedSize('')}
+                className='text-[10px] uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors underline underline-offset-4'
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+          <div className='flex flex-wrap gap-3'>
             {sizes.map((size) => (
               <button
                 key={size}
                 onClick={() => setSelectedSize(size)}
-                className={`px-4 py-2 border rounded-md transition-colors ${
+                className={`min-w-[50px] h-[50px] border flex items-center justify-center text-xs tracking-widest transition-all duration-300 ${
                   selectedSize === size
                     ? 'bg-primary text-primary-foreground border-primary'
-                    : 'hover:bg-muted'
+                    : 'bg-background text-foreground border-border hover:border-foreground'
                 }`}
               >
                 {size}
               </button>
             ))}
           </div>
-          {!selectedSize && (
-            <p className='text-sm text-destructive mt-1'>
-              Por favor selecciona una talla
+          {!selectedSize && buttonState === 'idle' && (
+            <p className='text-[10px] uppercase tracking-tighter text-foreground/40 italic'>
+              * Selección requerida para proceder
             </p>
           )}
         </div>
       )}
 
-      {/* Selector de cantidad */}
-      <div>
-        <label className='block text-sm font-medium mb-2'>Cantidad:</label>
-        <div className='flex items-center space-x-2'>
-          <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className={`w-10 h-10 border rounded-md flex items-center justify-center ${quantity <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}`}
-            disabled={quantity <= 1}
-          >
-            -
-          </button>
-          <span className='w-12 text-center'>{quantity}</span>
-          <button
-            onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-            className={`w-10 h-10 border rounded-md flex items-center justify-center ${quantity >= product.stock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}`}
-            disabled={quantity >= product.stock}
-          >
-            +
-          </button>
+      <div className='flex flex-col sm:flex-row gap-4 sm:items-end'>
+        {/* Selector de cantidad */}
+        <div className='space-y-4 flex-shrink-0'>
+          <label className='text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/80 block'>
+            Cantidad
+          </label>
+          <div className='flex items-center border border-border h-[56px] w-full sm:w-[140px]'>
+            <button
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className='flex-1 h-full flex items-center justify-center hover:bg-secondary transition-colors disabled:opacity-20'
+              disabled={quantity <= 1}
+            >
+              <span className='text-lg font-light'>−</span>
+            </button>
+            <span className='w-12 text-center text-sm font-medium'>
+              {quantity}
+            </span>
+            <button
+              onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+              className='flex-1 h-full flex items-center justify-center hover:bg-secondary transition-colors disabled:opacity-20'
+              disabled={quantity >= product.stock}
+            >
+              <span className='text-lg font-light'>+</span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Botón de añadir */}
-      <Button
-        onClick={handleAddToCart}
-        disabled={
-          isOutOfStock ||
-          buttonState === 'loading' ||
-          buttonState === 'success' ||
-          (hasSizes && !selectedSize)
-        }
-        className='w-full h-12 text-lg'
-      >
-        {buttonState === 'loading' && (
-          <ImSpinner2 className='animate-spin mr-2' />
-        )}
-        {buttonState === 'success' && (
-          <FiCheckCircle className='mr-2 text-green-600' />
-        )}
-        {buttonState === 'idle' && isOutOfStock ? (
-          'Agotado'
-        ) : buttonState === 'idle' ? (
-          <>
-            Añadir al carrito <MdOutlineShoppingCart className='ml-2' />
-          </>
-        ) : buttonState === 'success' ? (
-          '¡Añadido!'
-        ) : (
-          'Añadiendo...'
-        )}
-      </Button>
+        {/* Botón de añadir */}
+        <Button
+          onClick={handleAddToCart}
+          disabled={
+            isOutOfStock ||
+            buttonState === 'loading' ||
+            buttonState === 'success' ||
+            (hasSizes && !selectedSize)
+          }
+          className={`flex-grow h-[56px] rounded-none text-xs uppercase tracking-[0.2em] font-bold transition-all duration-500 shadow-none border ${
+            buttonState === 'success'
+              ? 'bg-background text-foreground border-foreground hover:bg-background'
+              : 'bg-primary text-primary-foreground border-primary hover:opacity-90'
+          }`}
+        >
+          {buttonState === 'loading' && (
+            <ImSpinner2 className='animate-spin mr-3 text-lg' />
+          )}
+          {buttonState === 'success' && (
+            <FiCheckCircle className='mr-3 text-lg' />
+          )}
+
+          {isOutOfStock ? (
+            'Agotado'
+          ) : buttonState === 'idle' ? (
+            <>Añadir al carrito</>
+          ) : buttonState === 'success' ? (
+            '¡Completado!'
+          ) : (
+            'Procesando...'
+          )}
+        </Button>
+      </div>
     </div>
   )
 }
