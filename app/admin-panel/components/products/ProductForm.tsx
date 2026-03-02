@@ -419,8 +419,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
               {isSubmitting
                 ? 'Guardando...'
                 : mode === 'create'
-                ? 'Crear Producto'
-                : 'Guardar Cambios'}
+                  ? 'Crear Producto'
+                  : 'Guardar Cambios'}
             </button>
           </div>
         </div>

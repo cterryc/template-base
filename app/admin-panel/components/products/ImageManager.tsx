@@ -48,11 +48,14 @@ const ImageManager: React.FC<ImageManagerProps> = ({
 
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('upload_preset', 'saviorperu')
+    formData.append(
+      'upload_preset',
+      process.env.NEXT_PUBLIC_CLOUDINARY_PRESET || ''
+    )
     formData.append('folder', 'ecommerce-products')
 
     const response = await fetch(
-      'https://api.cloudinary.com/v1_1/saviorperu/image/upload',
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
       {
         method: 'POST',
         body: formData
@@ -183,8 +186,8 @@ const ImageManager: React.FC<ImageManagerProps> = ({
         {editImage === undefined
           ? uploadAndGalery
           : editImage === true
-          ? uploadAndGalery
-          : null}
+            ? uploadAndGalery
+            : null}
 
         {/* Vista previa de imágenes */}
         <div
