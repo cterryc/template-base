@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
   MdClose,
   MdDelete,
@@ -8,15 +8,19 @@ import {
   MdExpandMore,
   MdFolder,
   MdArrowBack,
-  MdHome
+  MdHome,
+  MdCloudUpload
 } from 'react-icons/md'
 import { toast } from 'sonner'
 import {
   CloudinaryImageExtended,
   CloudinaryFolder,
   CloudinaryAssetsResponse,
-  CloudinaryFoldersResponse
+  CloudinaryFoldersResponse,
+  UploadFileStatus
 } from '../types'
+import UploadOverlay from './UploadOverlay'
+import UploadProgress from './UploadProgress'
 
 interface CloudinaryGalleryProps {
   onClose: () => void
@@ -33,17 +37,25 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
   const [currentPath, setCurrentPath] = useState<string>('')
   const [folderHistory, setFolderHistory] = useState<string[]>([])
   const [subfolders, setSubfolders] = useState<CloudinaryFolder[]>([])
-  
+
   // Imágenes de la carpeta actual
   const [assets, setAssets] = useState<CloudinaryImageExtended[]>([])
   const [selectedImages, setSelectedImages] = useState<string[]>([])
-  
+
   // Estados de carga
   const [loadingFolders, setLoadingFolders] = useState(false)
   const [loadingAssets, setLoadingAssets] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasMoreAssets, setHasMoreAssets] = useState(false)
+
+  // Drag & Drop
+  const [isDragOver, setIsDragOver] = useState(false)
+  const dragCounter = useRef(0)
+
+  // Upload Progress
+  const [uploads, setUploads] = useState<UploadFileStatus[]>([])
+  const [showUploadProgress, setShowUploadProgress] = useState(false)
 
   // Obtener subcarpetas de la carpeta actual
   const fetchFolders = useCallback(async (path: string = '') => {
@@ -54,8 +66,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
         : '/api/cloudinary-folders'
 
       const response = await fetch(url)
-      
-      // Si hay error, simplemente usamos array vacío (puede que no haya carpetas)
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         if (response.status !== 500) {
@@ -87,12 +98,11 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
       const url = `/api/cloudinary-assets?asset_folder=${encodeURIComponent(path)}&max_results=30${cursor ? `&next_cursor=${cursor}` : ''}`
 
       const response = await fetch(url)
-      
-      // Si hay error, manejar silenciosamente
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         console.warn('Assets API error:', errorData)
-        
+
         if (!cursor) {
           setAssets([])
         }
@@ -102,10 +112,8 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
       const result: CloudinaryAssetsResponse = await response.json()
 
       if (cursor) {
-        // Cargar más imágenes (append)
         setAssets((prev) => [...prev, ...result.resources])
       } else {
-        // Reemplazar imágenes (nueva carpeta)
         setAssets(result.resources)
       }
 
@@ -125,16 +133,22 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     }
   }, [])
 
+  // Cargar carpetas e imágenes al cambiar de ruta
+  useEffect(() => {
+    fetchFolders(currentPath)
+    fetchAssets(currentPath)
+  }, [currentPath, fetchFolders, fetchAssets])
+
   // Navegar a una carpeta
   const navigateTo = useCallback((path: string) => {
     setFolderHistory((prev) => [...prev, currentPath])
     setCurrentPath(path)
-    setSelectedImages([]) // Resetear selección al cambiar de carpeta
+    setSelectedImages([])
     setAssets([])
     setNextCursor(null)
   }, [currentPath])
 
-  // Navegar hacia atrás (subir un nivel)
+  // Navegar hacia atrás
   const navigateUp = useCallback(() => {
     if (folderHistory.length > 0) {
       const previousPath = folderHistory[folderHistory.length - 1]
@@ -152,12 +166,6 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     setAssets([])
     setNextCursor(null)
   }, [])
-
-  // Cargar carpetas e imágenes al cambiar de ruta
-  useEffect(() => {
-    fetchFolders(currentPath)
-    fetchAssets(currentPath)
-  }, [currentPath, fetchFolders, fetchAssets])
 
   // Cargar más imágenes con scroll
   const handleScroll = useCallback(
@@ -177,6 +185,138 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     },
     [loadingMore, hasMoreAssets, nextCursor, currentPath, fetchAssets]
   )
+
+  // ========== DRAG & DROP HANDLERS ==========
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current++
+    
+    // Solo activar si son archivos
+    if (e.dataTransfer.types.includes('Files')) {
+      setIsDragOver(true)
+    }
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current--
+    
+    if (dragCounter.current === 0) {
+      setIsDragOver(false)
+    }
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+  }, [])
+
+  // Subir archivo individual
+  const uploadFile = async (file: File): Promise<UploadFileStatus> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('folder', currentPath || 'ecommerce-products')
+
+    const response = await fetch('/api/cloudinary-upload', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Error al subir' }))
+      throw new Error(error.error || 'Error al subir imagen')
+    }
+
+    const result = await response.json()
+    return {
+      name: file.name,
+      status: 'success',
+      url: result.secure_url,
+      progress: 100
+    }
+  }
+
+  // Manejar drop de archivos
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+    dragCounter.current = 0
+
+    const files = Array.from(e.dataTransfer.files).filter(file =>
+      file.type.startsWith('image/')
+    )
+
+    if (files.length === 0) {
+      toast.warning('Solo se permiten archivos de imagen')
+      return
+    }
+
+    // Inicializar estado de uploads
+    const initialUploads: UploadFileStatus[] = files.map(file => ({
+      name: file.name,
+      status: 'pending',
+      progress: 0
+    }))
+
+    setUploads(initialUploads)
+    setShowUploadProgress(true)
+
+    // Subir archivos secuencialmente
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+
+      // Actualizar estado a "uploading"
+      setUploads(prev => prev.map((u, idx) =>
+        idx === i ? { ...u, status: 'uploading', progress: 50 } : u
+      ))
+
+      try {
+        const result = await uploadFile(file)
+
+        // Actualizar estado a "success"
+        setUploads(prev => prev.map((u, idx) =>
+          idx === i ? result : u
+        ))
+
+        // Agregar imagen a la galería localmente
+        setAssets(prev => [{
+          public_id: result.url?.split('/').pop()?.split('.')[0] || '',
+          secure_url: result.url!,
+          created_at: new Date().toISOString(),
+          bytes: file.size,
+          format: file.type.split('/')[1]
+        }, ...prev])
+
+      } catch (error: any) {
+        // Actualizar estado a "error"
+        setUploads(prev => prev.map((u, idx) =>
+          idx === i ? { ...u, status: 'error', error: error.message } : u
+        ))
+      }
+    }
+
+    // Notificar completado
+    const successCount = uploads.filter(u => u.status === 'success').length + 1
+    const errorCount = uploads.filter(u => u.status === 'error').length
+
+    if (errorCount === 0) {
+      toast.success(`${files.length} imagen(es) subida(s) exitosamente`)
+    } else {
+      toast.warning(`${successCount} subidas, ${errorCount} fallidas`)
+    }
+
+    // Auto-ocultar progress después de 3 segundos si todo fue exitoso
+    if (errorCount === 0) {
+      setTimeout(() => setShowUploadProgress(false), 3000)
+    }
+  }, [currentPath])
+
+  // ========== FIN DRAG & DROP HANDLERS ==========
 
   // Seleccionar/deseleccionar imagen
   const toggleImageSelection = (imageUrl: string) => {
@@ -237,29 +377,46 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     const paths: { name: string; path: string }[] = [
       { name: '🏠 Root', path: '' }
     ]
-    
+
     if (currentPath) {
       const parts = currentPath.split('/')
       let accumulatedPath = ''
-      
+
       parts.forEach((part, index) => {
         accumulatedPath = accumulatedPath
           ? `${accumulatedPath}/${part}`
           : part
-        
+
         paths.push({
           name: part,
           path: accumulatedPath
         })
       })
     }
-    
+
     return paths
   }
 
   return (
-    <div className='fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-sm'>
-      <div className='w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200 dark:bg-gray-800'>
+    <div
+      className='fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-sm'
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Overlay de Drag & Drop */}
+      <UploadOverlay isDragOver={isDragOver} currentPath={currentPath} />
+
+      {/* Progress de Upload */}
+      {showUploadProgress && (
+        <UploadProgress
+          uploads={uploads}
+          onClose={() => setShowUploadProgress(false)}
+        />
+      )}
+
+      <div className='w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200 dark:bg-gray-800 relative'>
         {/* Header */}
         <div className='flex items-center justify-between border-b p-6 dark:border-gray-700'>
           <div>
@@ -293,7 +450,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
             <MdHome size={16} />
             Root
           </button>
-          
+
           {folderHistory.length > 0 && (
             <button
               onClick={navigateUp}
@@ -386,6 +543,10 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
                 <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
                   <MdFolder className='text-6xl mx-auto mb-4 opacity-50' />
                   <p>Esta carpeta está vacía</p>
+                  <div className='mt-4 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg'>
+                    <MdCloudUpload className='text-3xl mx-auto mb-2 text-gray-400' />
+                    <p className='text-sm'>Arrastra imágenes aquí para subir</p>
+                  </div>
                   {folderHistory.length > 0 && (
                     <button
                       onClick={navigateUp}
@@ -462,6 +623,13 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Hint de Drag & Drop */}
+        {!isDragOver && (
+          <div className='absolute bottom-20 left-1/2 -translate-x-1/2 px-4 py-2 bg-gray-900/80 dark:bg-gray-700/80 text-white text-sm rounded-full opacity-0 hover:opacity-100 transition-opacity pointer-events-none'>
+            📁 Arrastra imágenes para subir a esta carpeta
+          </div>
+        )}
       </div>
     </div>
   )

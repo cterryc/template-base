@@ -93,3 +93,11 @@ export interface FormData {
   image4: string
   newCategory: string
 }
+
+export interface UploadFileStatus {
+  name: string
+  status: 'pending' | 'uploading' | 'success' | 'error'
+  progress?: number
+  error?: string
+  url?: string
+}
