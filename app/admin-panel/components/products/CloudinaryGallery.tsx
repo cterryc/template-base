@@ -167,16 +167,13 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     [currentPath]
   )
 
-  // Navegar hacia atrás
+  // Navegar hacia atrás (subir un nivel en la jerarquía)
   const navigateUp = useCallback(() => {
-    if (folderHistory.length > 0) {
-      const previousPath = folderHistory[folderHistory.length - 1]
-      setFolderHistory((prev) => prev.slice(0, -1))
-      setCurrentPath(previousPath)
-      setAssets([])
-      setNextCursor(null)
-    }
-  }, [folderHistory])
+    if (!currentPath) return // Ya estamos en Root
+    // Calcular padre: remover último segmento del path
+    const parentPath = currentPath.split('/').slice(0, -1).join('/')
+    setCurrentPath(parentPath)
+  }, [currentPath])
 
   // Ir a la raíz
   const navigateToRoot = useCallback(() => {
@@ -373,16 +370,19 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     setShowDeleteConfirm(false)
     setFolderToDelete(null)
 
-    // Si estamos en la carpeta que se eliminó, navegar al padre
     if (folderToDelete) {
       const parentPath = folderToDelete.path.split('/').slice(0, -1).join('/')
-      if (parentPath === currentPath || folderToDelete.path === currentPath) {
+
+      // Si estamos en la carpeta que se eliminó, navegar al padre
+      if (folderToDelete.path === currentPath) {
         navigateTo(parentPath)
+        // navigateTo ya dispara el useEffect que carga carpetas e imágenes
+        // No necesitamos fetch adicional
+      } else {
+        // Si no estamos en la carpeta eliminada, solo refrescar la lista de carpetas
+        fetchFolders(currentPath)
       }
     }
-
-    // Refrescar carpetas
-    fetchFolders(currentPath)
   }, [currentPath, folderToDelete, fetchFolders, navigateTo])
 
   // ========== FIN CREATE/DELETE FOLDER HANDLERS ==========
@@ -408,12 +408,12 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
       // La URL es como: https://res.cloudinary.com/xxx/image/upload/f_auto,q_auto/folder/image.jpg
       const urlParts = imageUrl.split('/upload/')
       let publicId = ''
-      
+
       if (urlParts.length > 1) {
         // Obtener parte después de /upload/ y eliminar transformaciones
         const afterUpload = urlParts[1]
         const parts = afterUpload.split('/')
-        
+
         // Filtrar transformaciones (contienen comas o empiezan con letras + guion bajo)
         const pathParts: string[] = []
         for (const part of parts) {
@@ -422,14 +422,15 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
           }
           pathParts.push(part)
         }
-        
+
         // Eliminar extensión
         const lastPart = pathParts.pop() || ''
         const publicIdWithoutExt = lastPart.split('.')[0]
-        
-        publicId = pathParts.length > 0 
-          ? `${pathParts.join('/')}/${publicIdWithoutExt}`
-          : publicIdWithoutExt
+
+        publicId =
+          pathParts.length > 0
+            ? `${pathParts.join('/')}/${publicIdWithoutExt}`
+            : publicIdWithoutExt
       }
 
       console.log('Deleting image:', { imageUrl, publicId })
@@ -550,7 +551,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
             Root
           </button>
 
-          {folderHistory.length > 0 && (
+          {currentPath && (
             <button
               onClick={navigateUp}
               className='flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border dark:border-gray-600'
@@ -685,7 +686,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
                         Arrastra imágenes aquí para subir
                       </p>
                     </div>
-                    {folderHistory.length > 0 && (
+                    {currentPath && (
                       <button
                         onClick={navigateUp}
                         className='mt-2 text-blue-600 dark:text-blue-400 hover:underline'

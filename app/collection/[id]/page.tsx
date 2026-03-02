@@ -3,8 +3,8 @@ import { Metadata } from 'next'
 import prisma from '@/lib/prisma'
 import { AddToCartButton } from './add-to-cart-button'
 import { ProductReviews } from './reviews/reviews-list'
+import { ImageGallery } from './image-gallery'
 import ProductCard from '@/components/product-card'
-import Image from 'next/image'
 import Link from 'next/link'
 
 interface PageProps {
@@ -98,34 +98,13 @@ export default async function ProductDetailPage({ params }: PageProps) {
         {/* Producto principal */}
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 mb-24'>
           {/* Columna Izquierda: Galería de Imágenes */}
-          <div className='lg:col-span-7 space-y-6'>
-            <div className='aspect-square relative overflow-hidden bg-secondary'>
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                className='object-cover'
-                priority
-              />
-            </div>
-            {product.image2 && (
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='aspect-square relative overflow-hidden bg-secondary'>
-                  <Image
-                    src={product.image2}
-                    alt={`${product.name} - detalle`}
-                    fill
-                    className='object-cover'
-                  />
-                </div>
-                {/* Placeholder para balancear la grid si solo hay 2 imágenes en total */}
-                <div className='aspect-square relative overflow-hidden bg-secondary flex items-center justify-center'>
-                  <span className='text-[10px] uppercase tracking-tighter opacity-20 italic text-foreground'>
-                    Gallery View
-                  </span>
-                </div>
-              </div>
-            )}
+          <div className='lg:col-span-7'>
+            <ImageGallery
+              images={[product.image, product.image2, product.image3, product.image4].filter(
+                (img): img is string => img !== null && img !== undefined
+              )}
+              productName={product.name}
+            />
           </div>
 
           {/* Columna Derecha: Información y Compra */}

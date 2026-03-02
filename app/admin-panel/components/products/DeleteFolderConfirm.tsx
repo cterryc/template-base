@@ -20,6 +20,7 @@ const DeleteFolderConfirm: React.FC<DeleteFolderConfirmProps> = ({
   const [assetCount, setAssetCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [confirmed, setConfirmed] = useState(false)
 
   // Obtener cantidad de assets antes de mostrar el modal
   useEffect(() => {
@@ -150,6 +151,8 @@ const DeleteFolderConfirm: React.FC<DeleteFolderConfirmProps> = ({
             <input
               type='checkbox'
               id='confirm-delete'
+              checked={confirmed}
+              onChange={(e) => setConfirmed(e.target.checked)}
               className='mt-1 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500'
             />
             <span className='text-sm text-gray-600 dark:text-gray-400 select-none'>
@@ -170,7 +173,7 @@ const DeleteFolderConfirm: React.FC<DeleteFolderConfirmProps> = ({
             <button
               type='button'
               onClick={handleDelete}
-              disabled={deleting}
+              disabled={deleting || !confirmed}
               className='flex-1 px-4 py-2.5 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
             >
               {deleting ? (
