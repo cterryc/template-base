@@ -9,24 +9,9 @@ import FilterPanel from './FilterPanel'
 import KpiDashboard from './KpiDashboard'
 import Pagination from './Pagination'
 import { MdSearch, MdAdd, MdClose } from 'react-icons/md'
+import { Producto } from '../types'
 
 // Interfaces (separar en archivo types.ts)
-interface Producto {
-  id: number
-  name: string
-  category: string
-  estado: string
-  size: string | null
-  price: number
-  image: string
-  image2: string | null
-  stock: number
-  destacado: boolean
-  createdAt: string
-  updatedAt: string
-  newCategory: string
-}
-
 interface ApiResponse {
   data: Producto[]
   pagination: {
