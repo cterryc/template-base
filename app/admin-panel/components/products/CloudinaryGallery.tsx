@@ -9,8 +9,10 @@ import {
   MdFolder,
   MdArrowBack,
   MdHome,
-  MdCloudUpload
+  MdCloudUpload,
+  MdMoreVert
 } from 'react-icons/md'
+import { FaFolderPlus } from 'react-icons/fa'
 import { toast } from 'sonner'
 import {
   CloudinaryImageExtended,
@@ -21,6 +23,8 @@ import {
 } from '../types'
 import UploadOverlay from './UploadOverlay'
 import UploadProgress from './UploadProgress'
+import CreateFolderModal from './CreateFolderModal'
+import DeleteFolderConfirm from './DeleteFolderConfirm'
 
 interface CloudinaryGalleryProps {
   onClose: () => void
@@ -57,6 +61,15 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
   const [uploads, setUploads] = useState<UploadFileStatus[]>([])
   const [showUploadProgress, setShowUploadProgress] = useState(false)
 
+  // Create/Delete Folder
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [folderToDelete, setFolderToDelete] = useState<{
+    path: string
+    name: string
+  } | null>(null)
+  const [hoveredFolder, setHoveredFolder] = useState<string | null>(null)
+
   // Obtener subcarpetas de la carpeta actual
   const fetchFolders = useCallback(async (path: string = '') => {
     setLoadingFolders(true)
@@ -87,51 +100,54 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
   }, [])
 
   // Obtener imágenes de la carpeta actual
-  const fetchAssets = useCallback(async (path: string = '', cursor: string | null = null) => {
-    if (cursor) {
-      setLoadingMore(true)
-    } else {
-      setLoadingAssets(true)
-    }
+  const fetchAssets = useCallback(
+    async (path: string = '', cursor: string | null = null) => {
+      if (cursor) {
+        setLoadingMore(true)
+      } else {
+        setLoadingAssets(true)
+      }
 
-    try {
-      const url = `/api/cloudinary-assets?asset_folder=${encodeURIComponent(path)}&max_results=30${cursor ? `&next_cursor=${cursor}` : ''}`
+      try {
+        const url = `/api/cloudinary-assets?asset_folder=${encodeURIComponent(path)}&max_results=30${cursor ? `&next_cursor=${cursor}` : ''}`
 
-      const response = await fetch(url)
+        const response = await fetch(url)
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.warn('Assets API error:', errorData)
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          console.warn('Assets API error:', errorData)
 
+          if (!cursor) {
+            setAssets([])
+          }
+          return
+        }
+
+        const result: CloudinaryAssetsResponse = await response.json()
+
+        if (cursor) {
+          setAssets((prev) => [...prev, ...result.resources])
+        } else {
+          setAssets(result.resources)
+        }
+
+        setNextCursor(result.next_cursor)
+        setHasMoreAssets(result.has_more)
+      } catch (error) {
+        console.warn('Error fetching assets:', error)
         if (!cursor) {
           setAssets([])
         }
-        return
+      } finally {
+        if (cursor) {
+          setLoadingMore(false)
+        } else {
+          setLoadingAssets(false)
+        }
       }
-
-      const result: CloudinaryAssetsResponse = await response.json()
-
-      if (cursor) {
-        setAssets((prev) => [...prev, ...result.resources])
-      } else {
-        setAssets(result.resources)
-      }
-
-      setNextCursor(result.next_cursor)
-      setHasMoreAssets(result.has_more)
-    } catch (error) {
-      console.warn('Error fetching assets:', error)
-      if (!cursor) {
-        setAssets([])
-      }
-    } finally {
-      if (cursor) {
-        setLoadingMore(false)
-      } else {
-        setLoadingAssets(false)
-      }
-    }
-  }, [])
+    },
+    []
+  )
 
   // Cargar carpetas e imágenes al cambiar de ruta
   useEffect(() => {
@@ -140,13 +156,16 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
   }, [currentPath, fetchFolders, fetchAssets])
 
   // Navegar a una carpeta
-  const navigateTo = useCallback((path: string) => {
-    setFolderHistory((prev) => [...prev, currentPath])
-    setCurrentPath(path)
-    setSelectedImages([])
-    setAssets([])
-    setNextCursor(null)
-  }, [currentPath])
+  const navigateTo = useCallback(
+    (path: string) => {
+      setFolderHistory((prev) => [...prev, currentPath])
+      setCurrentPath(path)
+      setSelectedImages([])
+      setAssets([])
+      setNextCursor(null)
+    },
+    [currentPath]
+  )
 
   // Navegar hacia atrás
   const navigateUp = useCallback(() => {
@@ -192,7 +211,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     e.preventDefault()
     e.stopPropagation()
     dragCounter.current++
-    
+
     // Solo activar si son archivos
     if (e.dataTransfer.types.includes('Files')) {
       setIsDragOver(true)
@@ -203,7 +222,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     e.preventDefault()
     e.stopPropagation()
     dragCounter.current--
-    
+
     if (dragCounter.current === 0) {
       setIsDragOver(false)
     }
@@ -227,7 +246,9 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Error al subir' }))
+      const error = await response
+        .json()
+        .catch(() => ({ error: 'Error al subir' }))
       throw new Error(error.error || 'Error al subir imagen')
     }
 
@@ -241,82 +262,130 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
   }
 
   // Manejar drop de archivos
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragOver(false)
-    dragCounter.current = 0
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsDragOver(false)
+      dragCounter.current = 0
 
-    const files = Array.from(e.dataTransfer.files).filter(file =>
-      file.type.startsWith('image/')
-    )
+      const files = Array.from(e.dataTransfer.files).filter((file) =>
+        file.type.startsWith('image/')
+      )
 
-    if (files.length === 0) {
-      toast.warning('Solo se permiten archivos de imagen')
-      return
-    }
+      if (files.length === 0) {
+        toast.warning('Solo se permiten archivos de imagen')
+        return
+      }
 
-    // Inicializar estado de uploads
-    const initialUploads: UploadFileStatus[] = files.map(file => ({
-      name: file.name,
-      status: 'pending',
-      progress: 0
-    }))
+      // Inicializar estado de uploads
+      const initialUploads: UploadFileStatus[] = files.map((file) => ({
+        name: file.name,
+        status: 'pending',
+        progress: 0
+      }))
 
-    setUploads(initialUploads)
-    setShowUploadProgress(true)
+      setUploads(initialUploads)
+      setShowUploadProgress(true)
 
-    // Subir archivos secuencialmente
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
+      // Subir archivos secuencialmente
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
 
-      // Actualizar estado a "uploading"
-      setUploads(prev => prev.map((u, idx) =>
-        idx === i ? { ...u, status: 'uploading', progress: 50 } : u
-      ))
+        // Actualizar estado a "uploading"
+        setUploads((prev) =>
+          prev.map((u, idx) =>
+            idx === i ? { ...u, status: 'uploading', progress: 50 } : u
+          )
+        )
 
-      try {
-        const result = await uploadFile(file)
+        try {
+          const result = await uploadFile(file)
 
-        // Actualizar estado a "success"
-        setUploads(prev => prev.map((u, idx) =>
-          idx === i ? result : u
-        ))
+          // Actualizar estado a "success"
+          setUploads((prev) => prev.map((u, idx) => (idx === i ? result : u)))
 
-        // Agregar imagen a la galería localmente
-        setAssets(prev => [{
-          public_id: result.url?.split('/').pop()?.split('.')[0] || '',
-          secure_url: result.url!,
-          created_at: new Date().toISOString(),
-          bytes: file.size,
-          format: file.type.split('/')[1]
-        }, ...prev])
+          // Agregar imagen a la galería localmente
+          setAssets((prev) => [
+            {
+              public_id: result.url?.split('/').pop()?.split('.')[0] || '',
+              secure_url: result.url!,
+              created_at: new Date().toISOString(),
+              bytes: file.size,
+              format: file.type.split('/')[1]
+            },
+            ...prev
+          ])
+        } catch (error: any) {
+          // Actualizar estado a "error"
+          setUploads((prev) =>
+            prev.map((u, idx) =>
+              idx === i ? { ...u, status: 'error', error: error.message } : u
+            )
+          )
+        }
+      }
 
-      } catch (error: any) {
-        // Actualizar estado a "error"
-        setUploads(prev => prev.map((u, idx) =>
-          idx === i ? { ...u, status: 'error', error: error.message } : u
-        ))
+      // Notificar completado
+      const successCount =
+        uploads.filter((u) => u.status === 'success').length + 1
+      const errorCount = uploads.filter((u) => u.status === 'error').length
+
+      if (errorCount === 0) {
+        toast.success(`${files.length} imagen(es) subida(s) exitosamente`)
+      } else {
+        toast.warning(`${successCount} subidas, ${errorCount} fallidas`)
+      }
+
+      // Auto-ocultar progress después de 3 segundos si todo fue exitoso
+      if (errorCount === 0) {
+        setTimeout(() => setShowUploadProgress(false), 3000)
+      }
+    },
+    [currentPath]
+  )
+
+  // ========== FIN DRAG & DROP HANDLERS ==========
+
+  // ========== CREATE/DELETE FOLDER HANDLERS ==========
+
+  // Crear carpeta
+  const handleCreateFolder = useCallback(
+    (folderName: string) => {
+      // Refrescar carpetas después de crear
+      fetchFolders(currentPath)
+      toast.success(`Carpeta "${folderName}" creada`)
+    },
+    [currentPath, fetchFolders]
+  )
+
+  // Confirmar eliminación de carpeta
+  const confirmDeleteFolder = useCallback(
+    (folderPath: string, folderName: string) => {
+      setFolderToDelete({ path: folderPath, name: folderName })
+      setShowDeleteConfirm(true)
+    },
+    []
+  )
+
+  // Eliminar carpeta (después de confirmación)
+  const handleDeleteFolderSuccess = useCallback(() => {
+    setShowDeleteConfirm(false)
+    setFolderToDelete(null)
+
+    // Si estamos en la carpeta que se eliminó, navegar al padre
+    if (folderToDelete) {
+      const parentPath = folderToDelete.path.split('/').slice(0, -1).join('/')
+      if (parentPath === currentPath || folderToDelete.path === currentPath) {
+        navigateTo(parentPath)
       }
     }
 
-    // Notificar completado
-    const successCount = uploads.filter(u => u.status === 'success').length + 1
-    const errorCount = uploads.filter(u => u.status === 'error').length
+    // Refrescar carpetas
+    fetchFolders(currentPath)
+  }, [currentPath, folderToDelete, fetchFolders, navigateTo])
 
-    if (errorCount === 0) {
-      toast.success(`${files.length} imagen(es) subida(s) exitosamente`)
-    } else {
-      toast.warning(`${successCount} subidas, ${errorCount} fallidas`)
-    }
-
-    // Auto-ocultar progress después de 3 segundos si todo fue exitoso
-    if (errorCount === 0) {
-      setTimeout(() => setShowUploadProgress(false), 3000)
-    }
-  }, [currentPath])
-
-  // ========== FIN DRAG & DROP HANDLERS ==========
+  // ========== FIN CREATE/DELETE FOLDER HANDLERS ==========
 
   // Seleccionar/deseleccionar imagen
   const toggleImageSelection = (imageUrl: string) => {
@@ -343,9 +412,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
 
       if (!response.ok) throw new Error()
 
-      setAssets((prev) =>
-        prev.filter((img) => img.secure_url !== imageUrl)
-      )
+      setAssets((prev) => prev.filter((img) => img.secure_url !== imageUrl))
       setSelectedImages((prev) => prev.filter((url) => url !== imageUrl))
       toast.success('Imagen eliminada exitosamente')
     } catch (error) {
@@ -383,9 +450,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
       let accumulatedPath = ''
 
       parts.forEach((part, index) => {
-        accumulatedPath = accumulatedPath
-          ? `${accumulatedPath}/${part}`
-          : part
+        accumulatedPath = accumulatedPath ? `${accumulatedPath}/${part}` : part
 
         paths.push({
           name: part,
@@ -464,9 +529,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
           <div className='flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400'>
             {getBreadcrumbPaths().map((item, index) => (
               <React.Fragment key={item.path || 'root'}>
-                {index > 0 && (
-                  <span className='text-gray-400'>/</span>
-                )}
+                {index > 0 && <span className='text-gray-400'>/</span>}
                 {item.path === currentPath ? (
                   <span className='font-semibold text-blue-600 dark:text-blue-400 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded'>
                     {item.name}
@@ -494,27 +557,64 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
           ) : (
             <>
               {/* Subcarpetas */}
-              {subfolders.length > 0 && (
-                <div className='mb-6'>
-                  <h4 className='text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide'>
+              <div className='mb-6'>
+                <div className='flex items-center justify-between mb-3'>
+                  <h4 className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide'>
                     Carpetas
                   </h4>
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors'
+                  >
+                    <FaFolderPlus size={16} />
+                    Nueva Carpeta
+                  </button>
+                </div>
+
+                {subfolders.length > 0 ? (
                   <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3'>
                     {subfolders.map((folder) => (
-                      <button
+                      <div
                         key={folder.path}
-                        onClick={() => navigateTo(folder.path)}
-                        className='flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group'
+                        className='relative group'
+                        onMouseEnter={() => setHoveredFolder(folder.path)}
+                        onMouseLeave={() => setHoveredFolder(null)}
                       >
-                        <MdFolder className='text-4xl text-gray-400 group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400' />
-                        <span className='text-sm font-medium text-gray-700 dark:text-gray-300 text-center truncate w-full'>
-                          {folder.name}
-                        </span>
-                      </button>
+                        <button
+                          onClick={() => navigateTo(folder.path)}
+                          className='w-full flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all'
+                        >
+                          <MdFolder className='text-4xl text-gray-400 group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400' />
+                          <span className='text-sm font-medium text-gray-700 dark:text-gray-300 text-center truncate w-full'>
+                            {folder.name}
+                          </span>
+                        </button>
+
+                        {/* Botón eliminar (visible en hover) */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            confirmDeleteFolder(folder.path, folder.name)
+                          }}
+                          className={`absolute top-1 right-1 p-1.5 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all ${
+                            hoveredFolder === folder.path
+                              ? 'opacity-100'
+                              : 'opacity-0'
+                          }`}
+                          title='Eliminar carpeta'
+                        >
+                          <MdDelete size={14} />
+                        </button>
+                      </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className='text-center py-8 text-gray-500 dark:text-gray-400 text-sm'>
+                    No hay carpetas. Crea una nueva carpeta para organizar tus
+                    imágenes.
+                  </div>
+                )}
+              </div>
 
               {/* Imágenes */}
               {assets.length > 0 && (
@@ -539,24 +639,28 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
               )}
 
               {/* Sin contenido */}
-              {subfolders.length === 0 && assets.length === 0 && !loadingAssets && (
-                <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
-                  <MdFolder className='text-6xl mx-auto mb-4 opacity-50' />
-                  <p>Esta carpeta está vacía</p>
-                  <div className='mt-4 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg'>
-                    <MdCloudUpload className='text-3xl mx-auto mb-2 text-gray-400' />
-                    <p className='text-sm'>Arrastra imágenes aquí para subir</p>
+              {subfolders.length === 0 &&
+                assets.length === 0 &&
+                !loadingAssets && (
+                  <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
+                    <MdFolder className='text-6xl mx-auto mb-4 opacity-50' />
+                    <p>Esta carpeta está vacía</p>
+                    <div className='mt-4 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg'>
+                      <MdCloudUpload className='text-3xl mx-auto mb-2 text-gray-400' />
+                      <p className='text-sm'>
+                        Arrastra imágenes aquí para subir
+                      </p>
+                    </div>
+                    {folderHistory.length > 0 && (
+                      <button
+                        onClick={navigateUp}
+                        className='mt-2 text-blue-600 dark:text-blue-400 hover:underline'
+                      >
+                        Volver atrás
+                      </button>
+                    )}
                   </div>
-                  {folderHistory.length > 0 && (
-                    <button
-                      onClick={navigateUp}
-                      className='mt-2 text-blue-600 dark:text-blue-400 hover:underline'
-                    >
-                      Volver atrás
-                    </button>
-                  )}
-                </div>
-              )}
+                )}
 
               {/* Loading más imágenes */}
               {loadingMore && (
@@ -599,7 +703,9 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
               className='px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed'
               disabled={loadingFolders || loadingAssets}
             >
-              {loadingFolders || loadingAssets ? 'Actualizando...' : 'Actualizar'}
+              {loadingFolders || loadingAssets
+                ? 'Actualizando...'
+                : 'Actualizar'}
             </button>
             {hasMoreAssets && (
               <span className='text-xs text-gray-500 dark:text-gray-400 self-center'>
@@ -629,6 +735,28 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
           <div className='absolute bottom-20 left-1/2 -translate-x-1/2 px-4 py-2 bg-gray-900/80 dark:bg-gray-700/80 text-white text-sm rounded-full opacity-0 hover:opacity-100 transition-opacity pointer-events-none'>
             📁 Arrastra imágenes para subir a esta carpeta
           </div>
+        )}
+
+        {/* Modal Crear Carpeta */}
+        {showCreateModal && (
+          <CreateFolderModal
+            onClose={() => setShowCreateModal(false)}
+            onSuccess={handleCreateFolder}
+            parentPath={currentPath}
+          />
+        )}
+
+        {/* Modal Confirmar Eliminar Carpeta */}
+        {showDeleteConfirm && folderToDelete && (
+          <DeleteFolderConfirm
+            onClose={() => {
+              setShowDeleteConfirm(false)
+              setFolderToDelete(null)
+            }}
+            onSuccess={handleDeleteFolderSuccess}
+            folderPath={folderToDelete.path}
+            folderName={folderToDelete.name}
+          />
         )}
       </div>
     </div>
