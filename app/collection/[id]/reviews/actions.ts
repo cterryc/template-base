@@ -147,5 +147,21 @@ export async function canUserReview(productId: number) {
     return { canReview: false, reason: 'already_reviewed' }
   }
 
-  return { canReview: true }
+  // Verificar si compró el producto
+  const hasPurchased = await prisma.orders.findFirst({
+    where: {
+      userId: dbUser.id,
+      status: { in: ['Pagado', 'Enviado', 'Entregado'] },
+      orderItems: {
+        some: {
+          productoId: productId
+        }
+      }
+    }
+  })
+
+  return {
+    canReview: true,
+    hasPurchased: !!hasPurchased
+  }
 }

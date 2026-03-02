@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { optimizeCloudinaryUrl } from '@/lib/utils/image-optimizer'
 
 interface ImageGalleryProps {
   images: string[]
@@ -18,7 +19,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
       {/* Imagen principal */}
       <div className='aspect-square relative overflow-hidden bg-secondary'>
         <Image
-          src={images[selectedImage]}
+          src={optimizeCloudinaryUrl(images[selectedImage], 1200, 85)}
           alt={`${productName} - vista ${selectedImage + 1}`}
           fill
           className='object-cover transition-transform duration-300 hover:scale-105'
@@ -28,7 +29,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
       </div>
 
       {/* Miniaturas - solo si hay más de 1 imagen */}
-      {images.length > 1 && (
+      {
         <div className='grid grid-cols-4 gap-3'>
           {images.map((image, index) => (
             <button
@@ -42,17 +43,19 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
               aria-label={`Ver imagen ${index + 1} de ${productName}`}
               type='button'
             >
-              <Image
-                src={image}
-                alt={`${productName} - miniatura ${index + 1}`}
-                fill
-                className='object-cover'
-                sizes='(max-width: 1024px) 25vw, 12vw'
-              />
+              {image && (
+                <Image
+                  src={optimizeCloudinaryUrl(image)}
+                  alt={`${productName} - miniatura ${index + 1}`}
+                  fill
+                  className='object-cover'
+                  sizes='(max-width: 1024px) 25vw, 12vw'
+                />
+              )}
             </button>
           ))}
         </div>
-      )}
+      }
     </div>
   )
 }

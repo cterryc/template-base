@@ -33,27 +33,6 @@ export async function ProductReviews({ productId }: ProductReviewsProps) {
         </div>
       </div>
 
-      {/* Acciones de Review (Condicionales) */}
-      <div className='mb-16'>
-        {canReview ? (
-          <div className='max-w-2xl'>
-            <CreateReviewForm productId={productId} />
-          </div>
-        ) : reason === 'already_reviewed' ? (
-          <div className='inline-block border border-border px-6 py-4'>
-            <p className='text-[10px] uppercase tracking-widest text-foreground/60'>
-              Ya has compartido tu opinión sobre este producto.
-            </p>
-          </div>
-        ) : reason === 'auth_required' ? (
-          <div className='inline-block border border-border px-6 py-4'>
-            <p className='text-[10px] uppercase tracking-widest text-foreground/60'>
-              Inicia sesión para compartir tu experiencia.
-            </p>
-          </div>
-        ) : null}
-      </div>
-
       {/* Lista de Reviews */}
       <div className='space-y-12'>
         {reviews.length === 0 ? (
@@ -108,6 +87,27 @@ export async function ProductReviews({ productId }: ProductReviewsProps) {
             </div>
           ))
         )}
+      </div>
+
+      {/* Acciones de Review (Condicionales) */}
+      <div className='mt-16'>
+        {canReview ? (
+          <div className='max-w-2xl'>
+            <CreateReviewForm productId={productId} />
+          </div>
+        ) : reason === 'already_reviewed' ? (
+          <div className='inline-block border border-border px-6 py-4'>
+            <p className='text-[10px] uppercase tracking-widest text-foreground/60'>
+              Ya has compartido tu opinión sobre este producto.
+            </p>
+          </div>
+        ) : reason === 'auth_required' ? (
+          <div className='inline-block border border-border px-6 py-4'>
+            <p className='text-[10px] uppercase tracking-widest text-foreground/60'>
+              Inicia sesión para compartir tu experiencia.
+            </p>
+          </div>
+        ) : null}
       </div>
     </div>
   )
