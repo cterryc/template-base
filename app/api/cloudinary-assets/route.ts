@@ -39,7 +39,20 @@ export async function GET(request: Request) {
     }
 
     // Transformar URLs para optimización (f_auto, q_auto)
-    const resources = result.resources.map((resource: any) => ({
+    // Filtrar solo imágenes directas de la carpeta (no subcarpetas)
+    let resources = result.resources
+    
+    if (assetFolder) {
+      // Filtrar para excluir imágenes de subcarpetas
+      // Ejemplo: Si assetFolder es 'product', excluir 'product/shoe/image.jpg'
+      resources = resources.filter((resource: any) => {
+        const relativePath = resource.public_id.replace(assetFolder + '/', '')
+        // Si no contiene más '/', es imagen directa de esta carpeta
+        return !relativePath.includes('/')
+      })
+    }
+    
+    const transformedResources = resources.map((resource: any) => ({
       public_id: resource.public_id,
       secure_url: resource.secure_url.replace(
         '/upload/',
@@ -53,9 +66,9 @@ export async function GET(request: Request) {
     }))
 
     return NextResponse.json({
-      resources,
+      resources: transformedResources,
       next_cursor: result.next_cursor,
-      total_count: result.total_count,
+      total_count: transformedResources.length,
       has_more: !!result.next_cursor
     })
   } catch (error: any) {

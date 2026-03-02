@@ -27,13 +27,19 @@ export async function GET(request: Request) {
       type: 'upload',
       resource_type: 'image',
       prefix: folder + '/',
-      max_results: 1,
+      max_results: 1000, // Obtenemos más para filtrar correctamente
       next_cursor: undefined
     })
 
+    // Filtrar solo imágenes directas (no subcarpetas)
+    const directResourcesCount = result.resources.filter((resource: any) => {
+      const relativePath = resource.public_id.replace(folder + '/', '')
+      return !relativePath.includes('/')
+    }).length
+
     return NextResponse.json({
-      count: result.total_count || result.resources.length,
-      has_resources: result.resources.length > 0,
+      count: directResourcesCount,
+      has_resources: directResourcesCount > 0,
       folder_path: folder
     })
   } catch (error: any) {

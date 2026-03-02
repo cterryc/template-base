@@ -31,7 +31,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
     // Validar caracteres
     const folderNameRegex = /^[a-zA-Z0-9_-]+$/
     if (!folderNameRegex.test(folderName.trim())) {
-      setError('Solo se permiten letras, números, guiones y guiones bajos')
+      setError('Sin espacios, solo letras, números, guiones y guiones bajos')
       return
     }
 
@@ -131,7 +131,8 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
           {/* Info */}
           <div className='mb-6 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg'>
             <p className='text-xs text-blue-700 dark:text-blue-400'>
-              💡 La carpeta se creará automáticamente cuando subas tu primera imagen
+              💡 La carpeta se creará automáticamente cuando subas tu primera
+              imagen
             </p>
           </div>
 

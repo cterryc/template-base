@@ -9,45 +9,27 @@ cloudinary.config({
   api_secret: env.CLOUDINARY_API_SECRET
 })
 
-/**
- * Extrae el public_id de una URL de Cloudinary
- * Soporta carpetas y elimina la extensión del archivo
- */
-const getPublicIdFromUrl = (url: string): string => {
-  const parts = url.split('/')
-  const uploadIndex = parts.indexOf('upload')
-
-  // Las versiones (v1234567) vienen después de 'upload', las ignoramos (+2)
-  const pathParts = parts.slice(uploadIndex + 2)
-  const lastPart = pathParts.pop() || '' // "nombre_imagen.jpg"
-  const publicIdWithoutExtension = lastPart.split('.')[0]
-
-  if (pathParts.length > 0) {
-    return `${pathParts.join('/')}/${publicIdWithoutExtension}`
-  }
-  return publicIdWithoutExtension
-}
-
 export async function POST(request: Request) {
   try {
-    const { imageUrl }: { imageUrl: string } = await request.json()
+    const { publicId }: { publicId?: string } = await request.json()
 
-    if (!imageUrl) {
+    if (!publicId) {
       return NextResponse.json(
-        { message: 'La URL es requerida' },
+        { message: 'Se requiere publicId' },
         { status: 400 }
       )
     }
 
-    const publicId = getPublicIdFromUrl(imageUrl)
-
-    // Tipado de la respuesta de Cloudinary
+    // Eliminar imagen de Cloudinary
     const result = await cloudinary.uploader.destroy(publicId)
 
-    if (result.result === 'ok') {
+    console.log('Cloudinary destroy result:', result)
+
+    if (result.result === 'ok' || result.result === 'not found') {
       return NextResponse.json({
         message: 'Imagen borrada correctamente',
-        publicId
+        publicId: publicId,
+        result
       })
     }
 
@@ -61,7 +43,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error en Cloudinary Delete:', error)
     return NextResponse.json(
-      { message: 'Error interno del servidor' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Error interno del servidor'
+      },
       { status: 500 }
     )
   }

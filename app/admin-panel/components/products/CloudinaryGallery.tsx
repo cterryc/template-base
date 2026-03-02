@@ -404,20 +404,54 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
       return
 
     try {
+      // Extraer public_id de la URL para enviarlo directamente
+      // La URL es como: https://res.cloudinary.com/xxx/image/upload/f_auto,q_auto/folder/image.jpg
+      const urlParts = imageUrl.split('/upload/')
+      let publicId = ''
+      
+      if (urlParts.length > 1) {
+        // Obtener parte después de /upload/ y eliminar transformaciones
+        const afterUpload = urlParts[1]
+        const parts = afterUpload.split('/')
+        
+        // Filtrar transformaciones (contienen comas o empiezan con letras + guion bajo)
+        const pathParts: string[] = []
+        for (const part of parts) {
+          if (part.includes(',') || /^[a-z]_/.test(part) || /^v\d/.test(part)) {
+            continue
+          }
+          pathParts.push(part)
+        }
+        
+        // Eliminar extensión
+        const lastPart = pathParts.pop() || ''
+        const publicIdWithoutExt = lastPart.split('.')[0]
+        
+        publicId = pathParts.length > 0 
+          ? `${pathParts.join('/')}/${publicIdWithoutExt}`
+          : publicIdWithoutExt
+      }
+
+      console.log('Deleting image:', { imageUrl, publicId })
+
       const response = await fetch('/api/delete-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl })
+        body: JSON.stringify({ imageUrl, publicId })
       })
 
-      if (!response.ok) throw new Error()
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Error al eliminar imagen')
+      }
 
       setAssets((prev) => prev.filter((img) => img.secure_url !== imageUrl))
       setSelectedImages((prev) => prev.filter((url) => url !== imageUrl))
       toast.success('Imagen eliminada exitosamente')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting image:', error)
-      toast.error('Error al eliminar la imagen')
+      toast.error(error.message || 'Error al eliminar la imagen')
     }
   }
 
