@@ -14,8 +14,12 @@ import CloudinaryGallery from './CloudinaryGallery'
 interface ImageManagerProps {
   mainImage: string
   secondaryImage?: string
+  image3?: string
+  image4?: string
   onMainImageChange: (url: string) => void
   onSecondaryImageChange?: (url: string) => void
+  onImage3Change?: (url: string) => void
+  onImage4Change?: (url: string) => void
   imageFrom?: string
   editImage?: boolean
 }
@@ -31,8 +35,12 @@ interface CloudinaryImage {
 const ImageManager: React.FC<ImageManagerProps> = ({
   mainImage,
   secondaryImage,
+  image3,
+  image4,
   onMainImageChange,
   onSecondaryImageChange,
+  onImage3Change,
+  onImage4Change,
   imageFrom,
   editImage
 }) => {
@@ -116,6 +124,8 @@ const ImageManager: React.FC<ImageManagerProps> = ({
   const handleSelectFromGallery = (images: string[]) => {
     if (images[0]) onMainImageChange(images[0])
     if (images[1] && onSecondaryImageChange) onSecondaryImageChange(images[1])
+    if (images[2] && onImage3Change) onImage3Change(images[2])
+    if (images[3] && onImage4Change) onImage4Change(images[3])
   }
 
   // Eliminar imagen subida
@@ -123,6 +133,8 @@ const ImageManager: React.FC<ImageManagerProps> = ({
     if (mainImage === url) onMainImageChange('')
     if (secondaryImage === url && onSecondaryImageChange)
       onSecondaryImageChange('')
+    if (image3 === url && onImage3Change) onImage3Change('')
+    if (image4 === url && onImage4Change) onImage4Change('')
     setUploadedImages((prev) => prev.filter((img) => img !== url))
   }
 
@@ -177,7 +189,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
               Imágenes del Producto
             </label>
             <p className='mb-3 text-xs text-gray-500 dark:text-gray-400'>
-              Sube hasta 2 imágenes (primera imagen es obligatoria)
+              Sube hasta 4 imágenes (primera imagen es obligatoria)
             </p>
           </>
         )}
@@ -212,6 +224,26 @@ const ImageManager: React.FC<ImageManagerProps> = ({
               imageUrl={secondaryImage || ''}
               label='Imagen Secundaria (Opcional)'
               onRemove={() => onSecondaryImageChange('')}
+              showIconRemove={editImage}
+            />
+          )}
+
+          {/* Imagen 3 */}
+          {onImage3Change && (
+            <ImagePreview
+              imageUrl={image3 || ''}
+              label='Imagen 3 (Opcional)'
+              onRemove={() => onImage3Change('')}
+              showIconRemove={editImage}
+            />
+          )}
+
+          {/* Imagen 4 */}
+          {onImage4Change && (
+            <ImagePreview
+              imageUrl={image4 || ''}
+              label='Imagen 4 (Opcional)'
+              onRemove={() => onImage4Change('')}
               showIconRemove={editImage}
             />
           )}
@@ -254,7 +286,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
         <CloudinaryGallery
           onClose={() => setShowCloudinaryGallery(false)}
           onSelectImages={handleSelectFromGallery}
-          maxSeleted={2}
+          maxSeleted={4}
         />
       )}
     </>

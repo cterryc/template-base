@@ -54,6 +54,8 @@ const updateProductSchema = z.object({
   price: z.number().positive().optional(),
   image: z.string().url().optional(),
   image2: z.string().url().optional().nullable(),
+  image3: z.string().url().optional().nullable(),
+  image4: z.string().url().optional().nullable(),
   stock: z.number().int().min(0).optional(),
   destacado: z.boolean().optional(),
   newCategory: z.string().optional()
@@ -110,6 +112,12 @@ export async function PUT(
         ...(validatedData.image && { image: validatedData.image }),
         ...(validatedData.image2 !== undefined && {
           image2: validatedData.image2
+        }),
+        ...(validatedData.image3 !== undefined && {
+          image3: validatedData.image3
+        }),
+        ...(validatedData.image4 !== undefined && {
+          image4: validatedData.image4
         }),
         ...(validatedData.stock !== undefined && {
           stock: validatedData.stock

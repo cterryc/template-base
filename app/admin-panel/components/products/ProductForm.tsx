@@ -24,6 +24,8 @@ interface FormData {
   destacado: boolean
   image: string
   image2: string
+  image3: string
+  image4: string
   newCategory: string
 }
 
@@ -44,6 +46,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     destacado: false,
     image: '',
     image2: '',
+    image3: '',
+    image4: '',
     newCategory: ''
   })
 
@@ -63,6 +67,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
         destacado: product.destacado,
         image: product.image,
         image2: product.image2 || '',
+        image3: product.image3 || '',
+        image4: product.image4 || '',
         newCategory: product.newCategory
       })
     }
@@ -131,6 +137,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
         price: Number(formData.price),
         stock: Number(formData.stock),
         image2: formData.image2 || null,
+        image3: formData.image3 || null,
+        image4: formData.image4 || null,
         size: formData.size
           .toUpperCase()
           .split(' ')
@@ -368,6 +376,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <ImageManager
                 mainImage={formData.image}
                 secondaryImage={formData.image2}
+                image3={formData.image3}
+                image4={formData.image4}
                 onMainImageChange={async (url) => {
                   setFormData((prev) => {
                     return {
@@ -379,6 +389,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 onSecondaryImageChange={async (url) => {
                   setFormData((prev) => {
                     return { ...prev, image2: url }
+                  })
+                }}
+                onImage3Change={async (url) => {
+                  setFormData((prev) => {
+                    return { ...prev, image3: url }
+                  })
+                }}
+                onImage4Change={async (url) => {
+                  setFormData((prev) => {
+                    return { ...prev, image4: url }
                   })
                 }}
               />

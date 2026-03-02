@@ -104,6 +104,8 @@ model Productos {
   price    Decimal
   image    String
   image2   String?
+  image3   String?
+  image4   String?
   stock    Int     @default(1)
 
   destacados ProductosDestacados[]

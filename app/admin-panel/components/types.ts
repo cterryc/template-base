@@ -7,6 +7,8 @@ export interface Producto {
   price: number
   image: string
   image2: string | null
+  image3: string | null
+  image4: string | null
   stock: number
   destacado: boolean
   createdAt: string
@@ -65,5 +67,7 @@ export interface FormData {
   destacado: boolean
   image: string
   image2: string
+  image3: string
+  image4: string
   newCategory: string
 }
