@@ -1,8 +1,22 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { MdClose, MdDelete, MdCheckCircle, MdExpandMore } from 'react-icons/md'
+import {
+  MdClose,
+  MdDelete,
+  MdCheckCircle,
+  MdExpandMore,
+  MdFolder,
+  MdArrowBack,
+  MdHome
+} from 'react-icons/md'
 import { toast } from 'sonner'
+import {
+  CloudinaryImageExtended,
+  CloudinaryFolder,
+  CloudinaryAssetsResponse,
+  CloudinaryFoldersResponse
+} from '../types'
 
 interface CloudinaryGalleryProps {
   onClose: () => void
@@ -10,102 +24,159 @@ interface CloudinaryGalleryProps {
   maxSeleted: number
 }
 
-interface CloudinaryImage {
-  public_id: string
-  secure_url: string
-  created_at: string
-  bytes: number
-  format: string
-}
-
 const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
   onClose,
   onSelectImages,
   maxSeleted
 }) => {
-  const [cloudinaryImages, setCloudinaryImages] = useState<CloudinaryImage[]>(
-    []
-  )
+  // Navegación por carpetas
+  const [currentPath, setCurrentPath] = useState<string>('')
+  const [folderHistory, setFolderHistory] = useState<string[]>([])
+  const [subfolders, setSubfolders] = useState<CloudinaryFolder[]>([])
+  
+  // Imágenes de la carpeta actual
+  const [assets, setAssets] = useState<CloudinaryImageExtended[]>([])
   const [selectedImages, setSelectedImages] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
+  
+  // Estados de carga
+  const [loadingFolders, setLoadingFolders] = useState(false)
+  const [loadingAssets, setLoadingAssets] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
-  const [hasMoreImages, setHasMoreImages] = useState(true)
+  const [hasMoreAssets, setHasMoreAssets] = useState(false)
 
-  // Fetch imágenes de Cloudinary con paginación
-  const fetchCloudinaryImages = useCallback(
-    async (cursor: string | null = null, isLoadMore: boolean = false) => {
-      if (isLoadMore) {
-        setLoadingMore(true)
-      } else {
-        setLoading(true)
+  // Obtener subcarpetas de la carpeta actual
+  const fetchFolders = useCallback(async (path: string = '') => {
+    setLoadingFolders(true)
+    try {
+      const url = path
+        ? `/api/cloudinary-folders?path=${encodeURIComponent(path)}`
+        : '/api/cloudinary-folders'
+
+      const response = await fetch(url)
+      
+      // Si hay error, simplemente usamos array vacío (puede que no haya carpetas)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        if (response.status !== 500) {
+          console.warn('Folders API returned non-critical error:', errorData)
+        }
+        setSubfolders([])
+        return
       }
 
-      try {
-        const url = cursor
-          ? `/api/cloudinary-list?next_cursor=${cursor}&max_results=30`
-          : '/api/cloudinary-list?max_results=30'
-
-        const response = await fetch(url)
-        if (!response.ok) throw new Error('Error al obtener imágenes')
-
-        const result = await response.json()
-
-        if (isLoadMore) {
-          // Agregar nuevas imágenes a las existentes
-          setCloudinaryImages((prev) => [...prev, ...result.resources])
-        } else {
-          // Reemplazar todas las imágenes
-          setCloudinaryImages(result.resources)
-        }
-
-        setNextCursor(result.next_cursor)
-        setHasMoreImages(result.has_more)
-      } catch (error) {
-        console.error('Error fetching cloudinary images:', error)
-        if (!isLoadMore) {
-          toast.error('No se pudieron cargar las imágenes')
-        }
-      } finally {
-        if (isLoadMore) {
-          setLoadingMore(false)
-        } else {
-          setLoading(false)
-        }
-      }
-    },
-    []
-  )
-
-  // Cargar más imágenes
-  const handleLoadMore = () => {
-    if (nextCursor && !loadingMore && hasMoreImages) {
-      fetchCloudinaryImages(nextCursor, true)
+      const result: CloudinaryFoldersResponse = await response.json()
+      setSubfolders(result.folders || [])
+    } catch (error) {
+      console.warn('Error fetching folders (this is optional):', error)
+      setSubfolders([])
+    } finally {
+      setLoadingFolders(false)
     }
-  }
+  }, [])
 
-  // Verificar si estamos cerca del final del scroll
+  // Obtener imágenes de la carpeta actual
+  const fetchAssets = useCallback(async (path: string = '', cursor: string | null = null) => {
+    if (cursor) {
+      setLoadingMore(true)
+    } else {
+      setLoadingAssets(true)
+    }
+
+    try {
+      const url = `/api/cloudinary-assets?asset_folder=${encodeURIComponent(path)}&max_results=30${cursor ? `&next_cursor=${cursor}` : ''}`
+
+      const response = await fetch(url)
+      
+      // Si hay error, manejar silenciosamente
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.warn('Assets API error:', errorData)
+        
+        if (!cursor) {
+          setAssets([])
+        }
+        return
+      }
+
+      const result: CloudinaryAssetsResponse = await response.json()
+
+      if (cursor) {
+        // Cargar más imágenes (append)
+        setAssets((prev) => [...prev, ...result.resources])
+      } else {
+        // Reemplazar imágenes (nueva carpeta)
+        setAssets(result.resources)
+      }
+
+      setNextCursor(result.next_cursor)
+      setHasMoreAssets(result.has_more)
+    } catch (error) {
+      console.warn('Error fetching assets:', error)
+      if (!cursor) {
+        setAssets([])
+      }
+    } finally {
+      if (cursor) {
+        setLoadingMore(false)
+      } else {
+        setLoadingAssets(false)
+      }
+    }
+  }, [])
+
+  // Navegar a una carpeta
+  const navigateTo = useCallback((path: string) => {
+    setFolderHistory((prev) => [...prev, currentPath])
+    setCurrentPath(path)
+    setSelectedImages([]) // Resetear selección al cambiar de carpeta
+    setAssets([])
+    setNextCursor(null)
+  }, [currentPath])
+
+  // Navegar hacia atrás (subir un nivel)
+  const navigateUp = useCallback(() => {
+    if (folderHistory.length > 0) {
+      const previousPath = folderHistory[folderHistory.length - 1]
+      setFolderHistory((prev) => prev.slice(0, -1))
+      setCurrentPath(previousPath)
+      setAssets([])
+      setNextCursor(null)
+    }
+  }, [folderHistory])
+
+  // Ir a la raíz
+  const navigateToRoot = useCallback(() => {
+    setFolderHistory([])
+    setCurrentPath('')
+    setAssets([])
+    setNextCursor(null)
+  }, [])
+
+  // Cargar carpetas e imágenes al cambiar de ruta
+  useEffect(() => {
+    fetchFolders(currentPath)
+    fetchAssets(currentPath)
+  }, [currentPath, fetchFolders, fetchAssets])
+
+  // Cargar más imágenes con scroll
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
       const container = e.currentTarget
-      const scrollThreshold = 100 // px desde el fondo
+      const scrollThreshold = 100
 
       if (
         container.scrollHeight - container.scrollTop <=
           container.clientHeight + scrollThreshold &&
         !loadingMore &&
-        hasMoreImages &&
+        hasMoreAssets &&
         nextCursor
       ) {
-        handleLoadMore()
+        fetchAssets(currentPath, nextCursor)
       }
     },
-    [loadingMore, hasMoreImages, nextCursor]
+    [loadingMore, hasMoreAssets, nextCursor, currentPath, fetchAssets]
   )
-
-  useEffect(() => {
-    fetchCloudinaryImages()
-  }, [fetchCloudinaryImages])
 
   // Seleccionar/deseleccionar imagen
   const toggleImageSelection = (imageUrl: string) => {
@@ -132,8 +203,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
 
       if (!response.ok) throw new Error()
 
-      // Eliminar imagen de la lista local
-      setCloudinaryImages((prev) =>
+      setAssets((prev) =>
         prev.filter((img) => img.secure_url !== imageUrl)
       )
       setSelectedImages((prev) => prev.filter((url) => url !== imageUrl))
@@ -155,9 +225,41 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     toast.success('Imágenes seleccionadas')
   }
 
+  // Obtener nombre de la carpeta actual
+  const getCurrentFolderName = () => {
+    if (!currentPath) return 'Root'
+    const parts = currentPath.split('/')
+    return parts[parts.length - 1]
+  }
+
+  // Construir breadcrumb path
+  const getBreadcrumbPaths = () => {
+    const paths: { name: string; path: string }[] = [
+      { name: '🏠 Root', path: '' }
+    ]
+    
+    if (currentPath) {
+      const parts = currentPath.split('/')
+      let accumulatedPath = ''
+      
+      parts.forEach((part, index) => {
+        accumulatedPath = accumulatedPath
+          ? `${accumulatedPath}/${part}`
+          : part
+        
+        paths.push({
+          name: part,
+          path: accumulatedPath
+        })
+      })
+    }
+    
+    return paths
+  }
+
   return (
     <div className='fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-sm'>
-      <div className='w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200 dark:bg-gray-800'>
+      <div className='w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200 dark:bg-gray-800'>
         {/* Header */}
         <div className='flex items-center justify-between border-b p-6 dark:border-gray-700'>
           <div>
@@ -165,7 +267,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
               Galería de Imágenes
             </h3>
             <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-              {cloudinaryImages.length} imágenes cargadas
+              {currentPath || 'Carpeta raíz'} • {assets.length} imágenes
             </p>
           </div>
           <div className='flex items-center gap-4'>
@@ -181,42 +283,132 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
           </div>
         </div>
 
+        {/* Breadcrumb Navigation */}
+        <div className='flex items-center gap-2 px-6 py-3 bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700 overflow-x-auto'>
+          <button
+            onClick={navigateToRoot}
+            className='flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border dark:border-gray-600 whitespace-nowrap'
+            disabled={!currentPath}
+          >
+            <MdHome size={16} />
+            Root
+          </button>
+          
+          {folderHistory.length > 0 && (
+            <button
+              onClick={navigateUp}
+              className='flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border dark:border-gray-600'
+            >
+              <MdArrowBack size={16} />
+              Atrás
+            </button>
+          )}
+
+          <div className='flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400'>
+            {getBreadcrumbPaths().map((item, index) => (
+              <React.Fragment key={item.path || 'root'}>
+                {index > 0 && (
+                  <span className='text-gray-400'>/</span>
+                )}
+                {item.path === currentPath ? (
+                  <span className='font-semibold text-blue-600 dark:text-blue-400 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded'>
+                    {item.name}
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => navigateTo(item.path)}
+                    className='hover:text-blue-600 dark:hover:text-blue-400 hover:underline px-1'
+                  >
+                    {item.name}
+                  </button>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
         {/* Contenido */}
         <div className='overflow-y-auto p-6 flex-1' onScroll={handleScroll}>
-          {loading && !loadingMore ? (
+          {/* Loading state */}
+          {(loadingFolders || loadingAssets) && !loadingMore ? (
             <div className='flex justify-center py-12'>
               <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
             </div>
-          ) : cloudinaryImages.length === 0 && !loadingMore ? (
-            <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
-              No hay imágenes en la galería
-            </div>
           ) : (
             <>
-              <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
-                {cloudinaryImages.map((image) => (
-                  <ImageCard
-                    key={image.public_id}
-                    image={image}
-                    isSelected={selectedImages.includes(image.secure_url)}
-                    onSelect={() => toggleImageSelection(image.secure_url)}
-                    onDelete={() => deleteImage(image.secure_url)}
-                  />
-                ))}
-              </div>
+              {/* Subcarpetas */}
+              {subfolders.length > 0 && (
+                <div className='mb-6'>
+                  <h4 className='text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide'>
+                    Carpetas
+                  </h4>
+                  <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3'>
+                    {subfolders.map((folder) => (
+                      <button
+                        key={folder.path}
+                        onClick={() => navigateTo(folder.path)}
+                        className='flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group'
+                      >
+                        <MdFolder className='text-4xl text-gray-400 group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400' />
+                        <span className='text-sm font-medium text-gray-700 dark:text-gray-300 text-center truncate w-full'>
+                          {folder.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              {/* Indicador de carga para más imágenes */}
+              {/* Imágenes */}
+              {assets.length > 0 && (
+                <div>
+                  {subfolders.length > 0 && (
+                    <h4 className='text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 mt-6 uppercase tracking-wide'>
+                      Imágenes en {getCurrentFolderName()}
+                    </h4>
+                  )}
+                  <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
+                    {assets.map((image) => (
+                      <ImageCard
+                        key={image.public_id}
+                        image={image}
+                        isSelected={selectedImages.includes(image.secure_url)}
+                        onSelect={() => toggleImageSelection(image.secure_url)}
+                        onDelete={() => deleteImage(image.secure_url)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sin contenido */}
+              {subfolders.length === 0 && assets.length === 0 && !loadingAssets && (
+                <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
+                  <MdFolder className='text-6xl mx-auto mb-4 opacity-50' />
+                  <p>Esta carpeta está vacía</p>
+                  {folderHistory.length > 0 && (
+                    <button
+                      onClick={navigateUp}
+                      className='mt-2 text-blue-600 dark:text-blue-400 hover:underline'
+                    >
+                      Volver atrás
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Loading más imágenes */}
               {loadingMore && (
                 <div className='flex justify-center py-6'>
                   <div className='h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
                 </div>
               )}
 
-              {/* Botón para cargar más (si no hay infinite scroll) */}
-              {!loadingMore && hasMoreImages && nextCursor && (
+              {/* Botón cargar más */}
+              {!loadingMore && hasMoreAssets && nextCursor && (
                 <div className='flex justify-center py-4'>
                   <button
-                    onClick={handleLoadMore}
+                    onClick={() => fetchAssets(currentPath, nextCursor)}
                     className='flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors'
                   >
                     <MdExpandMore />
@@ -225,10 +417,10 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
                 </div>
               )}
 
-              {/* Mensaje cuando no hay más imágenes */}
-              {!hasMoreImages && cloudinaryImages.length > 0 && (
+              {/* Fin de imágenes */}
+              {!hasMoreAssets && assets.length > 0 && (
                 <div className='text-center py-4 text-sm text-gray-500 dark:text-gray-400'>
-                  No hay más imágenes por cargar
+                  No hay más imágenes
                 </div>
               )}
             </>
@@ -239,15 +431,18 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
         <div className='border-t p-6 bg-gray-50 dark:bg-gray-700/30 dark:border-gray-700 flex justify-between items-center'>
           <div className='flex gap-3'>
             <button
-              onClick={() => fetchCloudinaryImages()}
+              onClick={() => {
+                fetchFolders(currentPath)
+                fetchAssets(currentPath)
+              }}
               className='px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed'
-              disabled={loading}
+              disabled={loadingFolders || loadingAssets}
             >
-              {loading ? 'Actualizando...' : 'Actualizar galería'}
+              {loadingFolders || loadingAssets ? 'Actualizando...' : 'Actualizar'}
             </button>
-            {hasMoreImages && (
+            {hasMoreAssets && (
               <span className='text-xs text-gray-500 dark:text-gray-400 self-center'>
-                Usa scroll para cargar más
+                Scroll para cargar más
               </span>
             )}
           </div>
@@ -272,9 +467,9 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
   )
 }
 
-// Componente interno para tarjeta de imagen (sin cambios)
+// Componente interno para tarjeta de imagen
 interface ImageCardProps {
-  image: CloudinaryImage
+  image: CloudinaryImageExtended
   isSelected: boolean
   onSelect: () => void
   onDelete: () => void
@@ -298,6 +493,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
       src={image.secure_url}
       alt={image.public_id}
       className='h-40 w-full object-cover'
+      loading='lazy'
     />
     <div className='absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity'>
       <div className='absolute bottom-2 left-2 right-2'>

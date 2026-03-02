@@ -51,6 +51,28 @@ export interface CloudinaryImage {
   format: string
 }
 
+export interface CloudinaryImageExtended extends CloudinaryImage {
+  width?: number
+  height?: number
+}
+
+export interface CloudinaryFolder {
+  name: string
+  path: string
+}
+
+export interface CloudinaryFoldersResponse {
+  folders: CloudinaryFolder[]
+  has_more: boolean
+}
+
+export interface CloudinaryAssetsResponse {
+  resources: CloudinaryImageExtended[]
+  next_cursor: string | null
+  total_count: number
+  has_more: boolean
+}
+
 export interface CloudinaryApiResponse {
   resources: CloudinaryImage[]
   next_cursor: string | null
