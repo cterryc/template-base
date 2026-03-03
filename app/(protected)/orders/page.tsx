@@ -66,10 +66,13 @@ const OrdersPage = async () => {
         totalPrice: item.totalPrice.toString(),
         producto: {
           name: item.producto.name,
-          price: item.producto.price.toString()
+          price: item.producto.price.toString(),
+          id: item.producto.id
         }
       }))
     }))
+
+    console.log('formattedOrders', { formattedOrders })
 
     // 5. Estructura de paginación
     const pagination = {

@@ -58,6 +58,7 @@ export function CreateReviewForm({ productId }: CreateReviewFormProps) {
   useEffect(() => {
     const checkPermission = async () => {
       const result = await canUserReview(productId)
+      console.log('canUserReview result', { result })
       setCanReview(result)
       setLoading(false)
     }

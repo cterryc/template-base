@@ -41,7 +41,7 @@ TAREA: Analiza la reseña del usuario que aparece al final y detecta:
 Responde ÚNICAMENTE en este formato JSON:
 {
   "approved": boolean,
-  "reason": "explicación breve y concisa en español si es rechazada, de lo contrario dejar vacío"
+  "reason": "explicación breve y concisa en español."
 }
 
 RESEÑA DEL USUARIO A ANALIZAR:

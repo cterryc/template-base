@@ -3,10 +3,13 @@
 import React from 'react'
 import { X } from 'lucide-react'
 import { usePDFGenerator } from './usePDFGenerator'
+import { ProductReviewButton } from './ProductReviewButton'
+import Link from 'next/link'
 
 interface OrderItem {
   id: number
   producto: {
+    id: number
     name: string
     price: string
   }
@@ -96,6 +99,8 @@ export default function OrderDetailsModal({
       onClose()
     }
   }
+
+  console.log('order', { order })
 
   return (
     <div
@@ -238,6 +243,9 @@ export default function OrderDetailsModal({
                 <thead className='bg-accent'>
                   <tr>
                     <th className='text-left p-3 text-sm font-medium text-foreground'>
+                      Id
+                    </th>
+                    <th className='text-left p-3 text-sm font-medium text-foreground'>
                       Producto
                     </th>
                     <th className='text-left p-3 text-sm font-medium text-foreground'>
@@ -249,6 +257,9 @@ export default function OrderDetailsModal({
                     <th className='text-left p-3 text-sm font-medium text-foreground'>
                       Subtotal
                     </th>
+                    <th className='text-left p-3 text-sm font-medium text-foreground'>
+                      Opinión
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -257,10 +268,14 @@ export default function OrderDetailsModal({
                       key={item.id}
                       className='border-b border-border last:border-0'
                     >
+                      <td className='p-3 text-gray-500'>{item.producto.id}</td>
                       <td className='p-3'>
-                        <div className='font-medium text-foreground'>
+                        <Link
+                          href={`/collection/${item.producto.id}`}
+                          className='font-medium text-blue-300 hover:underline'
+                        >
                           {item.producto.name}
-                        </div>
+                        </Link>
                       </td>
                       <td className='p-3 text-foreground'>
                         S/. {Number(item.producto.price).toFixed(2)}
@@ -268,6 +283,18 @@ export default function OrderDetailsModal({
                       <td className='p-3 text-foreground'>{item.quantity}</td>
                       <td className='p-3 font-medium text-foreground'>
                         S/. {Number(item.totalPrice).toFixed(2)}
+                      </td>
+                      <td className='p-3'>
+                        {order.status === 'Entregado' ? (
+                          <ProductReviewButton
+                            productId={item.producto.id}
+                            productName={item.producto.name}
+                          />
+                        ) : (
+                          <span className='text-xs text-muted-foreground'>
+                            Disponible al entregar
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}

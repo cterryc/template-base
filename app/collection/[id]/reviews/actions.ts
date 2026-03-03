@@ -15,7 +15,7 @@ const createReviewSchema = z.object({
 
 export type CreateReviewFormData = z.infer<typeof createReviewSchema>
 
-export type CreateReviewResult = 
+export type CreateReviewResult =
   | { success: true; message: string; pending?: boolean }
   | { success: false; error: string }
 
@@ -24,15 +24,12 @@ export type CreateReviewResult =
  */
 export async function getProductReviews(productId: number) {
   const reviews = await prisma.review.findMany({
-    where: { 
+    where: {
       productoId: productId,
       // Solo mostrar reviews:
       // - Sin moderar (aiModerated: false) O
       // - Aprobadas por IA (aiApproved: true)
-      OR: [
-        { aiModerated: false },
-        { aiApproved: true }
-      ]
+      OR: [{ aiModerated: false }, { aiApproved: true }]
     },
     include: {
       user: {
@@ -45,9 +42,10 @@ export async function getProductReviews(productId: number) {
   })
 
   // Calcular promedio
-  const averageRating = reviews.length > 0
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-    : 0
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : 0
 
   return {
     reviews,
@@ -91,14 +89,12 @@ export async function createReview(data: CreateReviewFormData) {
   }
 
   // 4. Verificar si el usuario compró el producto (verified badge)
-  const hasPurchased = await prisma.orders.findFirst({
+  const hasPurchased = await prisma.orderItem.findFirst({
     where: {
-      userId: dbUser.id,
-      status: { in: ['Pagado', 'Enviado', 'Entregado'] },
-      orderItems: {
-        some: {
-          productoId: data.productId
-        }
+      productoId: data.productId,
+      order: {
+        userId: dbUser.id,
+        status: { in: ['Pagado', 'Enviado', 'Entregado'] }
       }
     }
   })
@@ -185,21 +181,26 @@ export async function canUserReview(productId: number) {
     }
   })
 
+  console.log({ existingReview })
+
   if (existingReview) {
     return { canReview: false, reason: 'already_reviewed' }
   }
 
   // Verificar si compró el producto
-  const hasPurchased = await prisma.orders.findFirst({
+  const hasPurchased = await prisma.orderItem.findFirst({
     where: {
-      userId: dbUser.id,
-      status: { in: ['Pagado', 'Enviado', 'Entregado'] },
-      orderItems: {
-        some: {
-          productoId: productId
-        }
+      productoId: productId,
+      order: {
+        userId: dbUser.id,
+        status: { in: ['Pagado', 'Enviado', 'Entregado'] }
       }
     }
+  })
+
+  console.log({
+    hasPurchased,
+    existingReview
   })
 
   return {

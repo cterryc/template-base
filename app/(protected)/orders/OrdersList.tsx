@@ -19,6 +19,7 @@ import { calculateTotalWithDiscount } from '@/lib/utils/order-calculations'
 interface OrderItem {
   id: number
   producto: {
+    id: number
     name: string
     price: string
   }
@@ -111,6 +112,7 @@ export default function OrdersList({
   // Función para filtrar y ordenar los pedidos
   const filteredAndSortedOrders = useMemo(() => {
     let filtered = [...orders]
+    console.log('filteredAndSortedOrders orders', { orders })
 
     // Filtro por estado
     if (statusFilter !== 'todos') {
