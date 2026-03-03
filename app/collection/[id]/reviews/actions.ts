@@ -157,6 +157,34 @@ export async function createReview(data: CreateReviewFormData) {
 }
 
 /**
+ * Obtener review del usuario para un producto
+ */
+export async function getUserReview(productId: number) {
+  const { userId: clerkId } = await auth()
+  if (!clerkId) return null
+
+  const dbUser = await prisma.user.findUnique({ where: { clerkId } })
+  if (!dbUser) return null
+
+  const review = await prisma.review.findFirst({
+    where: {
+      userId: dbUser.id,
+      productoId: productId
+    },
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      aiApproved: true,
+      aiError: true
+    }
+  })
+
+  return review
+}
+
+/**
  * Verificar si el usuario puede revisar un producto
  */
 export async function canUserReview(productId: number) {
