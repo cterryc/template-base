@@ -200,6 +200,14 @@ model Review {
   productoId Int
   producto   Productos @relation(fields: [productoId], references: [id], onDelete: Cascade)
   verified   Boolean   @default(false) // ¿Compró el producto?
+  
+  // Moderación con IA
+  aiModerated Boolean  @default(false) // ¿Fue evaluada por IA?
+  aiApproved  Boolean? // true = apta, false = no apta, null = pendiente/error
+  aiReason    String?  // Razón si fue rechazada
+  aiModel     String?  @default("gemini-1.5-flash") // Modelo usado
+  aiError     Boolean  @default(false) // ¿Falló la IA?
+  
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 

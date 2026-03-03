@@ -139,7 +139,9 @@ export function CreateReviewForm({ productId }: CreateReviewFormProps) {
         <h3 className='text-lg font-semibold text-green-800'>
           ¡Gracias por tu opinión!
         </h3>
-        <p className='text-green-600 mt-1'>Tu review ha sido publicada.</p>
+        <p className='text-green-600 mt-1'>
+          Tu review está en revisión y se publicará pronto.
+        </p>
       </div>
     )
   }

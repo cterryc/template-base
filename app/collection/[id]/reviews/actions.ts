@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@clerk/nextjs/server'
 import prisma from '@/lib/prisma'
 import { z } from 'zod'
+import { moderateReview } from './ai-moderation'
 
 // Schema de validación
 const createReviewSchema = z.object({
@@ -14,12 +15,25 @@ const createReviewSchema = z.object({
 
 export type CreateReviewFormData = z.infer<typeof createReviewSchema>
 
+export type CreateReviewResult = 
+  | { success: true; message: string; pending?: boolean }
+  | { success: false; error: string }
+
 /**
- * Obtener reviews de un producto
+ * Obtener reviews de un producto (solo aprobadas por IA)
  */
 export async function getProductReviews(productId: number) {
   const reviews = await prisma.review.findMany({
-    where: { productoId: productId },
+    where: { 
+      productoId: productId,
+      // Solo mostrar reviews:
+      // - Sin moderar (aiModerated: false) O
+      // - Aprobadas por IA (aiApproved: true)
+      OR: [
+        { aiModerated: false },
+        { aiApproved: true }
+      ]
+    },
     include: {
       user: {
         select: {
@@ -43,7 +57,7 @@ export async function getProductReviews(productId: number) {
 }
 
 /**
- * Crear una nueva review
+ * Crear una nueva review con moderación de IA
  */
 export async function createReview(data: CreateReviewFormData) {
   // 1. Verificar autenticación
@@ -89,7 +103,21 @@ export async function createReview(data: CreateReviewFormData) {
     }
   })
 
-  // 5. Crear review
+  // 5. Moderar con IA (si hay comentario)
+  let aiResult: { approved: boolean; reason?: string; error?: boolean } = {
+    approved: true,
+    reason: undefined,
+    error: false
+  }
+
+  if (validated.data.comment) {
+    aiResult = await moderateReview(validated.data.comment)
+  }
+
+  // Determinar si la review fue aprobada por IA
+  const isAiApproved = aiResult.approved && !aiResult.error
+
+  // 6. Crear review
   try {
     await prisma.review.create({
       data: {
@@ -97,13 +125,27 @@ export async function createReview(data: CreateReviewFormData) {
         comment: validated.data.comment,
         userId: dbUser.id,
         productoId: data.productId,
-        verified: !!hasPurchased
+        verified: !!hasPurchased,
+        aiModerated: true,
+        aiApproved: isAiApproved ? true : null, // null = pendiente/rechazada/error
+        aiReason: aiResult.reason,
+        aiModel: 'gemini-1.5-flash',
+        aiError: aiResult.error || false
       }
     })
 
-    // 6. Invalidar caché
+    // 7. Invalidar caché
     revalidatePath(`/collection/${data.productId}`)
     revalidatePath(`/collection/${data.productId}/reviews`)
+
+    // 8. Retornar mensaje apropiado
+    if (aiResult.error || !isAiApproved) {
+      return {
+        success: true,
+        message: 'Tu opinión está en revisión y se publicará pronto.',
+        pending: true
+      }
+    }
 
     return {
       success: true,
