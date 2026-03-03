@@ -1,9 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { usePDFGenerator } from './usePDFGenerator'
 import { ProductReviewButton } from './ProductReviewButton'
+import { getUserReviewsForOrder } from '@/app/collection/[id]/reviews/actions'
 import Link from 'next/link'
 
 interface OrderItem {
@@ -45,9 +46,29 @@ export default function OrderDetailsModal({
   isOpen,
   onClose
 }: OrderDetailsModalProps) {
-  if (!isOpen || !order) return null
+  const [userReviews, setUserReviews] = useState<Record<number, {
+    id: number
+    rating: number
+    comment: string | null
+    aiApproved: boolean | null
+    aiError: boolean
+    createdAt: Date
+  }>>({})
 
+  // Hook debe llamarse antes de cualquier return
   const { generatePDF, isGenerating } = usePDFGenerator()
+
+  // Ref debe llamarse antes de cualquier return
+  const mouseDownTarget = React.useRef<EventTarget | null>(null)
+
+  // Obtener reviews del usuario para este pedido
+  useEffect(() => {
+    if (isOpen && order) {
+      getUserReviewsForOrder(order.id).then(setUserReviews)
+    }
+  }, [isOpen, order?.id])
+
+  if (!isOpen || !order) return null
 
   const handleGeneratePDF = async (order: Order) => {
     const pdfData = {
@@ -82,8 +103,6 @@ export default function OrderDetailsModal({
         return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
     }
   }
-
-  const mouseDownTarget = React.useRef<EventTarget | null>(null)
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     // Guardamos dónde se inició el clic
@@ -289,6 +308,7 @@ export default function OrderDetailsModal({
                           <ProductReviewButton
                             productId={item.producto.id}
                             productName={item.producto.name}
+                            userReview={userReviews[item.producto.id] || null}
                           />
                         ) : (
                           <span className='text-xs text-muted-foreground'>

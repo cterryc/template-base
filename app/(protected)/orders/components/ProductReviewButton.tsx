@@ -1,41 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Star, X, CheckCircle } from 'lucide-react'
 import { CreateReviewForm } from '@/app/collection/[id]/reviews/create-review-form'
-import { getUserReview } from '@/app/collection/[id]/reviews/actions'
 
 interface ProductReviewButtonProps {
   productId: number
   productName: string
+  userReview?: {
+    id: number
+    rating: number
+    comment: string | null
+    aiApproved: boolean | null
+    aiError: boolean
+    createdAt: Date | string
+  } | null
 }
 
-interface UserReview {
-  id: number
-  rating: number
-  comment: string | null
-  aiApproved: boolean | null
-  aiError: boolean
-  createdAt: Date | string
-}
-
-export function ProductReviewButton({ productId, productName }: ProductReviewButtonProps) {
+export function ProductReviewButton({ productId, productName, userReview }: ProductReviewButtonProps) {
   const [showModal, setShowModal] = useState(false)
-  const [userReview, setUserReview] = useState<UserReview | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  // Verificar si ya existe review
-  useEffect(() => {
-    const checkReview = async () => {
-      const review = await getUserReview(productId)
-      setUserReview(review)
-      setLoading(false)
-    }
-    checkReview()
-  }, [productId])
 
   // Si ya tiene review y no está cargando, mostrar estado
-  if (!loading && userReview) {
+  if (userReview) {
     return (
       <>
         <button

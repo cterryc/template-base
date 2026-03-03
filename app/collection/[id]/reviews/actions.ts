@@ -185,6 +185,50 @@ export async function getUserReview(productId: number) {
 }
 
 /**
+ * Obtener todas las reviews del usuario para los productos de un pedido
+ */
+export async function getUserReviewsForOrder(orderId: number) {
+  const { userId: clerkId } = await auth()
+  if (!clerkId) return {}
+
+  const dbUser = await prisma.user.findUnique({ where: { clerkId } })
+  if (!dbUser) return {}
+
+  // Obtener IDs de productos del pedido
+  const orderItems = await prisma.orderItem.findMany({
+    where: { orderId },
+    select: { productoId: true }
+  })
+
+  const productIds = orderItems.map(item => item.productoId)
+
+  // Obtener reviews para esos productos
+  const reviews = await prisma.review.findMany({
+    where: {
+      userId: dbUser.id,
+      productoId: { in: productIds }
+    },
+    select: {
+      productoId: true,
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      aiApproved: true,
+      aiError: true
+    }
+  })
+
+  // Convertir a mapa para acceso rápido
+  const reviewsMap: Record<number, typeof reviews[0]> = {}
+  reviews.forEach(review => {
+    reviewsMap[review.productoId] = review
+  })
+
+  return reviewsMap
+}
+
+/**
  * Verificar si el usuario puede revisar un producto
  */
 export async function canUserReview(productId: number) {
