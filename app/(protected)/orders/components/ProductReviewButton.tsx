@@ -25,13 +25,17 @@ export function ProductReviewButton({
   onReviewCreated
 }: ProductReviewButtonProps) {
   const [showModal, setShowModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   // Si ya tiene review y no está cargando, mostrar estado
   if (userReview) {
     return (
       <>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setIsEditing(false)
+            setShowModal(true)
+          }}
           className='text-sm text-green-600 dark:text-green-400 hover:underline flex items-center gap-1 transition-colors'
           title='Ver tu opinión'
         >
@@ -51,7 +55,9 @@ export function ProductReviewButton({
               {/* Header */}
               <div className='flex items-center justify-between p-4 border-b border-border'>
                 <div>
-                  <h3 className='font-bold text-foreground'>Tu opinión</h3>
+                  <h3 className='font-bold text-foreground'>
+                    {isEditing ? 'Editar tu opinión' : 'Tu opinión'}
+                  </h3>
                   <p className='text-xs text-muted-foreground truncate max-w-[200px]'>
                     {productName}
                   </p>
@@ -64,59 +70,94 @@ export function ProductReviewButton({
                 </button>
               </div>
 
-              {/* Review existente */}
-              <div className='p-4 space-y-3'>
-                {/* Estrellas */}
-                <div className='flex items-center gap-1'>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-5 h-5 ${
-                        star <= userReview.rating
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'fill-gray-200 text-gray-200'
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                {/* Comentario */}
-                {userReview.comment && (
-                  <p className='text-sm text-foreground/80 italic'>
-                    "{userReview.comment}"
-                  </p>
-                )}
-
-                {/* Estado de moderación */}
-                {userReview.aiError || !userReview.aiApproved ? (
-                  <div className='flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400'>
-                    <span>⏳</span>
-                    <span>Tu opinión está en revisión</span>
-                  </div>
+              {/* Contenido: Review existente o Formulario de edición */}
+              <div className='p-4'>
+                {isEditing ? (
+                  <CreateReviewForm
+                    productId={productId}
+                    initialData={{
+                      id: userReview.id,
+                      rating: userReview.rating,
+                      comment: userReview.comment
+                    }}
+                    onReviewCreated={() => {
+                      onReviewCreated?.()
+                      setIsEditing(false)
+                      // No cerramos el modal para que vea el mensaje de éxito
+                    }}
+                  />
                 ) : (
-                  <div className='flex items-center gap-2 text-xs text-green-600 dark:text-green-400'>
-                    <CheckCircle className='w-3 h-3' />
-                    <span>Opinión publicada</span>
+                  <div className='space-y-3'>
+                    {/* Estrellas */}
+                    <div className='flex items-center gap-1'>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-5 h-5 ${
+                            star <= userReview.rating
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'fill-gray-200 text-gray-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Comentario */}
+                    {userReview.comment && (
+                      <p className='text-sm text-foreground/80 italic'>
+                        "{userReview.comment}"
+                      </p>
+                    )}
+
+                    {/* Estado de moderación */}
+                    {userReview.aiError || !userReview.aiApproved ? (
+                      <div className='flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400'>
+                        <span>⏳</span>
+                        <span>Tu opinión está en revisión</span>
+                      </div>
+                    ) : (
+                      <div className='flex items-center gap-2 text-xs text-green-600 dark:text-green-400'>
+                        <CheckCircle className='w-3 h-3' />
+                        <span>Opinión publicada</span>
+                      </div>
+                    )}
+
+                    {/* Fecha */}
+                    <p className='text-xs text-muted-foreground'>
+                      {new Date(userReview.createdAt).toLocaleDateString(
+                        'es-PE',
+                        {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }
+                      )}
+                    </p>
+
+                    {/* Botón Editar */}
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className='text-xs text-blue-600 hover:underline flex items-center gap-1 mt-2'
+                    >
+                      Editar opinión
+                    </button>
                   </div>
                 )}
-
-                {/* Fecha */}
-                <p className='text-xs text-muted-foreground'>
-                  {new Date(userReview.createdAt).toLocaleDateString('es-PE', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
               </div>
 
               {/* Footer */}
               <div className='p-4 border-t border-border bg-accent/50'>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    if (isEditing) {
+                      setIsEditing(false)
+                    } else {
+                      setShowModal(false)
+                    }
+                  }}
                   className='w-full text-sm text-muted-foreground hover:underline py-2'
                 >
-                  Cerrar
+                  {isEditing ? 'Volver' : 'Cerrar'}
                 </button>
               </div>
             </div>

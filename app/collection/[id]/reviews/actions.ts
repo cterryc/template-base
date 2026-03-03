@@ -157,6 +157,103 @@ export async function createReview(data: CreateReviewFormData) {
 }
 
 /**
+ * Actualizar una review existente con moderación de IA
+ */
+export async function updateReview(
+  reviewId: number,
+  data: { rating: number; comment?: string }
+) {
+  // 1. Verificar autenticación
+  const { userId: clerkId } = await auth()
+  if (!clerkId) {
+    return {
+      success: false,
+      error: 'Debes iniciar sesión para editar tu review'
+    }
+  }
+
+  // 2. Validar datos
+  const validated = createReviewSchema.partial().safeParse(data)
+  if (!validated.success) {
+    return {
+      success: false,
+      error: validated.error.errors[0].message
+    }
+  }
+
+  // 3. Obtener usuario de la DB
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId }
+  })
+
+  if (!dbUser) {
+    return {
+      success: false,
+      error: 'Usuario no encontrado en la base de datos'
+    }
+  }
+
+  // 4. Verificar propiedad de la review
+  const existingReview = await prisma.review.findUnique({
+    where: { id: reviewId }
+  })
+
+  if (!existingReview || existingReview.userId !== dbUser.id) {
+    return {
+      success: false,
+      error: 'No tienes permiso para editar esta review'
+    }
+  }
+
+  // 5. Moderar con IA (solo si el comentario cambió)
+  let aiResult: { approved: boolean; reason?: string; error?: boolean } = {
+    approved: existingReview.aiApproved ?? true,
+    reason: existingReview.aiReason || undefined,
+    error: existingReview.aiError || false
+  }
+
+  const commentChanged = data.comment !== existingReview.comment
+
+  if (commentChanged && data.comment) {
+    aiResult = await moderateReview(data.comment)
+  }
+
+  // Determinar si la review fue aprobada por IA
+  const isAiApproved = aiResult.approved && !aiResult.error
+
+  // 6. Actualizar review
+  try {
+    await prisma.review.update({
+      where: { id: reviewId },
+      data: {
+        rating: data.rating,
+        comment: data.comment,
+        aiModerated: commentChanged ? true : existingReview.aiModerated,
+        aiApproved: commentChanged ? (isAiApproved ? true : null) : existingReview.aiApproved,
+        aiReason: commentChanged ? aiResult.reason : existingReview.aiReason,
+        aiError: commentChanged ? (aiResult.error || false) : existingReview.aiError
+      }
+    })
+
+    // 7. Invalidar caché
+    revalidatePath(`/collection/${existingReview.productoId}`)
+    revalidatePath(`/collection/${existingReview.productoId}/reviews`)
+
+    return {
+      success: true,
+      message: 'Review actualizada correctamente',
+      pending: commentChanged && (!isAiApproved || aiResult.error)
+    }
+  } catch (error) {
+    console.error('Error updating review:', error)
+    return {
+      success: false,
+      error: 'Error al actualizar la review. Inténtalo de nuevo.'
+    }
+  }
+}
+
+/**
  * Obtener review del usuario para un producto
  */
 export async function getUserReview(productId: number) {

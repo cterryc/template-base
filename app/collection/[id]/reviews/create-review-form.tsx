@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { createReview, canUserReview } from './actions'
+import { createReview, canUserReview, updateReview } from './actions'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { FiCheckCircle, FiAlertCircle } from 'react-icons/fi'
@@ -24,10 +24,19 @@ type ReviewFormData = z.infer<typeof reviewSchema>
 
 interface CreateReviewFormProps {
   productId: number
+  initialData?: {
+    id: number
+    rating: number
+    comment: string | null
+  }
   onReviewCreated?: () => void
 }
 
-export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFormProps) {
+export function CreateReviewForm({
+  productId,
+  initialData,
+  onReviewCreated
+}: CreateReviewFormProps) {
   const [isPending, startTransition] = useTransition()
   const [submitted, setSubmitted] = useState(false)
   const [hoverRating, setHoverRating] = useState(0)
@@ -37,6 +46,8 @@ export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFor
     reason?: string
   } | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const isEditing = !!initialData
 
   const {
     register,
@@ -48,15 +59,20 @@ export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFor
   } = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
-      rating: 0,
-      comment: ''
+      rating: initialData?.rating || 0,
+      comment: initialData?.comment || ''
     }
   })
 
   const rating = watch('rating')
 
-  // Verificar si puede revisar al montar
+  // Verificar si puede revisar al montar (solo si no estamos editando)
   useEffect(() => {
+    if (isEditing) {
+      setLoading(false)
+      return
+    }
+
     const checkPermission = async () => {
       const result = await canUserReview(productId)
       console.log('canUserReview result', { result })
@@ -64,19 +80,24 @@ export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFor
       setLoading(false)
     }
     checkPermission()
-  }, [productId])
+  }, [productId, isEditing])
 
   const onSubmit = async (data: ReviewFormData) => {
     startTransition(async () => {
-      const result = await createReview({
-        productId,
-        rating: data.rating,
-        comment: data.comment
-      })
+      const result = isEditing
+        ? await updateReview(initialData.id, {
+            rating: data.rating,
+            comment: data.comment
+          })
+        : await createReview({
+            productId,
+            rating: data.rating,
+            comment: data.comment
+          })
 
       if (result.success) {
         setSubmitted(true)
-        reset()
+        if (!isEditing) reset()
         onReviewCreated?.()
       } else {
         alert(result.error)
@@ -93,8 +114,8 @@ export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFor
     )
   }
 
-  // Si no puede revisar
-  if (canReview && !canReview.canReview) {
+  // Si no puede revisar y no estamos editando
+  if (!isEditing && canReview && !canReview.canReview) {
     if (canReview.reason === 'auth_required') {
       return (
         <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center'>
@@ -140,10 +161,12 @@ export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFor
       <div className='bg-green-50 border border-green-200 rounded-lg p-6 text-center'>
         <FiCheckCircle className='w-12 h-12 text-green-600 mx-auto mb-3' />
         <h3 className='text-lg font-semibold text-green-800'>
-          ¡Gracias por tu opinión!
+          {isEditing ? '¡Review actualizada!' : '¡Gracias por tu opinión!'}
         </h3>
         <p className='text-green-600 mt-1'>
-          Tu review está en revisión y se publicará pronto.
+          {isEditing
+            ? 'Tus cambios se han guardado correctamente.'
+            : 'Tu review está en revisión y se publicará pronto.'}
         </p>
       </div>
     )
@@ -154,7 +177,9 @@ export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFor
       onSubmit={handleSubmit(onSubmit)}
       className='border rounded-lg p-6 space-y-4'
     >
-      <h3 className='text-lg font-semibold'>Deja tu opinión</h3>
+      <h3 className='text-lg font-semibold'>
+        {isEditing ? 'Edita tu opinión' : 'Deja tu opinión'}
+      </h3>
 
       {/* Rating */}
       <div>
@@ -218,8 +243,10 @@ export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFor
         {isPending ? (
           <>
             <ImSpinner2 className='animate-spin mr-2' />
-            Publicando...
+            {isEditing ? 'Actualizando...' : 'Publicando...'}
           </>
+        ) : isEditing ? (
+          'Actualizar opinión'
         ) : (
           'Publicar opinión'
         )}
