@@ -15,9 +15,15 @@ interface ProductReviewButtonProps {
     aiError: boolean
     createdAt: Date | string
   } | null
+  onReviewCreated?: () => void
 }
 
-export function ProductReviewButton({ productId, productName, userReview }: ProductReviewButtonProps) {
+export function ProductReviewButton({
+  productId,
+  productName,
+  userReview,
+  onReviewCreated
+}: ProductReviewButtonProps) {
   const [showModal, setShowModal] = useState(false)
 
   // Si ya tiene review y no está cargando, mostrar estado
@@ -82,7 +88,7 @@ export function ProductReviewButton({ productId, productName, userReview }: Prod
                 )}
 
                 {/* Estado de moderación */}
-                {userReview.aiError || userReview.aiApproved === false ? (
+                {userReview.aiError || !userReview.aiApproved ? (
                   <div className='flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400'>
                     <span>⏳</span>
                     <span>Tu opinión está en revisión</span>
@@ -144,7 +150,9 @@ export function ProductReviewButton({ productId, productName, userReview }: Prod
             {/* Header */}
             <div className='flex items-center justify-between p-4 border-b border-border'>
               <div>
-                <h3 className='font-bold text-foreground'>Tu opinión importa</h3>
+                <h3 className='font-bold text-foreground'>
+                  Tu opinión importa
+                </h3>
                 <p className='text-xs text-muted-foreground truncate max-w-[200px]'>
                   {productName}
                 </p>
@@ -159,7 +167,13 @@ export function ProductReviewButton({ productId, productName, userReview }: Prod
 
             {/* Form */}
             <div className='p-4'>
-              <CreateReviewForm productId={productId} />
+              <CreateReviewForm
+                productId={productId}
+                onReviewCreated={() => {
+                  onReviewCreated?.()
+                  setShowModal(false)
+                }}
+              />
             </div>
 
             {/* Footer */}

@@ -24,9 +24,10 @@ type ReviewFormData = z.infer<typeof reviewSchema>
 
 interface CreateReviewFormProps {
   productId: number
+  onReviewCreated?: () => void
 }
 
-export function CreateReviewForm({ productId }: CreateReviewFormProps) {
+export function CreateReviewForm({ productId, onReviewCreated }: CreateReviewFormProps) {
   const [isPending, startTransition] = useTransition()
   const [submitted, setSubmitted] = useState(false)
   const [hoverRating, setHoverRating] = useState(0)
@@ -76,6 +77,7 @@ export function CreateReviewForm({ productId }: CreateReviewFormProps) {
       if (result.success) {
         setSubmitted(true)
         reset()
+        onReviewCreated?.()
       } else {
         alert(result.error)
       }

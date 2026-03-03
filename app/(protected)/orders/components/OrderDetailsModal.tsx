@@ -309,6 +309,11 @@ export default function OrderDetailsModal({
                             productId={item.producto.id}
                             productName={item.producto.name}
                             userReview={userReviews[item.producto.id] || null}
+                            onReviewCreated={async () => {
+                              // Recargar reviews después de crear una
+                              const reviews = await getUserReviewsForOrder(order.id)
+                              setUserReviews(reviews)
+                            }}
                           />
                         ) : (
                           <span className='text-xs text-muted-foreground'>
