@@ -172,7 +172,7 @@ NEXT_PUBLIC_CLOUDINARY_PRESET=...
 
 | Component | Size | Notes |
 |-----------|------|-------|
-| `header.tsx` | 11 KB | Main navigation, cart trigger, user menu |
+| `header.tsx` | 11.3 KB | Navegación principal (Home, Productos, Nosotros, Contactanos). UserButton.MenuItems limpio: solo "Admin Savior" (ADMIN/EDITOR) y "Mis pedidos". Menú mobile incluye enlaces esenciales + condicionales por rol |
 | `ShoppingCartPanel.tsx` | 9 KB | Slide-out cart panel |
 | `formToSend.tsx` | 23 KB | Checkout form (needs RHF+Zod refactor) |
 | `product-card.tsx` | — | Product display card |
@@ -200,6 +200,10 @@ NEXT_PUBLIC_CLOUDINARY_PRESET=...
 9. **Bundle size** — Could benefit from code splitting analysis
 10. **Accessibility** — UI needs WCAG audit
 11. **Structure** — Consider feature-based folder organization
+
+### ✅ Completed
+
+- **Header UserButton.MenuItems** — Limpiado para mostrar solo "Admin Savior" (ADMIN/EDITOR) y "Mis pedidos". Navegación principal y mobile restauradas con enlaces completos + condicionales por rol
 
 ---
 

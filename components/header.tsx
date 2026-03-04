@@ -1,12 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { ClipboardList, Menu } from 'lucide-react'
-import { MdOutlineShoppingCart, MdOutlineWork } from 'react-icons/md'
-import { FaProductHunt } from 'react-icons/fa6'
-import { IoIosMailUnread } from 'react-icons/io'
-import { FaHome } from 'react-icons/fa'
+import { MdOutlineShoppingCart } from 'react-icons/md'
 import { GrUserAdmin } from 'react-icons/gr'
 import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
@@ -68,32 +65,6 @@ export default function Header() {
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen)
   }
-
-  // useEffect(() => {
-  //   const controller = new AbortController()
-
-  //   if (isSignedIn) {
-  //     fetch(`/api/users/${user.id}`, { signal: controller.signal })
-  //       .then((response) => {
-  //         if (!response.ok) throw new Error('Error en la respuesta')
-  //         return response.json()
-  //       })
-  //       .then((data) => {
-  //         if (data.data.role === 'ADMIN') {
-  //           setIsAdmin('ADMIN')
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         // Ignoramos el error si fue causado por la cancelación de la petición
-  //         if (error.name !== 'AbortError') {
-  //           console.error('Error fetching user:', error)
-  //         }
-  //       })
-  //   }
-
-  //   // 2. Función de limpieza (cleanup)
-  //   return () => controller.abort()
-  // }, [isSignedIn])
 
   return (
     <header className='header' role='banner'>
@@ -207,50 +178,26 @@ export default function Header() {
                   }}
                 >
                   <UserButton.MenuItems>
+                    {/* "Admin Savior" - Solo ADMIN/EDITOR */}
                     {isAdminOrEditor && (
                       <UserButton.Link
-                        label='Admin Savior'
+                        label='Admin Panel'
                         labelIcon={
                           <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
                         }
                         href='/admin-panel'
                       />
                     )}
-                    <UserButton.Link
-                      label='Home'
-                      labelIcon={
-                        <FaHome className='w-full h-5 pb-1 justify-center items-center' />
-                      }
-                      href='/'
-                    />
-                    <UserButton.Link
-                      label='Todos los Productos'
-                      labelIcon={
-                        <FaProductHunt className='w-full h-5 pb-1 justify-center items-center' />
-                      }
-                      href='/collection'
-                    />
-                    <UserButton.Link
-                      label='Sobre Nosotros'
-                      labelIcon={
-                        <MdOutlineWork className='w-full h-5 pb-1 justify-center items-center' />
-                      }
-                      href='/about'
-                    />
-                    <UserButton.Link
-                      label='Contactanos'
-                      labelIcon={
-                        <IoIosMailUnread className='w-full h-5 pb-1 justify-center items-center' />
-                      }
-                      href='/contact'
-                    />
-                    <UserButton.Link
-                      label='Mis pedidos'
-                      labelIcon={
-                        <ClipboardList className='w-full pb-2 justify-center items-center' />
-                      }
-                      href='/orders'
-                    />
+                    {/* "Mis pedidos" - Solo usuarios logueados */}
+                    {!isAdminOrEditor && (
+                      <UserButton.Link
+                        label='Mis pedidos'
+                        labelIcon={
+                          <ClipboardList className='w-full pb-2 justify-center items-center' />
+                        }
+                        href='/orders'
+                      />
+                    )}
                     <UserButton.Action label='manageAccount' />
                   </UserButton.MenuItems>
                 </UserButton>
@@ -268,89 +215,105 @@ export default function Header() {
           )}
 
           {/* Mobile Menu Button */}
-          {!isSignedIn && isLoaded && (
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='md:hidden'
-                  aria-label='Abrir menú'
-                >
-                  <Menu className='h-6 w-6' />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side='right' className='w-[250px] sm:w-[300px]'>
-                <SheetHeader>
-                  <SheetTitle className='sr-only'>
-                    Menu de navegación
-                  </SheetTitle>
-                </SheetHeader>
-                <div className='flex flex-col h-full'>
-                  <div className='py-6'>
-                    <nav className='flex flex-col space-y-4'>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='md:hidden'
+                aria-label='Abrir menú'
+              >
+                <Menu className='h-6 w-6' />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side='right' className='w-[250px] sm:w-[300px]'>
+              <SheetHeader>
+                <SheetTitle className='sr-only'>Menú de navegación</SheetTitle>
+              </SheetHeader>
+              <div className='flex flex-col h-full'>
+                <div className='py-6'>
+                  <nav className='flex flex-col space-y-4'>
+                    <Link
+                      href='/'
+                      className='text-lg hover:text-primary'
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Home
+                    </Link>
+                    <Link
+                      href='/collection'
+                      className='text-lg hover:text-primary'
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsOpen(false)
+                        setTimeout(() => {
+                          window.location.href = '/collection'
+                        }, 100)
+                      }}
+                    >
+                      Productos
+                    </Link>
+                    <Link
+                      href='/about'
+                      className='text-lg hover:text-primary'
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Nosotros
+                    </Link>
+                    <Link
+                      href='/contact'
+                      className='text-lg hover:text-primary'
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Contactanos
+                    </Link>
+                    {/* "Mis pedidos" - Solo usuarios logueados */}
+                    {isSignedIn && (
                       <Link
-                        href='/'
+                        href='/orders'
                         className='text-lg hover:text-primary'
                         onClick={() => setIsOpen(false)}
                       >
-                        Home
+                        Mis pedidos
                       </Link>
+                    )}
+                    {/* "Admin Savior" - Solo ADMIN/EDITOR */}
+                    {isAdminOrEditor && (
                       <Link
-                        href='/collection'
-                        className='text-lg hover:text-primary'
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setIsOpen(false)
-                          setTimeout(() => {
-                            window.location.href = '/collection'
-                          }, 100)
-                        }}
-                      >
-                        Productos
-                      </Link>
-                      <Link
-                        href='/about'
+                        href='/admin-panel'
                         className='text-lg hover:text-primary'
                         onClick={() => setIsOpen(false)}
                       >
-                        Nosotros
+                        Admin Savior
                       </Link>
-                      <Link
-                        href='/contact'
-                        className='text-lg hover:text-primary'
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Contactanos
-                      </Link>
-                    </nav>
-                  </div>
-
-                  {!isSignedIn && (
-                    <div className='mt-auto pb-6 flex flex-col space-y-2'>
-                      <Link href='/sign-in'>
-                        <Button
-                          variant='outline'
-                          className='w-full'
-                          onClick={() => setIsOpen(false)}
-                        >
-                          Login
-                        </Button>
-                      </Link>
-                      <Link href='/sign-up'>
-                        <Button
-                          className='w-full'
-                          onClick={() => setIsOpen(false)}
-                        >
-                          Register
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
+                    )}
+                  </nav>
                 </div>
-              </SheetContent>
-            </Sheet>
-          )}
+
+                {!isSignedIn && (
+                  <div className='mt-auto pb-6 flex flex-col space-y-2'>
+                    <Link href='/sign-in'>
+                      <Button
+                        variant='outline'
+                        className='w-full'
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href='/sign-up'>
+                      <Button
+                        className='w-full'
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Register
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
       <ShoppingCartPanel

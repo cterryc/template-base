@@ -1,5 +1,5 @@
 .header {
-  @apply border-b fixed z-30 w-full;
+  @apply border-b fixed z-30 w-full px-10;
 }
 
 .header::before {
