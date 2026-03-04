@@ -31,6 +31,6 @@ next-env.d.ts
 /.clerk/
 
 # Skills
-.agent/*
-.agents/*
-.qwen/*
+.agent
+.agents
+.qwen
