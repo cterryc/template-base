@@ -17,15 +17,29 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1')
   const limit = parseInt(searchParams.get('limit') || '10')
   const search = searchParams.get('search') || ''
+  const status = searchParams.get('status') || 'all'
   const skip = (page - 1) * limit
 
   try {
     const where: any = {
-      OR: [
-        { comment: { contains: search, mode: 'insensitive' } },
-        { user: { name: { contains: search, mode: 'insensitive' } } },
-        { producto: { name: { contains: search, mode: 'insensitive' } } }
+      AND: [
+        {
+          OR: [
+            { comment: { contains: search, mode: 'insensitive' } },
+            { user: { name: { contains: search, mode: 'insensitive' } } },
+            { producto: { name: { contains: search, mode: 'insensitive' } } }
+          ]
+        }
       ]
+    }
+
+    // Filtro de estado
+    if (status === 'approved') {
+      where.AND.push({ aiApproved: true })
+    } else if (status === 'rejected') {
+      where.AND.push({ aiApproved: false })
+    } else if (status === 'pending') {
+      where.AND.push({ aiApproved: null })
     }
 
     const [reviews, total] = await Promise.all([

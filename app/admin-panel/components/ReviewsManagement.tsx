@@ -51,6 +51,7 @@ const ReviewsManagement: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pagination, setPagination] = useState<ApiResponse['pagination']>({
     total: 0,
@@ -65,10 +66,10 @@ const ReviewsManagement: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false)
 
   const fetchReviews = useCallback(
-    async (page: number = 1, search: string = '', showLoading: boolean = true) => {
+    async (page: number = 1, search: string = '', status: string = 'all', showLoading: boolean = true) => {
       if (showLoading) setLoading(true)
       try {
-        const queryParam = `page=${page}&limit=10&search=${encodeURIComponent(search)}`
+        const queryParam = `page=${page}&limit=10&search=${encodeURIComponent(search)}&status=${status}`
         const response = await fetch(`/api/admin/reviews?${queryParam}`)
         if (!response.ok) throw new Error('Error al obtener reseñas')
         const result: ApiResponse = await response.json()
@@ -89,13 +90,13 @@ const ReviewsManagement: React.FC = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(
       () => {
-        fetchReviews(currentPage, searchTerm, true)
+        fetchReviews(currentPage, searchTerm, statusFilter, true)
       },
       searchTerm ? 500 : 0
     )
 
     return () => clearTimeout(delayDebounceFn)
-  }, [currentPage, searchTerm, fetchReviews])
+  }, [currentPage, searchTerm, statusFilter, fetchReviews])
 
   const handleUpdateStatus = async (id: number, approved: boolean | null) => {
     setIsUpdating(true)
@@ -169,23 +170,53 @@ const ReviewsManagement: React.FC = () => {
               Modera y administra las opiniones de los clientes.
             </p>
           </div>
-          <div className='relative w-full sm:w-80'>
-            <MdSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl dark:text-gray-500' />
-            <input
-              type='text'
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className='h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-10 text-sm shadow-sm outline-none focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500'
-              placeholder='Buscar por usuario, producto o comentario...'
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
-              >
-                <MdClose />
-              </button>
-            )}
+          <div className='flex flex-col sm:flex-row gap-3 items-center'>
+            {/* Filtro de Estado */}
+            <div className='flex bg-white dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm'>
+              {[
+                { label: 'Todas', value: 'all' },
+                { label: 'Pendientes', value: 'pending' },
+                { label: 'Aprobadas', value: 'approved' },
+                { label: 'Rechazadas', value: 'rejected' }
+              ].map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => {
+                    setStatusFilter(filter.value as any)
+                    setCurrentPage(1)
+                  }}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    statusFilter === filter.value
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+
+            <div className='relative w-full sm:w-64'>
+              <MdSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl dark:text-gray-500' />
+              <input
+                type='text'
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value)
+                  setCurrentPage(1)
+                }}
+                className='h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-10 text-sm shadow-sm outline-none focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500'
+                placeholder='Buscar...'
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
+                >
+                  <MdClose />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
