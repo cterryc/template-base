@@ -184,22 +184,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'>
       <div className='w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200 dark:bg-gray-800'>
         {/* Header */}
-        <div className='flex items-center justify-between border-b p-6 dark:border-gray-700'>
-          <h3 className='text-xl font-bold dark:text-white'>
+        <div className='flex items-center justify-between border-b p-4 md:p-6 dark:border-gray-700'>
+          <h3 className='text-lg md:text-xl font-bold dark:text-white'>
             {mode === 'create'
               ? 'Crear Nuevo Producto'
               : `Editar Producto #${product?.id}`}
           </h3>
           <button
             onClick={onClose}
-            className='rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400'
+            className='min-h-[36px] min-w-[36px] rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400'
+            aria-label='Cerrar modal'
           >
             <MdClose size={24} />
           </button>
         </div>
 
         {/* Formulario */}
-        <div className='overflow-y-auto p-6 flex-1'>
+        <div className='overflow-y-auto p-4 md:p-6 flex-1'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             {/* Columna Izquierda - Datos básicos */}
             <div className='space-y-4'>
@@ -214,7 +215,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                  className='min-h-[44px] w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
                   placeholder='Ej: Camiseta básica'
                 />
               </div>
@@ -235,11 +236,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
                       })
                       setSelectorCategory('CATEGORIES')
                     }}
-                    className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                    className='min-h-[44px] w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
                     placeholder='Ej: Ropa, Accesorios'
                   />
                   <select
-                    className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                    className='min-h-[44px] w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
                     value={selectorCategory}
                     onChange={(e) => {
                       if (e.target.value === 'CATEGORIES') {
@@ -275,7 +276,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                       size: e.target.value.toUpperCase()
                     })
                   }
-                  className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                  className='min-h-[44px] w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
                   placeholder='Ej: M, 42, Única'
                 />
               </div>
@@ -297,7 +298,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     }
                     step='0.1'
                     min='0'
-                    className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                    className='min-h-[44px] w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
                     placeholder='0.00'
                   />
                 </div>
@@ -316,7 +317,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                       })
                     }
                     min='0'
-                    className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                    className='min-h-[44px] w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
                     placeholder='0'
                   />
                 </div>
@@ -333,7 +334,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     onChange={(e) =>
                       setFormData({ ...formData, estado: e.target.value })
                     }
-                    className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                    className='min-h-[44px] w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
                   >
                     <option value='DISPONIBLE'>DISPONIBLE</option>
                     <option value='NO DISPONIBLE'>NO DISPONIBLE</option>
@@ -407,7 +408,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         </div>
 
         {/* Footer */}
-        <div className='border-t p-6 bg-gray-50 dark:bg-gray-700/30 dark:border-gray-700 flex justify-between items-center'>
+        <div className='border-t p-4 md:p-6 bg-gray-50 dark:bg-gray-700/30 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4'>
           <div className='text-sm text-gray-500 dark:text-gray-400'>
             {mode === 'edit' && product ? (
               <>
@@ -418,10 +419,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <>Los campos marcados con * son obligatorios</>
             )}
           </div>
-          <div className='flex gap-3'>
+          <div className='flex gap-3 w-full sm:w-auto'>
             <button
               onClick={onClose}
-              className='px-6 py-2.5 rounded-lg font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors'
+              className='min-h-[44px] px-6 py-2.5 rounded-lg font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto'
             >
               Cancelar
             </button>
@@ -434,7 +435,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 !formData.image ||
                 formData.price <= 0
               }
-              className='px-6 py-2.5 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+              className='min-h-[44px] px-6 py-2.5 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full sm:w-auto'
             >
               {isSubmitting
                 ? 'Guardando...'

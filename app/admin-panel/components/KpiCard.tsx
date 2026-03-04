@@ -53,7 +53,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
         </div>
       </div>
       <div className='flex items-end justify-between'>
-        <h3 className='text-2xl font-black text-gray-900 dark:text-white'>
+        <h3 className='text-xl md:text-2xl font-black text-gray-900 dark:text-white'>
           {title === 'Ingresos' || title === 'Valor Inventario'
             ? showMoney && value
             : value}

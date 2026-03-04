@@ -51,7 +51,9 @@ const ReviewsManagement: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'pending' | 'approved' | 'rejected'
+  >('all')
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pagination, setPagination] = useState<ApiResponse['pagination']>({
     total: 0,
@@ -66,7 +68,12 @@ const ReviewsManagement: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false)
 
   const fetchReviews = useCallback(
-    async (page: number = 1, search: string = '', status: string = 'all', showLoading: boolean = true) => {
+    async (
+      page: number = 1,
+      search: string = '',
+      status: string = 'all',
+      showLoading: boolean = true
+    ) => {
       if (showLoading) setLoading(true)
       try {
         const queryParam = `page=${page}&limit=10&search=${encodeURIComponent(search)}&status=${status}`
@@ -109,12 +116,24 @@ const ReviewsManagement: React.FC = () => {
 
       if (!response.ok) throw new Error('Error al actualizar reseña')
 
-      toast.success(approved === true ? 'Reseña aprobada' : approved === false ? 'Reseña rechazada' : 'Reseña pendiente')
-      
+      toast.success(
+        approved === true
+          ? 'Reseña aprobada'
+          : approved === false
+            ? 'Reseña rechazada'
+            : 'Reseña pendiente'
+      )
+
       // Actualizar estado local
-      setReviews(prev => prev.map(r => r.id === id ? { ...r, aiApproved: approved, aiModerated: true } : r))
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, aiApproved: approved, aiModerated: true } : r
+        )
+      )
       if (selectedReview?.id === id) {
-        setSelectedReview(prev => prev ? { ...prev, aiApproved: approved, aiModerated: true } : null)
+        setSelectedReview((prev) =>
+          prev ? { ...prev, aiApproved: approved, aiModerated: true } : null
+        )
       }
     } catch (error) {
       toast.error('No se pudo actualizar la reseña')
@@ -124,19 +143,26 @@ const ReviewsManagement: React.FC = () => {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro de eliminar esta reseña? Esta acción es irreversible.')) return
+    if (
+      !confirm(
+        '¿Estás seguro de eliminar esta reseña? Esta acción es irreversible.'
+      )
+    )
+      return
 
     setIsDeleting(id)
     try {
-      const response = await fetch(`/api/admin/reviews/${id}`, { method: 'DELETE' })
+      const response = await fetch(`/api/admin/reviews/${id}`, {
+        method: 'DELETE'
+      })
       if (response.ok) {
-        setReviews(prev => prev.filter(r => r.id !== id))
-        setPagination(prev => ({ ...prev, total: prev.total - 1 }))
+        setReviews((prev) => prev.filter((r) => r.id !== id))
+        setPagination((prev) => ({ ...prev, total: prev.total - 1 }))
         toast.success('Reseña eliminada')
         if (selectedReview?.id === id) setSelectedReview(null)
-        
+
         if (reviews.length === 1 && currentPage > 1) {
-          setCurrentPage(prev => prev - 1)
+          setCurrentPage((prev) => prev - 1)
         } else {
           fetchReviews(currentPage, searchTerm, statusFilter, false)
         }
@@ -185,7 +211,7 @@ const ReviewsManagement: React.FC = () => {
                     setStatusFilter(filter.value as any)
                     setCurrentPage(1)
                   }}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-4 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${
                     statusFilter === filter.value
                       ? 'bg-blue-600 text-white shadow-md'
                       : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
@@ -223,10 +249,12 @@ const ReviewsManagement: React.FC = () => {
         {/* Results Info */}
         <div className='flex items-center justify-between text-sm text-gray-600 dark:text-gray-400'>
           <div>
-            Mostrando <span className='font-bold'>{reviews.length}</span> de <span className='font-bold'>{pagination.total}</span> reseñas
+            Mostrando <span className='font-bold'>{reviews.length}</span> de{' '}
+            <span className='font-bold'>{pagination.total}</span> reseñas
           </div>
           <div>
-            Página <span className='font-bold'>{currentPage}</span> de <span className='font-bold'>{pagination.totalPages}</span>
+            Página <span className='font-bold'>{currentPage}</span> de{' '}
+            <span className='font-bold'>{pagination.totalPages}</span>
           </div>
         </div>
 
@@ -234,20 +262,35 @@ const ReviewsManagement: React.FC = () => {
         <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700'>
           <div className='overflow-x-auto'>
             <table className='w-full text-left text-sm'>
-              <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300'>
+              <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300 sticky top-0'>
                 <tr>
-                  <th className='px-6 py-4 font-bold'>Producto</th>
-                  <th className='px-6 py-4 font-bold'>Usuario</th>
-                  <th className='px-6 py-4 font-bold'>Calificación</th>
-                  <th className='px-6 py-4 font-bold'>Estado</th>
-                  <th className='px-6 py-4 font-bold'>Fecha</th>
-                  <th className='px-6 py-4 text-right font-bold'>Acciones</th>
+                  <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                    Producto
+                  </th>
+                  <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                    Usuario
+                  </th>
+                  <th className='hidden sm:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                    Calificación
+                  </th>
+                  <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                    Estado
+                  </th>
+                  <th className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                    Fecha
+                  </th>
+                  <th className='px-3 py-3 md:px-6 md:py-4 text-right font-bold whitespace-nowrap text-xs md:text-sm'>
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className='px-6 py-12 text-center'>
+                    <td
+                      colSpan={4}
+                      className='px-3 py-12 md:px-6 md:py-12 text-center'
+                    >
                       <div className='flex justify-center'>
                         <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
                       </div>
@@ -255,55 +298,79 @@ const ReviewsManagement: React.FC = () => {
                   </tr>
                 ) : reviews.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className='px-6 py-12 text-center text-gray-500'>
+                    <td
+                      colSpan={4}
+                      className='px-3 py-12 md:px-6 md:py-12 text-center text-gray-500'
+                    >
                       No se encontraron reseñas.
                     </td>
                   </tr>
                 ) : (
                   reviews.map((review) => (
-                    <tr key={review.id} className='hover:bg-gray-50 transition-colors group dark:hover:bg-gray-700/30'>
-                      <td className='px-6 py-4'>
+                    <tr
+                      key={review.id}
+                      className='hover:bg-gray-50 transition-colors group dark:hover:bg-gray-700/30'
+                    >
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                         <div className='flex items-center gap-3'>
-                          <img src={review.producto.image} alt='' className='h-8 w-8 rounded-lg object-cover' />
-                          <span className='font-medium text-gray-900 dark:text-white truncate max-w-[150px]'>
+                          <img
+                            src={review.producto.image}
+                            alt=''
+                            className='hidden sm:block h-6 w-6 md:h-8 md:w-8 rounded-lg object-cover'
+                          />
+                          <span className='font-medium text-gray-900 dark:text-white truncate max-w-[100px] sm:max-w-[150px] text-xs md:text-sm'>
                             {review.producto.name}
                           </span>
                         </div>
                       </td>
-                      <td className='px-6 py-4'>
+                      <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                         <div className='flex flex-col'>
-                          <span className='font-semibold text-gray-900 dark:text-white'>{review.user.name || 'Usuario'}</span>
-                          <span className='text-xs text-gray-400'>{review.user.email}</span>
+                          <span className='font-semibold text-gray-900 dark:text-white text-xs md:text-sm'>
+                            {review.user.name || 'Usuario'}
+                          </span>
+                          <span className='text-xs text-gray-400'>
+                            {review.user.email}
+                          </span>
                         </div>
                       </td>
-                      <td className='px-6 py-4'>
+                      <td className='hidden sm:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                         <div className='flex items-center gap-0.5 text-yellow-500 font-bold'>
                           {review.rating} <MdStar className='text-lg' />
                         </div>
                       </td>
-                      <td className='px-6 py-4'>
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ${
-                          review.aiApproved === true ? 'bg-emerald-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                          review.aiApproved === false ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                          'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                        }`}>
-                          {review.aiApproved === true ? 'Aprobado' : review.aiApproved === false ? 'Rechazado' : 'Pendiente'}
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ${
+                            review.aiApproved === true
+                              ? 'bg-emerald-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : review.aiApproved === false
+                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                          }`}
+                        >
+                          {review.aiApproved === true
+                            ? 'Aprobado'
+                            : review.aiApproved === false
+                              ? 'Rechazado'
+                              : 'Pendiente'}
                         </span>
                       </td>
-                      <td className='px-6 py-4 text-gray-500 dark:text-gray-400'>
+                      <td className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-xs md:text-sm'>
                         {new Date(review.createdAt).toLocaleDateString()}
                       </td>
-                      <td className='px-6 py-4 text-right'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 text-right whitespace-nowrap'>
                         <div className='flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all'>
                           <button
                             onClick={() => setSelectedReview(review)}
-                            className='p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors'
+                            className='min-h-[36px] min-w-[36px] p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors'
+                            aria-label='Ver detalles'
                           >
                             <MdRemoveRedEye size={20} />
                           </button>
                           <button
                             onClick={() => handleDelete(review.id)}
-                            className='p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors'
+                            className='min-h-[36px] min-w-[36px] p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors'
+                            aria-label='Eliminar reseña'
                           >
                             <MdDelete size={20} />
                           </button>
@@ -327,7 +394,9 @@ const ReviewsManagement: React.FC = () => {
             >
               <MdChevronLeft size={20} />
             </button>
-            <span className='text-sm font-medium'>{currentPage} / {pagination.totalPages}</span>
+            <span className='text-sm font-medium'>
+              {currentPage} / {pagination.totalPages}
+            </span>
             <button
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === pagination.totalPages}
@@ -343,28 +412,49 @@ const ReviewsManagement: React.FC = () => {
       {selectedReview && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'>
           <div className='w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col dark:bg-gray-800'>
-            <div className='flex items-center justify-between border-b p-6 dark:border-gray-700'>
-              <h3 className='text-xl font-bold dark:text-white'>Detalle de Reseña</h3>
-              <button onClick={() => setSelectedReview(null)} className='p-2 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700'>
+            <div className='flex items-center justify-between border-b p-4 md:p-6 dark:border-gray-700'>
+              <h3 className='text-lg md:text-xl font-bold dark:text-white'>
+                Detalle de Reseña
+              </h3>
+              <button
+                onClick={() => setSelectedReview(null)}
+                className='min-h-[36px] min-w-[36px] p-2 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700'
+                aria-label='Cerrar modal'
+              >
                 <MdClose size={24} />
               </button>
             </div>
 
-            <div className='p-6 space-y-6 overflow-y-auto max-h-[70vh]'>
+            <div className='p-4 md:p-6 space-y-6 overflow-y-auto max-h-[70vh]'>
               <div className='flex items-center gap-4 p-4 bg-gray-50 rounded-xl dark:bg-gray-700/30'>
-                <img src={selectedReview.producto.image} className='h-16 w-16 rounded-lg object-cover' alt='' />
+                <img
+                  src={selectedReview.producto.image}
+                  className='h-16 w-16 rounded-lg object-cover'
+                  alt=''
+                />
                 <div>
-                  <p className='font-bold dark:text-white'>{selectedReview.producto.name}</p>
+                  <p className='font-bold dark:text-white'>
+                    {selectedReview.producto.name}
+                  </p>
                   <div className='flex items-center text-yellow-500'>
-                    {[1,2,3,4,5].map(s => (
-                      <MdStar key={s} className={s <= selectedReview.rating ? 'fill-current' : 'text-gray-200'} />
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <MdStar
+                        key={s}
+                        className={
+                          s <= selectedReview.rating
+                            ? 'fill-current'
+                            : 'text-gray-200'
+                        }
+                      />
                     ))}
                   </div>
                 </div>
               </div>
 
               <div className='space-y-2'>
-                <p className='text-xs font-bold text-gray-400 uppercase'>Comentario</p>
+                <p className='text-xs font-bold text-gray-400 uppercase'>
+                  Comentario
+                </p>
                 <p className='text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg italic'>
                   "{selectedReview.comment || 'Sin comentario'}"
                 </p>
@@ -372,8 +462,12 @@ const ReviewsManagement: React.FC = () => {
 
               <div className='flex items-center justify-between border-t pt-6'>
                 <div className='flex flex-col'>
-                  <span className='text-xs font-bold text-gray-400 uppercase'>Acciones de Moderación</span>
-                  <p className='text-sm text-gray-500'>Cambia el estado de visibilidad.</p>
+                  <span className='text-xs font-bold text-gray-400 uppercase'>
+                    Acciones de Moderación
+                  </span>
+                  <p className='text-sm text-gray-500'>
+                    Cambia el estado de visibilidad.
+                  </p>
                 </div>
                 <div className='flex gap-2'>
                   <button

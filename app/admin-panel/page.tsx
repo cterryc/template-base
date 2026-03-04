@@ -6,7 +6,9 @@ import {
   MdInventory2,
   MdShoppingBag,
   MdGroups2,
-  MdSettings
+  MdSettings,
+  MdMenu,
+  MdClose
 } from 'react-icons/md'
 import { BiSolidCoupon } from 'react-icons/bi'
 import { IoGridSharp } from 'react-icons/io5'
@@ -17,6 +19,7 @@ import SettingsManagement from './components/SettingsManagement'
 import CuponesCRUD from './components/CuponesCRUD'
 import ReviewsManagement from './components/ReviewsManagement'
 import { MdRateReview } from 'react-icons/md'
+import { Button } from '@/components/ui/button'
 
 const paths = [
   { name: 'Órdenes', path: 'orders', icon: MdShoppingBag },
@@ -30,6 +33,7 @@ const paths = [
 const AdminPanel = () => {
   // Estado inicial basado en localStorage o por defecto 'orders'
   const [panel, setPanel] = useState<string>('')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   // Efecto para cargar el panel guardado al montar
   useEffect(() => {
@@ -46,6 +50,7 @@ const AdminPanel = () => {
   const handleSetPanel = (newPanel: string) => {
     setPanel(newPanel)
     sessionStorage.setItem('admin-panel', newPanel)
+    setIsSidebarOpen(false) // Cerrar sidebar mobile al seleccionar
   }
 
   return (
@@ -54,17 +59,50 @@ const AdminPanel = () => {
         {/* Notificaciones Toast */}
         <Toaster position='top-right' richColors />
 
-        {/* Sidebar */}
-        <aside className='hidden w-64 flex-col border-r border-gray-200 bg-white lg:flex dark:bg-gray-800 dark:border-gray-700  pb-12'>
-          <div className='flex h-16 items-center px-6 border-b border-gray-100 dark:border-gray-700'>
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className='lg:hidden fixed top-4 left-4 z-40 p-2 rounded-lg bg-white shadow-md border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors'
+          aria-label='Abrir menú'
+        >
+          <MdMenu size={24} className='text-gray-700 dark:text-gray-300' />
+        </button>
+
+        {/* Overlay para mobile */}
+        {isSidebarOpen && (
+          <div
+            className='lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm'
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar - Desktop y Mobile */}
+        <aside
+          className={`
+            fixed lg:static inset-y-0 left-0 z-50
+            w-64 flex-col border-r border-gray-200 bg-white 
+            lg:flex dark:bg-gray-800 dark:border-gray-700
+            transform transition-transform duration-300 ease-in-out
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          `}
+        >
+          <div className='flex h-16 items-center justify-between px-6 border-b border-gray-100 dark:border-gray-700'>
             <div className='flex items-center gap-2'>
               <IoGridSharp className='text-blue-600 text-2xl dark:text-blue-400' />
               <h1 className='text-lg font-bold tracking-tight text-gray-900 dark:text-white'>
                 Admin E-com
               </h1>
             </div>
+            {/* Botón cerrar solo mobile */}
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className='lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
+              aria-label='Cerrar menú'
+            >
+              <MdClose size={20} className='text-gray-500 dark:text-gray-400' />
+            </button>
           </div>
-          <div className='flex flex-1 flex-col justify-between overflow-y-auto px-4 py-6'>
+          <div className='flex flex-1 flex-col justify-between overflow-y-auto px-4 py-6 pb-12'>
             <nav className='flex flex-col gap-1'>
               {paths.map((item) => (
                 <button

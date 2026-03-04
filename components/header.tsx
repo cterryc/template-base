@@ -166,42 +166,107 @@ export default function Header() {
             <span className='loader'></span>
           ) : isSignedIn ? (
             <div className='min-w-7 flex justify-center items-center'>
-              <SignedIn>
-                <UserButton
-                  appearance={{
-                    theme: theme === 'dark' ? dark : 'simple'
-                  }}
-                  userProfileProps={{
-                    appearance: {
+              <div className='sm:hidden flex justify-center items-center'>
+                <SignedIn>
+                  <UserButton
+                    appearance={{
                       theme: theme === 'dark' ? dark : 'simple'
-                    }
-                  }}
-                >
-                  <UserButton.MenuItems>
-                    {/* "Admin Savior" - Solo ADMIN/EDITOR */}
-                    {isAdminOrEditor && (
+                    }}
+                    userProfileProps={{
+                      appearance: {
+                        theme: theme === 'dark' ? dark : 'simple'
+                      }
+                    }}
+                  >
+                    <UserButton.MenuItems>
+                      {/* "Admin Savior" - Solo ADMIN/EDITOR */}
+
                       <UserButton.Link
-                        label='Admin Panel'
+                        label='Inicio'
                         labelIcon={
                           <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
                         }
-                        href='/admin-panel'
+                        href='/'
                       />
-                    )}
-                    {/* "Mis pedidos" - Solo usuarios logueados */}
-                    {!isAdminOrEditor && (
                       <UserButton.Link
-                        label='Mis pedidos'
+                        label='Productos'
                         labelIcon={
-                          <ClipboardList className='w-full pb-2 justify-center items-center' />
+                          <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
                         }
-                        href='/orders'
+                        href='/collection'
                       />
-                    )}
-                    <UserButton.Action label='manageAccount' />
-                  </UserButton.MenuItems>
-                </UserButton>
-              </SignedIn>
+                      <UserButton.Link
+                        label='Nosotros'
+                        labelIcon={
+                          <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
+                        }
+                        href='/about'
+                      />
+                      <UserButton.Link
+                        label='Contactanos'
+                        labelIcon={
+                          <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
+                        }
+                        href='/contact'
+                      />
+                      {isAdminOrEditor ? (
+                        <UserButton.Link
+                          label='Admin Panel'
+                          labelIcon={
+                            <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
+                          }
+                          href='/admin-panel'
+                        />
+                      ) : (
+                        <UserButton.Link
+                          label='Mis pedidos'
+                          labelIcon={
+                            <ClipboardList className='w-full pb-2 justify-center items-center' />
+                          }
+                          href='/orders'
+                        />
+                      )}
+                      <UserButton.Action label='manageAccount' />
+                    </UserButton.MenuItems>
+                  </UserButton>
+                </SignedIn>
+              </div>
+              <div className='max-sm:hidden flex justify-center items-center'>
+                <SignedIn>
+                  <UserButton
+                    appearance={{
+                      theme: theme === 'dark' ? dark : 'simple'
+                    }}
+                    userProfileProps={{
+                      appearance: {
+                        theme: theme === 'dark' ? dark : 'simple'
+                      }
+                    }}
+                  >
+                    <UserButton.MenuItems>
+                      {/* "Admin Savior" - Solo ADMIN/EDITOR */}
+                      {isAdminOrEditor ? (
+                        <UserButton.Link
+                          label='Admin Panel'
+                          labelIcon={
+                            <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
+                          }
+                          href='/admin-panel'
+                        />
+                      ) : (
+                        <UserButton.Link
+                          label='Mis pedidos'
+                          labelIcon={
+                            <ClipboardList className='w-full pb-2 justify-center items-center' />
+                          }
+                          href='/orders'
+                        />
+                      )}
+                      <UserButton.Action label='manageAccount' />
+                    </UserButton.MenuItems>
+                  </UserButton>
+                </SignedIn>
+              </div>
             </div>
           ) : (
             <div className='hidden md:flex space-x-2'>
@@ -215,105 +280,111 @@ export default function Header() {
           )}
 
           {/* Mobile Menu Button */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant='ghost'
-                size='icon'
-                className='md:hidden'
-                aria-label='Abrir menú'
-              >
-                <Menu className='h-6 w-6' />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side='right' className='w-[250px] sm:w-[300px]'>
-              <SheetHeader>
-                <SheetTitle className='sr-only'>Menú de navegación</SheetTitle>
-              </SheetHeader>
-              <div className='flex flex-col h-full'>
-                <div className='py-6'>
-                  <nav className='flex flex-col space-y-4'>
-                    <Link
-                      href='/'
-                      className='text-lg hover:text-primary'
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Home
-                    </Link>
-                    <Link
-                      href='/collection'
-                      className='text-lg hover:text-primary'
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsOpen(false)
-                        setTimeout(() => {
-                          window.location.href = '/collection'
-                        }, 100)
-                      }}
-                    >
-                      Productos
-                    </Link>
-                    <Link
-                      href='/about'
-                      className='text-lg hover:text-primary'
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Nosotros
-                    </Link>
-                    <Link
-                      href='/contact'
-                      className='text-lg hover:text-primary'
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Contactanos
-                    </Link>
-                    {/* "Mis pedidos" - Solo usuarios logueados */}
-                    {isSignedIn && (
+          <div
+            className={`${isSignedIn || !isLoaded ? 'max-sm:hidden' : 'max-sm:flex'}`}
+          >
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='md:hidden'
+                  aria-label='Abrir menú'
+                >
+                  <Menu className='h-6 w-6' />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side='right' className='w-[250px] sm:w-[300px]'>
+                <SheetHeader>
+                  <SheetTitle className='sr-only'>
+                    Menú de navegación
+                  </SheetTitle>
+                </SheetHeader>
+                <div className='flex flex-col h-full'>
+                  <div className='py-6'>
+                    <nav className='flex flex-col space-y-4'>
                       <Link
-                        href='/orders'
+                        href='/'
                         className='text-lg hover:text-primary'
                         onClick={() => setIsOpen(false)}
                       >
-                        Mis pedidos
+                        Home
                       </Link>
-                    )}
-                    {/* "Admin Savior" - Solo ADMIN/EDITOR */}
-                    {isAdminOrEditor && (
                       <Link
-                        href='/admin-panel'
+                        href='/collection'
+                        className='text-lg hover:text-primary'
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setIsOpen(false)
+                          setTimeout(() => {
+                            window.location.href = '/collection'
+                          }, 100)
+                        }}
+                      >
+                        Productos
+                      </Link>
+                      <Link
+                        href='/about'
                         className='text-lg hover:text-primary'
                         onClick={() => setIsOpen(false)}
                       >
-                        Admin Savior
+                        Nosotros
                       </Link>
-                    )}
-                  </nav>
-                </div>
-
-                {!isSignedIn && (
-                  <div className='mt-auto pb-6 flex flex-col space-y-2'>
-                    <Link href='/sign-in'>
-                      <Button
-                        variant='outline'
-                        className='w-full'
+                      <Link
+                        href='/contact'
+                        className='text-lg hover:text-primary'
                         onClick={() => setIsOpen(false)}
                       >
-                        Login
-                      </Button>
-                    </Link>
-                    <Link href='/sign-up'>
-                      <Button
-                        className='w-full'
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Register
-                      </Button>
-                    </Link>
+                        Contactanos
+                      </Link>
+                      {/* "Mis pedidos" - Solo usuarios logueados */}
+                      {isSignedIn && (
+                        <Link
+                          href='/orders'
+                          className='text-lg hover:text-primary'
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Mis pedidos
+                        </Link>
+                      )}
+                      {/* "Admin Savior" - Solo ADMIN/EDITOR */}
+                      {isAdminOrEditor && (
+                        <Link
+                          href='/admin-panel'
+                          className='text-lg hover:text-primary'
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Admin Savior
+                        </Link>
+                      )}
+                    </nav>
                   </div>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
+
+                  {!isSignedIn && (
+                    <div className='mt-auto pb-6 flex flex-col space-y-2'>
+                      <Link href='/sign-in'>
+                        <Button
+                          variant='outline'
+                          className='w-full'
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Login
+                        </Button>
+                      </Link>
+                      <Link href='/sign-up'>
+                        <Button
+                          className='w-full'
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Register
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
       <ShoppingCartPanel

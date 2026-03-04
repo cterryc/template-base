@@ -288,7 +288,7 @@ const OdersManagement: React.FC = () => {
                     Gestiona las ventas y envíos de tu tienda.
                   </p>
                 </div>
-                <div className='relative w-full sm:w-80'>
+                <div className='relative w-full md:w-80'>
                   <MdSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl dark:text-gray-500' />
                   <input
                     type='text'
@@ -301,6 +301,7 @@ const OdersManagement: React.FC = () => {
                     <button
                       onClick={() => setSearchTerm('')}
                       className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400'
+                      aria-label='Limpiar búsqueda'
                     >
                       <MdClose />
                     </button>
@@ -360,15 +361,27 @@ const OdersManagement: React.FC = () => {
             <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700'>
               <div className='overflow-x-auto'>
                 <table className='w-full text-left text-sm text-gray-600 dark:text-gray-400'>
-                  <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300'>
+                  <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300 sticky top-0'>
                     <tr>
-                      <th className='px-6 py-4 font-bold'>ID</th>
-                      <th className='px-6 py-4 font-bold'>Cliente</th>
-                      <th className='px-6 py-4 font-bold'>Productos</th>
-                      <th className='px-6 py-4 font-bold'>Destino</th>
-                      <th className='px-6 py-4 font-bold'>Total</th>
-                      <th className='px-6 py-4 font-bold'>Estado</th>
-                      <th className='px-6 py-4 text-right font-bold'>
+                      <th className='hidden sm:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap'>
+                        ID
+                      </th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap'>
+                        Cliente
+                      </th>
+                      <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap'>
+                        Productos
+                      </th>
+                      <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap'>
+                        Destino
+                      </th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap'>
+                        Total
+                      </th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap'>
+                        Estado
+                      </th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 text-right font-bold whitespace-nowrap'>
                         Acciones
                       </th>
                     </tr>
@@ -376,17 +389,20 @@ const OdersManagement: React.FC = () => {
                   <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
                     {loading ? (
                       <tr>
-                        <td colSpan={7} className='px-6 py-12 text-center'>
+                        <td
+                          colSpan={4}
+                          className='px-3 py-8 md:px-6 md:py-12 text-center'
+                        >
                           <div className='flex justify-center'>
-                            <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
+                            <div className='h-6 w-6 md:h-8 md:w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
                           </div>
                         </td>
                       </tr>
                     ) : orders.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={7}
-                          className='px-6 py-12 text-center text-gray-500 dark:text-gray-400'
+                          colSpan={4}
+                          className='px-3 py-8 md:px-6 md:py-12 text-center text-gray-500 dark:text-gray-400'
                         >
                           {searchTerm
                             ? 'No se encontraron órdenes para la búsqueda'
@@ -403,49 +419,49 @@ const OdersManagement: React.FC = () => {
                               : ''
                           }`}
                         >
-                          <td className='px-6 py-4 font-medium text-gray-900 dark:text-white'>
+                          <td className='hidden sm:table-cell px-3 py-3 md:px-6 md:py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap'>
                             #ORD-{order.id}
                           </td>
-                          <td className='px-6 py-4'>
-                            <div className='flex flex-col'>
-                              <span className='font-semibold text-gray-900 dark:text-white'>
+                          <td className='px-3 py-3 md:px-6 md:py-4'>
+                            <div className='flex flex-col gap-0.5'>
+                              <span className='font-semibold text-gray-900 dark:text-white text-[10px] md:text-sm'>
                                 {order.clientName}
                               </span>
-                              <span className='text-xs text-gray-400 dark:text-gray-500'>
+                              <span className='hidden md:block text-xs text-gray-400 dark:text-gray-500 truncate max-w-[120px] md:max-w-none'>
                                 {order.user.email}
                               </span>
                             </div>
                           </td>
-                          <td className='px-6 py-4'>
+                          <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4'>
                             <div className='flex -space-x-2'>
                               {order.orderItems.slice(0, 3).map((item, i) => (
                                 <img
                                   key={i}
                                   src={item.producto.image}
                                   alt={item.producto.name}
-                                  className='h-8 w-8 rounded-full border-2 border-white dark:border-gray-800 object-cover shadow-sm'
+                                  className='h-6 w-6 md:h-8 md:w-8 rounded-full border-2 border-white dark:border-gray-800 object-cover shadow-sm'
                                 />
                               ))}
                               {order.totalProducts > 3 && (
-                                <div className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold text-gray-600 dark:text-gray-300'>
+                                <div className='flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full border-2 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-700 text-[8px] md:text-[10px] font-bold text-gray-600 dark:text-gray-300'>
                                   +{order.totalProducts - 3}
                                 </div>
                               )}
                             </div>
                           </td>
-                          <td className='px-6 py-4'>
+                          <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4'>
                             <div className='flex items-center gap-1.5'>
                               {order.locationToSend === 'Lima' ? (
-                                <MdOutlineLocationCity className='text-blue-500 dark:text-blue-400' />
+                                <MdOutlineLocationCity className='text-blue-500 dark:text-blue-400 text-sm md:text-base' />
                               ) : (
-                                <MdOutlineLandscape className='text-green-500 dark:text-green-400' />
+                                <MdOutlineLandscape className='text-green-500 dark:text-green-400 text-sm md:text-base' />
                               )}
-                              <span className='text-gray-700 dark:text-gray-300'>
+                              <span className='text-xs md:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap'>
                                 {order.locationToSend}
                               </span>
                             </div>
                           </td>
-                          <td className='px-6 py-4 font-bold text-gray-900 dark:text-white'>
+                          <td className='px-3 py-3 md:px-6 md:py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap text-[10px] md:text-sm'>
                             S/{' '}
                             {calculateTotalWithDiscount(
                               parseFloat(order.totalPrice.toString()),
@@ -453,9 +469,9 @@ const OdersManagement: React.FC = () => {
                               parseFloat(order.discount?.toString() || '0')
                             )}
                           </td>
-                          <td className='px-6 py-4'>
+                          <td className='px-3 py-3 md:px-6 md:py-4'>
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ${
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 md:px-2.5 md:py-1 text-[10px] md:text-xs font-bold ${
                                 order.status === 'Entregado'
                                   ? 'bg-emerald-100 text-green-500 dark:bg-green-600 dark:text-emerald-200'
                                   : order.status === 'Enviado'
@@ -470,19 +486,21 @@ const OdersManagement: React.FC = () => {
                               {order.status}
                             </span>
                           </td>
-                          <td className='px-6 py-4 text-right'>
-                            <div className='flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all'>
+                          <td className='px-3 py-3 md:px-6 md:py-4 text-right'>
+                            <div className='flex justify-end gap-1.5 md:gap-2 opacity-0 group-hover:opacity-100 transition-all'>
                               <button
                                 onClick={() => setSelectedOrder(order)}
-                                className='p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
+                                className='p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center'
+                                aria-label='Ver detalles'
                               >
-                                <MdRemoveRedEye size={20} />
+                                <MdRemoveRedEye size={18} />
                               </button>
                               <button
                                 onClick={() => handleDelete(order.id)}
-                                className='p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
+                                className='p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center'
+                                aria-label='Eliminar orden'
                               >
-                                <MdDelete size={20} />
+                                <MdDelete size={18} />
                               </button>
                             </div>
                           </td>

@@ -170,16 +170,16 @@ export default function CategoriesCRUD() {
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className='min-h-[44px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
               placeholder='Nombre de la categoría'
               required
             />
           </div>
 
-          <div className='flex gap-2'>
+          <div className='flex gap-2 flex-col sm:flex-row'>
             <button
               type='submit'
-              className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+              className='min-h-[44px] px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto'
             >
               {editingId ? 'Actualizar' : 'Crear'}
             </button>
@@ -188,7 +188,7 @@ export default function CategoriesCRUD() {
               <button
                 type='button'
                 onClick={handleCancel}
-                className='px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2'
+                className='min-h-[44px] px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 w-full sm:w-auto'
               >
                 Cancelar
               </button>
@@ -213,12 +213,12 @@ export default function CategoriesCRUD() {
           ) : (
             <div className='overflow-x-auto dark:bg-gray-800 rounded-xl'>
               <table className='w-full text-left text-sm text-gray-600 dark:text-gray-400'>
-                <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300'>
+                <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300 sticky top-0'>
                   <tr>
-                    <th className='px-6 py-4 font-bold'>ID</th>
-                    <th className='px-6 py-4 font-bold'>Nombre</th>
-                    <th className='px-6 py-4 font-bold'>Creado</th>
-                    <th className='px-6 py-4 text-right font-bold'>Acciones</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>ID</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Nombre</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Creado</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 text-right font-bold whitespace-nowrap text-xs md:text-sm'>Acciones</th>
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
@@ -227,34 +227,34 @@ export default function CategoriesCRUD() {
                       key={category.id}
                       className='hover:bg-gray-50/50 transition-colors group dark:hover:bg-gray-700/30'
                     >
-                      <td className='px-6 py-4'>
-                        <span className='text-sm text-gray-900 dark:text-white'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
+                        <span className='text-xs md:text-sm text-gray-900 dark:text-white'>
                           {category.id}
                         </span>
                       </td>
-                      <td className='px-6 py-4'>
-                        <span className='font-semibold text-gray-900 dark:text-white'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
+                        <span className='font-semibold text-gray-900 dark:text-white text-xs md:text-sm'>
                           {category.name}
                         </span>
                       </td>
-                      <td className='px-6 py-4'>
-                        <span className='text-sm'>
-                          {new Date(category.createdAt).toLocaleDateString()}
-                        </span>
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-xs md:text-sm'>
+                        {new Date(category.createdAt).toLocaleDateString()}
                       </td>
-                      <td className='px-6 py-4 text-right'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 text-right whitespace-nowrap'>
                         <div className='flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all'>
                           <button
                             onClick={() => handleEdit(category)}
-                            className='p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
+                            className='min-h-[36px] min-w-[36px] p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
                             title='Editar'
+                            aria-label='Editar categoría'
                           >
                             <MdEdit size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(category.id)}
-                            className='p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
+                            className='min-h-[36px] min-w-[36px] p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
                             title='Eliminar'
+                            aria-label='Eliminar categoría'
                           >
                             <MdDelete size={18} />
                           </button>

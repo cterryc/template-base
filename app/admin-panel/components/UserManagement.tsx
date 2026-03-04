@@ -306,7 +306,7 @@ const UserManagement: React.FC = () => {
                 Gestiona los usuarios registrados en tu tienda.
               </p>
             </div>
-            <div className='relative w-full sm:w-80'>
+            <div className='relative w-full md:w-80'>
               <MdSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl dark:text-gray-500' />
               <input
                 type='text'
@@ -319,6 +319,7 @@ const UserManagement: React.FC = () => {
                 <button
                   onClick={() => setSearchTerm('')}
                   className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400'
+                  aria-label='Limpiar búsqueda'
                 >
                   <MdClose />
                 </button>
@@ -362,14 +363,14 @@ const UserManagement: React.FC = () => {
             <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700'>
               <div className='overflow-x-auto'>
                 <table className='w-full text-left text-sm text-gray-600 dark:text-gray-400'>
-                  <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300'>
+                  <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300 sticky top-0'>
                     <tr>
-                      <th className='px-6 py-4 font-bold'>Usuario</th>
-                      <th className='px-6 py-4 font-bold'>Contacto</th>
-                      <th className='px-6 py-4 font-bold'>Rol</th>
-                      <th className='px-6 py-4 font-bold'>Pedidos</th>
-                      <th className='px-6 py-4 font-bold'>Registro</th>
-                      <th className='px-6 py-4 text-right font-bold'>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Usuario</th>
+                      <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Contacto</th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Rol</th>
+                      <th className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Pedidos</th>
+                      <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Registro</th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 text-right font-bold whitespace-nowrap text-xs md:text-sm'>
                         Acciones
                       </th>
                     </tr>
@@ -377,7 +378,7 @@ const UserManagement: React.FC = () => {
                   <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
                     {loading ? (
                       <tr>
-                        <td colSpan={6} className='px-6 py-12 text-center'>
+                        <td colSpan={3} className='px-3 py-12 md:px-6 md:py-12 text-center'>
                           <div className='flex justify-center'>
                             <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
                           </div>
@@ -386,8 +387,8 @@ const UserManagement: React.FC = () => {
                     ) : users.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={6}
-                          className='px-6 py-12 text-center text-gray-500 dark:text-gray-400'
+                          colSpan={3}
+                          className='px-3 py-12 md:px-6 md:py-12 text-center text-gray-500 dark:text-gray-400'
                         >
                           {searchTerm
                             ? 'No se encontraron usuarios para la búsqueda'
@@ -404,9 +405,9 @@ const UserManagement: React.FC = () => {
                               : ''
                           }`}
                         >
-                          <td className='px-6 py-4'>
+                          <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                             <div className='flex flex-col'>
-                              <span className='font-semibold text-gray-900 dark:text-white'>
+                              <span className='font-semibold text-gray-900 dark:text-white text-xs md:text-sm'>
                                 {user.name || 'Sin nombre'}
                               </span>
                               <span className='text-xs text-gray-400 dark:text-gray-500'>
@@ -414,9 +415,9 @@ const UserManagement: React.FC = () => {
                               </span>
                             </div>
                           </td>
-                          <td className='px-6 py-4'>
+                          <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                             <div className='flex flex-col'>
-                              <span className='text-sm dark:text-gray-300'>
+                              <span className='text-xs md:text-sm dark:text-gray-300'>
                                 {user.email}
                               </span>
                               {user.phone && (
@@ -426,7 +427,7 @@ const UserManagement: React.FC = () => {
                               )}
                             </div>
                           </td>
-                          <td className='px-6 py-4'>
+                          <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                             <div className='flex flex-col gap-1'>
                               <span
                                 className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-bold ${
@@ -444,17 +445,17 @@ const UserManagement: React.FC = () => {
                               )}
                             </div>
                           </td>
-                          <td className='px-6 py-4'>
+                          <td className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                             <div className='flex items-center gap-2'>
                               <MdShoppingCart className='text-gray-400 dark:text-gray-500' />
-                              <span className='font-medium dark:text-gray-300'>
+                              <span className='font-medium dark:text-gray-300 text-xs md:text-sm'>
                                 {user.totalOrders}
                               </span>
                             </div>
                           </td>
-                          <td className='px-6 py-4'>
+                          <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                             <div className='flex flex-col'>
-                              <span className='text-sm dark:text-gray-300'>
+                              <span className='text-xs md:text-sm dark:text-gray-300'>
                                 {new Date(user.createdAt).toLocaleDateString()}
                               </span>
                               <span className='text-xs text-gray-500'>
@@ -468,31 +469,26 @@ const UserManagement: React.FC = () => {
                               </span>
                             </div>
                           </td>
-                          <td className='px-6 py-4 text-right'>
+                          <td className='px-3 py-3 md:px-6 md:py-4 text-right whitespace-nowrap'>
                             <div className='flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all'>
                               <button
                                 onClick={() => fetchUserDetails(user.id)}
-                                className='p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
+                                className='min-h-[36px] min-w-[36px] p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
                                 title='Ver detalles'
+                                aria-label='Ver detalles'
                               >
                                 <MdRemoveRedEye size={20} />
                               </button>
-                              {/* <button
-                                onClick={() => fetchUserDetails(user.id)}
-                                className='p-2 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400 rounded-lg transition-colors'
-                                title='Editar'
-                              >
-                                <MdEdit size={20} />
-                              </button> */}
                               <button
                                 onClick={() => handleDeleteUser(user.id)}
                                 disabled={user.id === 1}
-                                className='p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed'
+                                className='min-h-[36px] min-w-[36px] p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed'
                                 title={
                                   user.id === 1
                                     ? 'No se puede eliminar el admin principal'
                                     : 'Eliminar'
                                 }
+                                aria-label='Eliminar usuario'
                               >
                                 <MdDelete size={20} />
                               </button>
@@ -579,8 +575,8 @@ const UserManagement: React.FC = () => {
       {selectedUser && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'>
           <div className='w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200 dark:bg-gray-800'>
-            <div className='flex items-center justify-between border-b p-6 dark:border-gray-700'>
-              <h3 className='text-xl font-bold dark:text-white'>
+            <div className='flex items-center justify-between border-b p-4 md:p-6 dark:border-gray-700'>
+              <h3 className='text-lg md:text-xl font-bold dark:text-white'>
                 {isEditing ? 'Editar Usuario' : 'Detalles de Usuario'}
               </h3>
               <button
@@ -589,13 +585,14 @@ const UserManagement: React.FC = () => {
                   setIsEditing(false)
                   setEditForm({})
                 }}
-                className='rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400'
+                className='min-h-[36px] min-w-[36px] rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400'
+                aria-label='Cerrar modal'
               >
                 <MdClose size={24} />
               </button>
             </div>
 
-            <div className='overflow-y-auto p-6 flex-1'>
+            <div className='overflow-y-auto p-4 md:p-6 flex-1'>
               {/* Cambiar Rol */}
               <div className='mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100 dark:bg-gray-700/30 dark:border-gray-700'>
                 <p className='text-xs font-bold text-gray-400 uppercase mb-3 dark:text-gray-500'>

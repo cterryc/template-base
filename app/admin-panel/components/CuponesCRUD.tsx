@@ -263,7 +263,7 @@ export default function CuponesCRUD() {
                 >
                   Código del Cupón
                 </label>
-                <div className='flex gap-2'>
+                <div className='flex gap-2 flex-col sm:flex-row'>
                   <input
                     type='text'
                     id='codigoCupon'
@@ -274,14 +274,14 @@ export default function CuponesCRUD() {
                         codigoCupon: e.target.value.toUpperCase()
                       })
                     }
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white'
+                    className='min-h-[44px] flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white'
                     placeholder='Ej: DESCUENTO20'
                     maxLength={50}
                   />
                   <button
                     type='button'
                     onClick={generarCodigo}
-                    className='px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 whitespace-nowrap'
+                    className='min-h-[44px] px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 whitespace-nowrap w-full sm:w-auto'
                   >
                     Generar
                   </button>
@@ -308,7 +308,7 @@ export default function CuponesCRUD() {
                       descuento: parseInt(e.target.value) || 0
                     })
                   }
-                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  className='min-h-[44px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                   min='0'
                   max='100'
                   step='1'
@@ -352,10 +352,10 @@ export default function CuponesCRUD() {
               </label>
             </div>
 
-            <div className='flex gap-2 pt-2'>
+            <div className='flex gap-2 pt-2 flex-col sm:flex-row'>
               <button
                 type='submit'
-                className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors'
+                className='min-h-[44px] px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors w-full sm:w-auto'
               >
                 {editingId ? 'Actualizar Cupón' : 'Crear Cupón'}
               </button>
@@ -364,7 +364,7 @@ export default function CuponesCRUD() {
                 <button
                   type='button'
                   onClick={handleCancel}
-                  className='px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors'
+                  className='min-h-[44px] px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors w-full sm:w-auto'
                 >
                   Cancelar
                 </button>
@@ -439,14 +439,14 @@ export default function CuponesCRUD() {
           ) : (
             <div className='overflow-x-auto dark:bg-gray-800 rounded-xl'>
               <table className='w-full text-left text-sm text-gray-600 dark:text-gray-400'>
-                <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300'>
+                <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300 sticky top-0'>
                   <tr>
-                    <th className='px-6 py-4 font-bold'>ID</th>
-                    <th className='px-6 py-4 font-bold'>Código</th>
-                    <th className='px-6 py-4 font-bold'>Descuento</th>
-                    <th className='px-6 py-4 font-bold'>Estado</th>
-                    <th className='px-6 py-4 font-bold'>Creado</th>
-                    <th className='px-6 py-4 text-right font-bold'>Acciones</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>ID</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Código</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Descuento</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Estado</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Creado</th>
+                    <th className='px-3 py-3 md:px-6 md:py-4 text-right font-bold whitespace-nowrap text-xs md:text-sm'>Acciones</th>
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
@@ -455,33 +455,34 @@ export default function CuponesCRUD() {
                       key={cupon.id}
                       className='hover:bg-gray-50/50 transition-colors group dark:hover:bg-gray-700/30'
                     >
-                      <td className='px-6 py-4'>
-                        <span className='font-mono text-sm text-gray-900 dark:text-white'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
+                        <span className='font-mono text-xs md:text-sm text-gray-900 dark:text-white'>
                           #{cupon.id}
                         </span>
                       </td>
-                      <td className='px-6 py-4'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                         <div className='flex items-center'>
-                          <code className='text-sm font-mono bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-2 py-1 rounded'>
+                          <code className='text-xs md:text-sm font-mono bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-2 py-1 rounded'>
                             {cupon.codigoCupon}
                           </code>
                           <button
                             onClick={() =>
                               navigator.clipboard.writeText(cupon.codigoCupon)
                             }
-                            className='ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                            className='ml-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                             title='Copiar código'
+                            aria-label='Copiar código'
                           >
                             <IoIosCopy className='h-5 w-5' />
                           </button>
                         </div>
                       </td>
-                      <td className='px-6 py-4'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                         <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-orange-600 dark:bg-red-900/30 dark:text-orange-400'>
                           {cupon.descuento}% OFF
                         </span>
                       </td>
-                      <td className='px-6 py-4'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             cupon.mostrarCupon
@@ -492,24 +493,24 @@ export default function CuponesCRUD() {
                           {cupon.mostrarCupon ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
-                      <td className='px-6 py-4'>
-                        <span className='text-sm text-gray-500 dark:text-gray-400'>
-                          {new Date(cupon.createdAt).toLocaleDateString()}
-                        </span>
+                      <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-500 dark:text-gray-400'>
+                        {new Date(cupon.createdAt).toLocaleDateString()}
                       </td>
-                      <td className='px-6 py-4 text-right'>
+                      <td className='px-3 py-3 md:px-6 md:py-4 text-right whitespace-nowrap'>
                         <div className='flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all'>
                           <button
                             onClick={() => handleEdit(cupon)}
-                            className='p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
+                            className='min-h-[36px] min-w-[36px] p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
                             title='Editar'
+                            aria-label='Editar cupón'
                           >
                             <MdEdit size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(cupon.id)}
-                            className='p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
+                            className='min-h-[36px] min-w-[36px] p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
                             title='Eliminar'
+                            aria-label='Eliminar cupón'
                           >
                             <MdDelete size={18} />
                           </button>

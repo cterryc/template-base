@@ -147,22 +147,41 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
       <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700'>
         <div className='overflow-x-auto'>
           <table className='w-full text-left text-sm text-gray-600 dark:text-gray-400'>
-            <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300'>
+            <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300 sticky top-0'>
               <tr>
-                <th className='px-6 py-4 font-bold'>Imagen</th>
-                <th className='px-6 py-4 font-bold'>Nombre</th>
-                <th className='px-6 py-4 font-bold'>Categoría</th>
-                <th className='px-6 py-4 font-bold'>Estado</th>
-                <th className='px-6 py-4 font-bold'>Precio</th>
-                <th className='px-6 py-4 font-bold'>Stock</th>
-                <th className='px-6 py-4 font-bold'>Destacado</th>
-                <th className='px-6 py-4 text-right font-bold'>Acciones</th>
+                <th className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                  Imagen
+                </th>
+                <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                  Nombre
+                </th>
+                <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                  Categoría
+                </th>
+                <th className='hidden sm:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                  Estado
+                </th>
+                <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                  Precio
+                </th>
+                <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                  Stock
+                </th>
+                <th className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                  Destacado
+                </th>
+                <th className='px-3 py-3 md:px-6 md:py-4 text-right font-bold whitespace-nowrap text-xs md:text-sm'>
+                  Acciones
+                </th>
               </tr>
             </thead>
             {loading ? (
               <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
                 <tr>
-                  <td colSpan={8} className='px-6 py-12 text-center'>
+                  <td
+                    colSpan={5}
+                    className='px-3 py-12 md:px-6 md:py-12 text-center'
+                  >
                     <div className='flex justify-center'>
                       <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
                     </div>
@@ -172,9 +191,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
             ) : products.length === 0 ? (
               <>
                 <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
-                  <tr className='px-6 py-12 text-center m-auto'>
+                  <tr className='px-3 py-12 md:px-6 md:py-12 text-center m-auto'>
                     <td
-                      colSpan={8}
+                      colSpan={5}
                       className='mt-2 text-sm font-medium text-gray-900 dark:text-white py-5'
                     >
                       <p>
@@ -248,27 +267,27 @@ const ProductRow: React.FC<ProductRowProps> = ({
     }`}
   >
     {/* Columna de Imagen */}
-    <td className='px-6 py-4'>
+    <td className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
       <div className='flex -space-x-2'>
         <img
           src={product.image}
           alt={product.name}
-          className='h-10 w-10 rounded-lg border-2 border-white dark:border-gray-800 object-cover shadow-sm'
+          className='h-8 w-8 md:h-10 md:w-10 rounded-lg border-2 border-white dark:border-gray-800 object-cover shadow-sm'
         />
         {product.image2 && (
           <img
             src={product.image2}
             alt={`${product.name} - 2`}
-            className='h-10 w-10 rounded-lg border-2 border-white dark:border-gray-800 object-cover shadow-sm'
+            className='h-8 w-8 md:h-10 md:w-10 rounded-lg border-2 border-white dark:border-gray-800 object-cover shadow-sm'
           />
         )}
       </div>
     </td>
 
     {/* Columna de Nombre */}
-    <td className='px-6 py-4'>
+    <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
       <div className='flex flex-col'>
-        <span className='font-semibold text-gray-900 dark:text-white'>
+        <span className='font-semibold text-gray-900 dark:text-white text-xs md:text-sm'>
           {product.name}
         </span>
         <span className='text-xs text-gray-400 dark:text-gray-500'>
@@ -278,54 +297,55 @@ const ProductRow: React.FC<ProductRowProps> = ({
     </td>
 
     {/* Columna de Categoría */}
-    <td className='px-6 py-4'>
+    <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
       <CategoryBadge category={product.category} />
     </td>
 
     {/* Columna de Estado */}
-    <td className='px-6 py-4'>
+    <td className='hidden sm:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
       <EstadoBadge estado={product.estado} />
     </td>
 
     {/* Columna de Precio */}
-    <td className='px-6 py-4 font-bold text-gray-900 dark:text-white'>
+    <td className='px-3 py-3 md:px-6 md:py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap text-xs md:text-sm'>
       S/ {Number(product.price).toFixed(2)}
     </td>
 
     {/* Columna de Stock */}
-    <td className='px-6 py-4'>
+    <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
       <StockIndicator stock={product.stock} />
     </td>
 
     {/* Columna de Destacado */}
-    <td className='px-6 py-4'>
+    <td className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
       <button
         onClick={() => onToggleDestacado(product)}
-        className={`p-1 rounded-lg transition-colors ${
-          product.destacado
-            ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30'
-            : 'text-gray-300 hover:text-amber-500 hover:bg-gray-50 dark:text-gray-600 dark:hover:bg-gray-700'
-        }`}
+        className='min-h-[36px] min-w-[36px] p-1 rounded-lg transition-colors'
         title={product.destacado ? 'Quitar destacado' : 'Marcar como destacado'}
+        aria-label={
+          product.destacado ? 'Quitar destacado' : 'Marcar como destacado'
+        }
       >
         {product.destacado ? <MdStar size={22} /> : <MdStarBorder size={22} />}
       </button>
     </td>
 
     {/* Columna de Acciones */}
-    <td className='px-6 py-4 text-right'>
+    <td className='px-3 py-3 md:px-6 md:py-4 text-right whitespace-nowrap'>
       <div className='flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all'>
         <button
           onClick={() => onEdit(product)}
-          className='p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
+          className='min-h-[36px] min-w-[36px] p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
           title='Editar producto'
+          aria-label='Editar producto'
         >
           <MdEdit size={20} />
         </button>
         <button
           onClick={() => onDelete(product.id)}
-          className='p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
+          className='min-h-[36px] min-w-[36px] p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
           title='Eliminar producto'
+          aria-label='Eliminar producto'
         >
           <MdDelete size={20} />
         </button>

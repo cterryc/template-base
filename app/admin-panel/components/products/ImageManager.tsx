@@ -88,37 +88,37 @@ const ImageManager: React.FC<ImageManagerProps> = ({
   }
 
   // Manejar subida de imagen
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  // const handleImageUpload = async (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   const file = event.target.files?.[0]
+  //   if (!file) return
 
-    setUploadingToCloudinary(true)
-    try {
-      const imageUrl = await uploadImageToCloudinary(file)
+  //   setUploadingToCloudinary(true)
+  //   try {
+  //     const imageUrl = await uploadImageToCloudinary(file)
 
-      setUploadedImages((prev) => [...prev, imageUrl])
+  //     setUploadedImages((prev) => [...prev, imageUrl])
 
-      // Asignar automáticamente si falta alguna imagen
-      if (!mainImage) {
-        onMainImageChange(imageUrl)
-      } else if (!secondaryImage) {
-        if (onSecondaryImageChange) {
-          onSecondaryImageChange(imageUrl)
-        }
-      } else if (imageFrom === 'systemImages') {
-        onMainImageChange(imageUrl)
-      }
+  //     // Asignar automáticamente si falta alguna imagen
+  //     if (!mainImage) {
+  //       onMainImageChange(imageUrl)
+  //     } else if (!secondaryImage) {
+  //       if (onSecondaryImageChange) {
+  //         onSecondaryImageChange(imageUrl)
+  //       }
+  //     } else if (imageFrom === 'systemImages') {
+  //       onMainImageChange(imageUrl)
+  //     }
 
-      toast.success('Imagen subida exitosamente')
-    } catch (error) {
-      console.error('Error uploading image:', error)
-      toast.error('Error al subir la imagen')
-    } finally {
-      setUploadingToCloudinary(false)
-    }
-  }
+  //     toast.success('Imagen subida exitosamente')
+  //   } catch (error) {
+  //     console.error('Error uploading image:', error)
+  //     toast.error('Error al subir la imagen')
+  //   } finally {
+  //     setUploadingToCloudinary(false)
+  //   }
+  // }
 
   // Seleccionar imagen de la galería
   const handleSelectFromGallery = (images: string[]) => {
@@ -144,7 +144,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
         imageFrom === 'systemImages' ? 'flex-col' : ''
       } flex gap-3 mb-4`}
     >
-      <div>
+      {/* <div>
         <input
           type='file'
           id='image-upload'
@@ -164,7 +164,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
           <MdCloudUpload />
           {uploadingToCloudinary ? 'Subiendo...' : 'Subir Imagen'}
         </label>
-      </div>
+      </div> */}
 
       <button
         onClick={() => setShowCloudinaryGallery(true)}

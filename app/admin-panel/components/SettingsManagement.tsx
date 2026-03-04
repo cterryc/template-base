@@ -314,25 +314,25 @@ const SettingsManagement: React.FC = () => {
               {!editingSettings ? (
                 <button
                   onClick={() => setEditingSettings(true)}
-                  className='flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors'
+                  className='min-h-[44px] flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors w-full sm:w-auto'
                 >
                   <MdEdit /> Editar Configuraciones
                 </button>
               ) : (
-                <div className='flex gap-2'>
+                <div className='flex gap-2 flex-col sm:flex-row'>
                   <button
                     onClick={() => {
                       setEditingSettings(false)
                       setSettingsForm(settings)
                       setSettingsErrors({})
                     }}
-                    className='flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors'
+                    className='min-h-[44px] flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto'
                   >
                     <MdCancel /> Cancelar
                   </button>
                   <button
                     onClick={handleSaveSettings}
-                    className='flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors'
+                    className='min-h-[44px] flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors w-full sm:w-auto'
                   >
                     <MdSave /> Guardar Cambios
                   </button>
@@ -363,7 +363,7 @@ const SettingsManagement: React.FC = () => {
                         handleSettingChange('minimoDelivery', e.target.value)
                       }
                       disabled={!editingSettings}
-                      className={`w-full rounded-lg border px-3 py-2 ${
+                      className={`min-h-[44px] w-full rounded-lg border px-3 py-2 ${
                         settingsErrors.minimoDelivery
                           ? 'border-red-500'
                           : 'border-gray-300 dark:border-gray-600'
@@ -386,7 +386,7 @@ const SettingsManagement: React.FC = () => {
                         handleSettingChange('maximoDelivery', e.target.value)
                       }
                       disabled={!editingSettings}
-                      className={`w-full rounded-lg border px-3 py-2 ${
+                      className={`min-h-[44px] w-full rounded-lg border px-3 py-2 ${
                         settingsErrors.maximoDelivery
                           ? 'border-red-500'
                           : 'border-gray-300 dark:border-gray-600'
@@ -422,7 +422,7 @@ const SettingsManagement: React.FC = () => {
                         handleSettingChange('telefono', e.target.value)
                       }
                       disabled={!editingSettings}
-                      className={`w-full rounded-lg border px-3 py-2 ${
+                      className={`min-h-[44px] w-full rounded-lg border px-3 py-2 ${
                         settingsErrors.telefono
                           ? 'border-red-500'
                           : 'border-gray-300 dark:border-gray-600'
@@ -446,7 +446,7 @@ const SettingsManagement: React.FC = () => {
                         handleSettingChange('correo', e.target.value)
                       }
                       disabled={!editingSettings}
-                      className={`w-full rounded-lg border px-3 py-2 ${
+                      className={`min-h-[44px] w-full rounded-lg border px-3 py-2 ${
                         settingsErrors.correo
                           ? 'border-red-500'
                           : 'border-gray-300 dark:border-gray-600'
@@ -524,7 +524,7 @@ const SettingsManagement: React.FC = () => {
                           handleSettingChange(key, e.target.value)
                         }
                         disabled={!editingSettings}
-                        className={`w-full rounded-lg border px-3 py-2 ${
+                        className={`min-h-[44px] w-full rounded-lg border px-3 py-2 ${
                           settingsErrors[key]
                             ? 'border-red-500'
                             : 'border-gray-300 dark:border-gray-600'
@@ -606,13 +606,13 @@ const SettingsManagement: React.FC = () => {
             <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700'>
               <div className='overflow-x-auto'>
                 <table className='w-full text-left text-sm text-gray-600 dark:text-gray-400'>
-                  <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300'>
+                  <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300 sticky top-0'>
                     <tr>
-                      <th className='px-6 py-4 font-bold'>Imagen</th>
-                      <th className='px-6 py-4 font-bold'>Nombre</th>
-                      <th className='px-6 py-4 font-bold'>Actualizado</th>
-                      <th className='px-6 py-4 font-bold'>Creado</th>
-                      <th className='px-6 py-4 text-right font-bold'>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Imagen</th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Nombre</th>
+                      <th className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Actualizado</th>
+                      <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Creado</th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 text-right font-bold whitespace-nowrap text-xs md:text-sm'>
                         Acciones
                       </th>
                     </tr>
@@ -620,7 +620,7 @@ const SettingsManagement: React.FC = () => {
                   <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
                     {loadingColecciones ? (
                       <tr>
-                        <td colSpan={5} className='px-6 py-12 text-center'>
+                        <td colSpan={3} className='px-3 py-12 md:px-6 md:py-12 text-center'>
                           <div className='flex justify-center'>
                             <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
                           </div>
@@ -629,8 +629,8 @@ const SettingsManagement: React.FC = () => {
                     ) : colecciones.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={5}
-                          className='px-6 py-12 text-center text-gray-500 dark:text-gray-400'
+                          colSpan={3}
+                          className='px-3 py-12 md:px-6 md:py-12 text-center text-gray-500 dark:text-gray-400'
                         >
                           {searchTerm
                             ? 'No se encontraron colecciones'
@@ -643,38 +643,35 @@ const SettingsManagement: React.FC = () => {
                           key={coleccion.id}
                           className='hover:bg-gray-50/50 transition-colors group dark:hover:bg-gray-700/30'
                         >
-                          <td className='px-6 py-4'>
+                          <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
                             <img
                               src={coleccion.image}
                               alt={coleccion.name}
-                              className='h-12 w-12 rounded-lg object-cover border'
+                              className='h-8 w-8 md:h-12 md:w-12 rounded-lg object-cover border'
                             />
                           </td>
-                          <td className='px-6 py-4'>
-                            <span className='font-semibold text-gray-900 dark:text-white'>
+                          <td className='px-3 py-3 md:px-6 md:py-4 whitespace-nowrap'>
+                            <span className='font-semibold text-gray-900 dark:text-white text-xs md:text-sm'>
                               {coleccion.name}
                             </span>
                           </td>
-                          <td className='px-6 py-4'>
-                            <span className='text-sm'>
-                              {new Date(
-                                coleccion.updatedAt
-                              ).toLocaleDateString()}
-                            </span>
+                          <td className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-xs md:text-sm'>
+                            {new Date(
+                              coleccion.updatedAt
+                            ).toLocaleDateString()}
                           </td>
-                          <td className='px-6 py-4'>
-                            <span className='text-sm'>
-                              {new Date(
-                                coleccion.createdAt
-                              ).toLocaleDateString()}
-                            </span>
+                          <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-xs md:text-sm'>
+                            {new Date(
+                              coleccion.createdAt
+                            ).toLocaleDateString()}
                           </td>
-                          <td className='px-6 py-4 text-right'>
+                          <td className='px-3 py-3 md:px-6 md:py-4 text-right whitespace-nowrap'>
                             <div className='flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all'>
                               <button
                                 onClick={() => handleEditColeccion(coleccion)}
-                                className='p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
+                                className='min-h-[36px] min-w-[36px] p-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors'
                                 title='Editar'
+                                aria-label='Editar colección'
                               >
                                 <MdEdit size={18} />
                               </button>
@@ -682,8 +679,9 @@ const SettingsManagement: React.FC = () => {
                                 onClick={() =>
                                   handleDeleteColeccion(coleccion.id)
                                 }
-                                className='p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
+                                className='min-h-[36px] min-w-[36px] p-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors'
                                 title='Eliminar'
+                                aria-label='Eliminar colección'
                               >
                                 <MdDelete size={18} />
                               </button>
