@@ -57,7 +57,7 @@ const nextConfig = {
     // DESHABILITADO TEMPORALMENTE: Clerk auth pages tienen conflicto con cacheComponents
     // Ver: https://github.com/clerk/clerk-nextjs/issues
   },
-  cacheComponents: true, // Deshabilitado temporalmente por conflicto con Clerk
+  // cacheComponents: true, // Deshabilitado temporalmente por conflicto con Clerk
 
   // Server external packages - don't bundle these
   serverExternalPackages: ['@prisma/client'],
