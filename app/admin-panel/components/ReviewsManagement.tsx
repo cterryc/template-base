@@ -138,7 +138,7 @@ const ReviewsManagement: React.FC = () => {
         if (reviews.length === 1 && currentPage > 1) {
           setCurrentPage(prev => prev - 1)
         } else {
-          fetchReviews(currentPage, searchTerm, false)
+          fetchReviews(currentPage, searchTerm, statusFilter, false)
         }
       } else {
         throw new Error()

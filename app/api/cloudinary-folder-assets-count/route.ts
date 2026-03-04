@@ -10,10 +10,9 @@ cloudinary.config({
 })
 
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const folder = searchParams.get('folder') || ''
   try {
-    const { searchParams } = new URL(request.url)
-    const folder = searchParams.get('folder') || ''
-
     if (!folder) {
       return NextResponse.json(
         { error: 'folder parameter is required' },
@@ -45,7 +44,8 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error('Error counting assets:', error)
 
-    const errorMessage = error?.error?.message || error?.message || 'Error al contar recursos'
+    const errorMessage =
+      error?.error?.message || error?.message || 'Error al contar recursos'
 
     // Si la carpeta no existe o está vacía
     if (
@@ -60,9 +60,6 @@ export async function GET(request: Request) {
       })
     }
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }

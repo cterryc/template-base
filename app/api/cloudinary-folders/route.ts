@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from 'cloudinary'
+import { v2 as cloudinary, type AdminApiOptions } from 'cloudinary'
 import { NextResponse } from 'next/server'
 import { env } from '@/lib/env'
 
@@ -16,18 +16,27 @@ export async function GET(request: Request) {
     const maxResults = searchParams.get('max_results') || '100'
 
     let result
+    const options: AdminApiOptions = {
+      max_results: parseInt(maxResults)
+    }
     
     // Usar el endpoint correcto para listar subcarpetas
     if (path) {
       // Listar subcarpetas de una carpeta específica
-      result = await cloudinary.api.sub_folders(path, {
-        max_results: parseInt(maxResults)
-      })
+      // Casteamos la función para forzar la firma basada en Promesas
+      const subFolders = cloudinary.api.sub_folders as (
+        path: string,
+        options?: AdminApiOptions
+      ) => Promise<{ folders: any[]; next_cursor?: string }>
+      
+      result = await subFolders(path, options)
     } else {
       // Listar carpetas raíz
-      result = await cloudinary.api.root_folders({
-        max_results: parseInt(maxResults)
-      })
+      const rootFolders = cloudinary.api.root_folders as (
+        options?: AdminApiOptions
+      ) => Promise<{ folders: any[]; next_cursor?: string }>
+      
+      result = await rootFolders(options)
     }
 
     return NextResponse.json({
