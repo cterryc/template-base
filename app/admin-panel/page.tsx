@@ -15,11 +15,14 @@ import UserManagement from './components/UserManagement'
 import ProductsManagement from './components/products/ProductsManagement'
 import SettingsManagement from './components/SettingsManagement'
 import CuponesCRUD from './components/CuponesCRUD'
+import ReviewsManagement from './components/ReviewsManagement'
+import { MdRateReview } from 'react-icons/md'
 
 const paths = [
   { name: 'Órdenes', path: 'orders', icon: MdShoppingBag },
   { name: 'Productos', path: 'products', icon: MdInventory2 },
   { name: 'Usuarios', path: 'users', icon: MdGroups2 },
+  { name: 'Reseñas', path: 'reviews', icon: MdRateReview },
   { name: 'Cupones', path: 'coupon', icon: BiSolidCoupon },
   { name: 'Configuracion', path: 'settings', icon: MdSettings }
 ]
@@ -88,6 +91,8 @@ const AdminPanel = () => {
           <SettingsManagement />
         ) : panel === 'coupon' ? (
           <CuponesCRUD />
+        ) : panel === 'reviews' ? (
+          <ReviewsManagement />
         ) : (
           <OdersManagement />
         )}
