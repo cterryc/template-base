@@ -32,7 +32,7 @@ import { useTheme } from 'next-themes'
 const ShoppingCartPanel = dynamic(() => import('./ShoppingCartPanel'), {
   ssr: false,
   loading: () => (
-    <div className='fixed right-0 top-1/2 -translate-y-1/2 w-80 md:w-96 bg-background border-l p-4 z-50'>
+    <div className='fixed right-0 top-1/2 opacity-0 -translate-y-1/2 w-80 md:w-96 bg-background border-l p-4 z-50'>
       <p className='text-muted-foreground text-center'>Cargando carrito...</p>
     </div>
   )
@@ -126,7 +126,9 @@ export default function Header() {
                 className={`hover:text-slate-400 ${
                   pathname === '/' || pathname === '' ? 'text-slate-500' : ''
                 }`}
-                aria-current={pathname === '/' || pathname === '' ? 'page' : undefined}
+                aria-current={
+                  pathname === '/' || pathname === '' ? 'page' : undefined
+                }
               >
                 Home
               </Link>
@@ -178,7 +180,8 @@ export default function Header() {
             {cartItems.length > 0 && (
               <>
                 <span className='sr-only'>
-                  {cartItems.reduce((total, item) => total + item.quantity, 0)} productos en el carrito
+                  {cartItems.reduce((total, item) => total + item.quantity, 0)}{' '}
+                  productos en el carrito
                 </span>
                 <span className='absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs'>
                   {cartItems.reduce((total, item) => total + item.quantity, 0)}
@@ -268,7 +271,12 @@ export default function Header() {
           {!isSignedIn && isLoaded && (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant='ghost' size='icon' className='md:hidden' aria-label='Abrir menú'>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='md:hidden'
+                  aria-label='Abrir menú'
+                >
                   <Menu className='h-6 w-6' />
                 </Button>
               </SheetTrigger>
