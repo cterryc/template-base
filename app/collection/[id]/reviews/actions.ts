@@ -254,6 +254,66 @@ export async function updateReview(
 }
 
 /**
+ * Eliminar una review existente
+ */
+export async function deleteReview(reviewId: number) {
+  // 1. Verificar autenticación
+  const { userId: clerkId } = await auth()
+  if (!clerkId) {
+    return {
+      success: false,
+      error: 'Debes iniciar sesión para eliminar tu review'
+    }
+  }
+
+  // 2. Obtener usuario de la DB
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId }
+  })
+
+  if (!dbUser) {
+    return {
+      success: false,
+      error: 'Usuario no encontrado en la base de datos'
+    }
+  }
+
+  // 3. Verificar propiedad de la review
+  const existingReview = await prisma.review.findUnique({
+    where: { id: reviewId }
+  })
+
+  if (!existingReview || existingReview.userId !== dbUser.id) {
+    return {
+      success: false,
+      error: 'No tienes permiso para eliminar esta review'
+    }
+  }
+
+  // 4. Eliminar review
+  try {
+    await prisma.review.delete({
+      where: { id: reviewId }
+    })
+
+    // 5. Invalidar caché
+    revalidatePath(`/collection/${existingReview.productoId}`)
+    revalidatePath(`/collection/${existingReview.productoId}/reviews`)
+
+    return {
+      success: true,
+      message: 'Review eliminada correctamente'
+    }
+  } catch (error) {
+    console.error('Error deleting review:', error)
+    return {
+      success: false,
+      error: 'Error al eliminar la review. Inténtalo de nuevo.'
+    }
+  }
+}
+
+/**
  * Obtener review del usuario para un producto
  */
 export async function getUserReview(productId: number) {

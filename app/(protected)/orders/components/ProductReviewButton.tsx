@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Star, X, CheckCircle } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { Star, X, CheckCircle, Trash2, AlertTriangle, Loader2 } from 'lucide-react'
 import { CreateReviewForm } from '@/app/collection/[id]/reviews/create-review-form'
+import { deleteReview } from '@/app/collection/[id]/reviews/actions'
 
 interface ProductReviewButtonProps {
   productId: number
@@ -26,6 +27,23 @@ export function ProductReviewButton({
 }: ProductReviewButtonProps) {
   const [showModal, setShowModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  const handleDelete = async () => {
+    if (!userReview) return
+
+    startTransition(async () => {
+      const result = await deleteReview(userReview.id)
+      if (result.success) {
+        onReviewCreated?.()
+        setShowModal(false)
+        setIsDeleting(false)
+      } else {
+        alert(result.error)
+      }
+    })
+  }
 
   // Si ya tiene review y no está cargando, mostrar estado
   if (userReview) {
@@ -34,6 +52,7 @@ export function ProductReviewButton({
         <button
           onClick={() => {
             setIsEditing(false)
+            setIsDeleting(false)
             setShowModal(true)
           }}
           className='text-sm text-green-600 dark:text-green-400 hover:underline flex items-center gap-1 transition-colors'
@@ -46,7 +65,9 @@ export function ProductReviewButton({
         {showModal && (
           <div
             className='fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'
-            onClick={() => setShowModal(false)}
+            onClick={() => {
+              if (!isPending) setShowModal(false)
+            }}
           >
             <div
               className='bg-card rounded-lg border border-border max-w-md w-full mx-4 overflow-hidden shadow-2xl'
@@ -56,7 +77,11 @@ export function ProductReviewButton({
               <div className='flex items-center justify-between p-4 border-b border-border'>
                 <div>
                   <h3 className='font-bold text-foreground'>
-                    {isEditing ? 'Editar tu opinión' : 'Tu opinión'}
+                    {isDeleting
+                      ? '¿Eliminar opinión?'
+                      : isEditing
+                      ? 'Editar tu opinión'
+                      : 'Tu opinión'}
                   </h3>
                   <p className='text-xs text-muted-foreground truncate max-w-[200px]'>
                     {productName}
@@ -64,7 +89,8 @@ export function ProductReviewButton({
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className='p-1.5 rounded-lg hover:bg-accent transition-colors'
+                  disabled={isPending}
+                  className='p-1.5 rounded-lg hover:bg-accent transition-colors disabled:opacity-50'
                 >
                   <X className='w-5 h-5' />
                 </button>
@@ -72,7 +98,44 @@ export function ProductReviewButton({
 
               {/* Contenido: Review existente o Formulario de edición */}
               <div className='p-4'>
-                {isEditing ? (
+                {isDeleting ? (
+                  <div className='space-y-4 py-2'>
+                    <div className='flex items-start gap-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg'>
+                      <AlertTriangle className='w-5 h-5 text-destructive shrink-0 mt-0.5' />
+                      <div>
+                        <p className='text-sm font-medium text-destructive'>
+                          Esta acción no se puede deshacer
+                        </p>
+                        <p className='text-xs text-destructive/80 mt-1'>
+                          Tu opinión y calificación serán eliminadas
+                          permanentemente.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className='flex gap-3'>
+                      <button
+                        onClick={handleDelete}
+                        disabled={isPending}
+                        className='flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90 px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2'
+                      >
+                        {isPending ? (
+                          <Loader2 className='w-4 h-4 animate-spin' />
+                        ) : (
+                          <Trash2 className='w-4 h-4' />
+                        )}
+                        Confirmar
+                      </button>
+                      <button
+                        onClick={() => setIsDeleting(false)}
+                        disabled={isPending}
+                        className='flex-1 bg-accent text-accent-foreground hover:bg-accent/80 px-4 py-2 rounded-md text-sm font-medium transition-colors'
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : isEditing ? (
                   <CreateReviewForm
                     productId={productId}
                     initialData={{
@@ -134,13 +197,22 @@ export function ProductReviewButton({
                       )}
                     </p>
 
-                    {/* Botón Editar */}
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className='text-xs text-blue-600 hover:underline flex items-center gap-1 mt-2'
-                    >
-                      Editar opinión
-                    </button>
+                    {/* Botones de acción */}
+                    <div className='flex items-center gap-4 mt-2'>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className='text-xs text-blue-600 hover:underline flex items-center gap-1'
+                      >
+                        Editar opinión
+                      </button>
+                      <button
+                        onClick={() => setIsDeleting(true)}
+                        className='text-xs text-destructive hover:underline flex items-center gap-1'
+                      >
+                        <Trash2 className='w-3 h-3' />
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -149,15 +221,17 @@ export function ProductReviewButton({
               <div className='p-4 border-t border-border bg-accent/50'>
                 <button
                   onClick={() => {
-                    if (isEditing) {
+                    if (isEditing || isDeleting) {
                       setIsEditing(false)
+                      setIsDeleting(false)
                     } else {
                       setShowModal(false)
                     }
                   }}
-                  className='w-full text-sm text-muted-foreground hover:underline py-2'
+                  disabled={isPending}
+                  className='w-full text-sm text-muted-foreground hover:underline py-2 disabled:opacity-50'
                 >
-                  {isEditing ? 'Volver' : 'Cerrar'}
+                  {isEditing || isDeleting ? 'Volver' : 'Cerrar'}
                 </button>
               </div>
             </div>
