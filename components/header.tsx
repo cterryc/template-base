@@ -122,7 +122,9 @@ export default function Header() {
         </nav>
 
         <div className='flex items-center max-md:pr-5'>
-          <ThemeToggle />
+          <div className='flex items-center w-8'>
+            <ThemeToggle />
+          </div>
           <button
             onClick={toggleCart}
             className='relative h-8 w-8 p-0 ml-2 md:ml-3'
@@ -142,11 +144,11 @@ export default function Header() {
             )}
           </button>
 
-          {/* // !  aqui abajo esta el Login Descomentar para seguir trabajando */}
+          {/* Login Clerk */}
           {!isLoaded ? (
             <span className='loader'></span>
           ) : isSignedIn ? (
-            <div className='min-w-7 flex justify-center items-center'>
+            <div className='min-w-7 flex justify-center items-center pl-3'>
               <div className='sm:hidden flex justify-center items-center'>
                 <SignedIn>
                   <UserButton
@@ -267,12 +269,12 @@ export default function Header() {
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button
-                  variant='ghost'
+                  // variant='ghost'
                   size='icon'
-                  className='md:hidden'
+                  className='md:hidden ml-3'
                   aria-label='Abrir menú'
                 >
-                  <Menu className='h-6 w-6' />
+                  <Menu />
                 </Button>
               </SheetTrigger>
               <SheetContent side='right' className='w-[250px] sm:w-[300px]'>

@@ -138,9 +138,7 @@ export default function ShoppingCartPanel({
                       <span className='font-medium text-foreground'>
                         {item.name}
                       </span>
-                      <span className='text-muted-foreground text-sm'>
-                        {item.size}
-                      </span>
+
                       <button
                         onClick={() => removeFromCart(item.id)}
                         className='text-muted-foreground hover:text-destructive transition-colors duration-200 p-0 rounded-full hover:bg-accent'
@@ -152,6 +150,11 @@ export default function ShoppingCartPanel({
                       <span className='text-muted-foreground'>
                         Cantidad: {item.quantity}
                       </span>
+                      {item.size && (
+                        <span className='text-muted-foreground text-sm'>
+                          Talla: {item.size}
+                        </span>
+                      )}
                       <span className='font-medium text-foreground'>
                         S/ {(item.price * item.quantity).toFixed(2)}
                       </span>
