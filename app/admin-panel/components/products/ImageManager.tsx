@@ -1,14 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import {
-  MdImage,
-  MdCloudUpload,
-  MdPhotoLibrary,
-  MdClose,
-  MdCheckCircle
-} from 'react-icons/md'
-import { toast } from 'sonner'
+import { MdImage, MdPhotoLibrary, MdClose, MdCheckCircle } from 'react-icons/md'
 import CloudinaryGallery from './CloudinaryGallery'
 
 interface ImageManagerProps {
@@ -22,14 +15,7 @@ interface ImageManagerProps {
   onImage4Change?: (url: string) => void
   imageFrom?: string
   editImage?: boolean
-}
-
-interface CloudinaryImage {
-  public_id: string
-  secure_url: string
-  created_at: string
-  bytes: number
-  format: string
+  maxImages?: number // Controla cuántas imágenes se pueden seleccionar (default: 4)
 }
 
 const ImageManager: React.FC<ImageManagerProps> = ({
@@ -42,83 +28,11 @@ const ImageManager: React.FC<ImageManagerProps> = ({
   onImage3Change,
   onImage4Change,
   imageFrom,
-  editImage
+  editImage,
+  maxImages = 4 // Por defecto permite hasta 4 imágenes
 }) => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
-  const [uploadingToCloudinary, setUploadingToCloudinary] = useState(false)
   const [showCloudinaryGallery, setShowCloudinaryGallery] = useState(false)
-
-  // Subir imagen a Cloudinary
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    if (!file.type.startsWith('image/')) {
-      throw new Error('Solo se permiten archivos de imagen')
-    }
-
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append(
-      'upload_preset',
-      process.env.NEXT_PUBLIC_CLOUDINARY_PRESET || ''
-    )
-    formData.append('folder', 'ecommerce-products')
-
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: 'POST',
-        body: formData
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(`Error al subir imagen: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-
-    // --- TRANSFORMACIÓN AQUÍ ---
-    // Insertamos f_auto (formato) y q_auto (compresión inteligente)
-    // Esto hará que si el navegador soporta WebP, Cloudinary lo envíe así.
-    const optimizedUrl = data.secure_url.replace(
-      '/upload/',
-      '/upload/f_auto,q_auto/'
-    )
-
-    return optimizedUrl
-  }
-
-  // Manejar subida de imagen
-  // const handleImageUpload = async (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   const file = event.target.files?.[0]
-  //   if (!file) return
-
-  //   setUploadingToCloudinary(true)
-  //   try {
-  //     const imageUrl = await uploadImageToCloudinary(file)
-
-  //     setUploadedImages((prev) => [...prev, imageUrl])
-
-  //     // Asignar automáticamente si falta alguna imagen
-  //     if (!mainImage) {
-  //       onMainImageChange(imageUrl)
-  //     } else if (!secondaryImage) {
-  //       if (onSecondaryImageChange) {
-  //         onSecondaryImageChange(imageUrl)
-  //       }
-  //     } else if (imageFrom === 'systemImages') {
-  //       onMainImageChange(imageUrl)
-  //     }
-
-  //     toast.success('Imagen subida exitosamente')
-  //   } catch (error) {
-  //     console.error('Error uploading image:', error)
-  //     toast.error('Error al subir la imagen')
-  //   } finally {
-  //     setUploadingToCloudinary(false)
-  //   }
-  // }
 
   // Seleccionar imagen de la galería
   const handleSelectFromGallery = (images: string[]) => {
@@ -141,31 +55,11 @@ const ImageManager: React.FC<ImageManagerProps> = ({
   const uploadAndGalery = (
     <div
       className={`${
-        imageFrom === 'systemImages' ? 'flex-col' : ''
+        imageFrom === 'systemImages' || imageFrom === 'colection'
+          ? 'flex-col'
+          : ''
       } flex gap-3 mb-4`}
     >
-      {/* <div>
-        <input
-          type='file'
-          id='image-upload'
-          accept='.jpg, .jpeg, .png, .webp'
-          onChange={handleImageUpload}
-          className='hidden'
-          disabled={uploadingToCloudinary}
-        />
-        <label
-          htmlFor='image-upload'
-          className={`flex items-center gap-1 rounded-lg px-2 py-2.5 text-sm font-medium cursor-pointer transition-colors ${
-            uploadingToCloudinary
-              ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
-              : 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50'
-          }`}
-        >
-          <MdCloudUpload />
-          {uploadingToCloudinary ? 'Subiendo...' : 'Subir Imagen'}
-        </label>
-      </div> */}
-
       <button
         onClick={() => setShowCloudinaryGallery(true)}
         className='flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors'
@@ -180,16 +74,20 @@ const ImageManager: React.FC<ImageManagerProps> = ({
     <>
       <div
         className={`${
-          imageFrom === 'systemImages' ? 'grid grid-cols-2 gap-1' : ''
+          imageFrom === 'systemImages' || imageFrom === 'colection'
+            ? 'grid grid-cols-2 gap-1'
+            : ''
         }`}
       >
         {!imageFrom && (
           <>
             <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
-              Imágenes del Producto
+              {maxImages === 1 ? 'Imagen' : 'Imágenes del Producto'}
             </label>
             <p className='mb-3 text-xs text-gray-500 dark:text-gray-400'>
-              Sube hasta 4 imágenes (primera imagen es obligatoria)
+              {maxImages === 1
+                ? 'Selecciona una imagen'
+                : `Sube hasta ${maxImages} imágenes (primera imagen es obligatoria)`}
             </p>
           </>
         )}
@@ -212,24 +110,24 @@ const ImageManager: React.FC<ImageManagerProps> = ({
           {/* Imagen principal */}
           <ImagePreview
             imageUrl={mainImage}
-            label='Imagen Principal'
+            label={maxImages === 1 ? 'Imagen' : 'Imagen Principal'}
             onRemove={() => onMainImageChange('')}
             showIconRemove={editImage}
             onSecondaryImageChange={onSecondaryImageChange === undefined}
           />
 
           {/* Imagen secundaria */}
-          {onSecondaryImageChange && (
+          {maxImages >= 2 && onSecondaryImageChange && (
             <ImagePreview
               imageUrl={secondaryImage || ''}
-              label='Imagen Secundaria (Opcional)'
+              label='Imagen 2 (Opcional)'
               onRemove={() => onSecondaryImageChange('')}
               showIconRemove={editImage}
             />
           )}
 
           {/* Imagen 3 */}
-          {onImage3Change && (
+          {maxImages >= 3 && onImage3Change && (
             <ImagePreview
               imageUrl={image3 || ''}
               label='Imagen 3 (Opcional)'
@@ -239,7 +137,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
           )}
 
           {/* Imagen 4 */}
-          {onImage4Change && (
+          {maxImages >= 4 && onImage4Change && (
             <ImagePreview
               imageUrl={image4 || ''}
               label='Imagen 4 (Opcional)'
@@ -286,7 +184,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
         <CloudinaryGallery
           onClose={() => setShowCloudinaryGallery(false)}
           onSelectImages={handleSelectFromGallery}
-          maxSeleted={4}
+          maxSeleted={maxImages}
         />
       )}
     </>

@@ -402,6 +402,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     return { ...prev, image4: url }
                   })
                 }}
+                maxImages={4}
               />
             </div>
           </div>

@@ -21,7 +21,6 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import ImageManager from './products/ImageManager'
 import CategoriesCRUD from './CategoriesCRUD'
-import CuponesCRUD from './CuponesCRUD'
 
 // --- Interfaces ---
 interface Coleccion {
@@ -478,8 +477,8 @@ const SettingsManagement: React.FC = () => {
                           {key === 'imagenIzquierda'
                             ? 'Imagen Izquierda'
                             : key === 'imagenDerecha'
-                            ? 'Imagen Derecha'
-                            : 'Foto de Tienda'}
+                              ? 'Imagen Derecha'
+                              : 'Foto de Tienda'}
                         </label>
                         <div className='flex gap-2'>
                           <ImageManager
@@ -489,6 +488,7 @@ const SettingsManagement: React.FC = () => {
                             }}
                             imageFrom={'systemImages'}
                             editImage={editingSettings}
+                            maxImages={1}
                           />
                         </div>
                         {settingsErrors[key] && (
@@ -608,10 +608,18 @@ const SettingsManagement: React.FC = () => {
                 <table className='w-full text-left text-sm text-gray-600 dark:text-gray-400'>
                   <thead className='bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/50 dark:text-gray-300 sticky top-0'>
                     <tr>
-                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Imagen</th>
-                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Nombre</th>
-                      <th className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Actualizado</th>
-                      <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>Creado</th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                        Imagen
+                      </th>
+                      <th className='px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                        Nombre
+                      </th>
+                      <th className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                        Actualizado
+                      </th>
+                      <th className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 font-bold whitespace-nowrap text-xs md:text-sm'>
+                        Creado
+                      </th>
                       <th className='px-3 py-3 md:px-6 md:py-4 text-right font-bold whitespace-nowrap text-xs md:text-sm'>
                         Acciones
                       </th>
@@ -620,7 +628,10 @@ const SettingsManagement: React.FC = () => {
                   <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
                     {loadingColecciones ? (
                       <tr>
-                        <td colSpan={3} className='px-3 py-12 md:px-6 md:py-12 text-center'>
+                        <td
+                          colSpan={3}
+                          className='px-3 py-12 md:px-6 md:py-12 text-center'
+                        >
                           <div className='flex justify-center'>
                             <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent'></div>
                           </div>
@@ -656,14 +667,10 @@ const SettingsManagement: React.FC = () => {
                             </span>
                           </td>
                           <td className='hidden md:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-xs md:text-sm'>
-                            {new Date(
-                              coleccion.updatedAt
-                            ).toLocaleDateString()}
+                            {new Date(coleccion.updatedAt).toLocaleDateString()}
                           </td>
                           <td className='hidden lg:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-xs md:text-sm'>
-                            {new Date(
-                              coleccion.createdAt
-                            ).toLocaleDateString()}
+                            {new Date(coleccion.createdAt).toLocaleDateString()}
                           </td>
                           <td className='px-3 py-3 md:px-6 md:py-4 text-right whitespace-nowrap'>
                             <div className='flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all'>
@@ -754,7 +761,7 @@ const SettingsManagement: React.FC = () => {
                         image: url
                       }))
                     }}
-                    imageFrom={'colection'}
+                    maxImages={1}
                   />
                 </div>
 

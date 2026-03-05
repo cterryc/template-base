@@ -218,6 +218,13 @@ NEXT_PUBLIC_CLOUDINARY_PRESET=...
   - **ReviewsManagement.tsx** (6 → 4 columnas en mobile): Ocultar Usuario (`hidden lg:table-cell`), Fecha (`hidden md:table-cell`)
   - **SettingsManagement.tsx** (Colecciones) (5 → 3 columnas en mobile): Ocultar Actualizado (`hidden md:table-cell`), Creado (`hidden lg:table-cell`)
   - **Breakpoints**: Mobile (< 640px): 3-4 columnas | Tablet (640px-768px): 5-6 columnas | Desktop (≥ 768px): todas las columnas
+- **ImageManager Refactorizado** — Ahora soporta múltiples casos de uso con prop `maxImages`:
+  - **`maxImages` prop**: Controla cuántas imágenes se pueden seleccionar (default: 4)
+  - **ProductForm.tsx**: `maxImages={4}` — Permite seleccionar 1-4 imágenes para productos
+  - **SettingsManagement.tsx**: `maxImages={1}` — Solo permite 1 imagen por campo (imagenIzquierda, imagenDerecha, fotoTienda)
+  - **Labels dinámicos**: "Imagen" vs "Imágenes del Producto" según cantidad
+  - **CloudinaryGallery**: Ahora recibe `maxSeleted` dinámico en lugar de hardcoded
+  - **Archivos modificados**: `ImageManager.tsx`, `ProductForm.tsx`, `SettingsManagement.tsx`
 
 ---
 
