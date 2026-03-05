@@ -2,11 +2,13 @@
 
 import { useCart } from '@/contexts/CartContext'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { X } from 'lucide-react'
 import './ShoppingCartPanel.css'
 import { useEffect, useState } from 'react'
 // import { codigoCupon, mostrarCupon } from '../data/cupon'
 import { LuLoaderCircle } from 'react-icons/lu'
+import { FaTrashAlt } from 'react-icons/fa'
 
 import FormToSend from './formToSend'
 
@@ -112,19 +114,19 @@ export default function ShoppingCartPanel({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className='w-full sm:max-w-md p-0 flex flex-col'>
         <SheetHeader className='px-6 py-4 border-b'>
-          <SheetTitle className='text-xl font-semibold text-gray-800'>
+          <SheetTitle className='text-xl font-semibold text-foreground'>
             Tu Carrito
           </SheetTitle>
         </SheetHeader>
 
         <ScrollArea className='flex-1 px-6 py-4'>
           {cartItems.length === 0 ? (
-            <p className='text-gray-500 text-center py-8'>
+            <p className='text-muted-foreground text-center py-8'>
               Tu carrito está vacío
             </p>
           ) : (
             <>
-              <ul className='space-y-6 mb-6'>
+              <ul className='space-y-4 mb-6'>
                 {cartItems.map((item) => (
                   <li key={item.id} className={'shoppingCartItem'}>
                     <img
@@ -133,69 +135,68 @@ export default function ShoppingCartPanel({
                       className='imageCartPanel'
                     />
                     <div className='containerItemTitleCartPanel'>
-                      <span className='font-medium text-gray-800'>
+                      <span className='font-medium text-foreground'>
                         {item.name}
                       </span>
-                      <span>{item.size}</span>
+                      <span className='text-muted-foreground text-sm'>
+                        {item.size}
+                      </span>
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className='text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded-full hover:bg-gray-200'
+                        className='text-muted-foreground hover:text-destructive transition-colors duration-200 p-0 rounded-full hover:bg-accent'
                       >
-                        <X size={16} />
+                        <FaTrashAlt className='text-red-500' size={16} />
                       </button>
                     </div>
                     <div className='containerItemPriceCuantitiCartPanel'>
-                      <span className='text-gray-600'>
+                      <span className='text-muted-foreground'>
                         Cantidad: {item.quantity}
                       </span>
-                      <span className='font-medium text-gray-800'>
+                      <span className='font-medium text-foreground'>
                         S/ {(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   </li>
                 ))}
               </ul>
-              <div className='border-t border-gray-200 pt-4 mb-6'>
+              <div className='border-t border-border pt-4 mb-6'>
                 <>
-                  <div className='flex justify-center'>
-                    <span className='text-gray-600'>Cupon:</span>
-                    <div className='relative bg-white dark:bg-gray-600 w-full rounded-md ml-2'>
-                      <input
-                        type='text'
-                        placeholder='Cupon de descuento...'
-                        className='text-sm p-1 outline outline-1 border-0 rounded ml-2 outline-none px-1 bg-transparent'
-                        value={cuponCode}
-                        onChange={(event) => {
-                          setCuponCode(event.target.value.toUpperCase())
-                          if (cuponError) {
-                            setCuponError('')
-                          }
-                        }}
-                      />
-                      <button
-                        onClick={() => validateCupon()}
-                        className='absolute right-0 top-0 h-full bg-black p-1 rounded-r-md min-w-20 flex justify-center items-center'
-                      >
-                        {loading ? (
-                          <LuLoaderCircle className='animate-spin' />
-                        ) : (
-                          'Validar'
-                        )}
-                      </button>
-                    </div>
+                  <div className='flex items-center gap-2 mb-1'>
+                    <Input
+                      type='text'
+                      placeholder='Cupón de descuento...'
+                      className='flex-1 uppercase'
+                      value={cuponCode}
+                      onChange={(event) => {
+                        setCuponCode(event.target.value.toUpperCase())
+                        if (cuponError) {
+                          setCuponError('')
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={() => validateCupon()}
+                      disabled={loading}
+                      className='min-w-24 bg-primary text-primary-foreground hover:bg-primary/90'
+                    >
+                      {loading ? (
+                        <LuLoaderCircle className='animate-spin mr-2' />
+                      ) : null}
+                      {loading ? 'Validando' : 'Validar'}
+                    </Button>
                   </div>
                   {cuponError.length > 0 && (
-                    <span className='text-red-500 text-sm right-0 flex w-full justify-end'>
+                    <span className='text-destructive text-sm flex w-full justify-end'>
                       Cupon invalido
                     </span>
                   )}
                   <div
-                    className={`flex justify-between text-sm mt-1 ${
+                    className={`flex justify-between text-sm mt-2 font-medium ${
                       cuponError.length > 0
-                        ? 'text-red-400'
+                        ? 'text-destructive'
                         : descuento > 0
-                          ? 'text-green-600'
-                          : 'text-gray-600'
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-muted-foreground'
                     }`}
                   >
                     <span>Descuento:</span>
@@ -203,18 +204,20 @@ export default function ShoppingCartPanel({
                   </div>
                 </>
 
-                <div className='flex justify-between items-center mb-4'>
-                  <span className='text-gray-600'>Subtotal:</span>
-                  <span className='text-xl font-semibold text-gray-800'>
+                <div className='flex justify-between items-center mb-4 mt-3'>
+                  <span className='text-muted-foreground'>Subtotal:</span>
+                  <span className='text-2xl font-bold text-foreground tracking-tight'>
                     S/ {subTotal}
                   </span>
                 </div>
                 <div
-                  className={`flex justify-between text-xs ${
-                    discount === codigoCupon ? 'text-red-400' : 'text-gray-600'
-                  } bg-green-100 rounded py-2 px-4 mb-2 border border-green-300`}
+                  className={`flex justify-between text-sm ${
+                    discount === codigoCupon
+                      ? 'text-destructive'
+                      : 'text-emerald-700 dark:text-emerald-400'
+                  } bg-emerald-500/10 rounded-md py-3 px-4 mb-2 border border-emerald-500/20`}
                 >
-                  <span>
+                  <span className='font-medium'>
                     Delivery gratuito solo para compras mayores a S/.150.00
                   </span>
                 </div>
@@ -223,17 +226,17 @@ export default function ShoppingCartPanel({
                 <Button
                   onClick={clearCart}
                   variant='outline'
-                  className='w-full hover:bg-gray-300 dark:hover:text-black transition-colors duration-200'
+                  className='w-full'
                 >
                   Limpiar Carrito
                 </Button>
-                <button
-                  style={{ backgroundColor: '#262626', marginTop: '10px' }}
-                  className='buttonShowCardClientName'
+                <Button
+                  className='w-full'
+                  size='lg'
                   onClick={() => setShowCardClientName(true)}
                 >
                   Continuar
-                </button>
+                </Button>
               </div>
             </>
           )}

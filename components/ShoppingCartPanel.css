@@ -4,13 +4,13 @@
 }
 
 .shoppingCartItem {
-  @apply grid bg-gray-50 py-4 rounded-lg shadow-sm;
-  grid-template-columns: 70px 1fr;
+  @apply grid bg-muted/40 overflow-hidden py-3 rounded-xl border border-border/50 transition-colors hover:bg-muted/80 pr-2;
+  grid-template-columns: 80px 1fr;
   grid-template-rows: 40px 40px;
 }
 
 .imageCartPanel {
-  @apply h-[80px] w-[70px] object-cover;
+  @apply h-[80px] w-[80px] p-2 object-cover rounded-md;
   grid-area: 1 / 1;
 }
 
@@ -25,11 +25,10 @@
 }
 
 .cardFormCaontainer {
-  @apply fixed flex justify-center p-2 z-50 h-full;
+  @apply fixed flex justify-center p-2 z-50 h-full bg-black/40 backdrop-blur-sm;
   bottom: 0px;
   right: 0px;
   width: 100vw;
-  background-color: rgba(26, 26, 26, 0.349);
 }
 
 .formContainer {
@@ -57,10 +56,6 @@
     -webkit-transform: scale(1);
     transform: scale(1);
   }
-}
-.buttonShowCardClientName {
-  @apply w-full flex text-white justify-center items-center rounded-lg px-4 transition-all duration-200 hover:opacity-90 hover:shadow-md;
-  @apply h-11 gap-2;
 }
 
 .labelClientName {
