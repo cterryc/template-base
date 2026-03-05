@@ -715,17 +715,23 @@ const OdersManagement: React.FC = () => {
                     </span>
                   </div>
                 )}
-                {selectedOrder.deliveryCost &&
-                  selectedOrder.deliveryCost > 0 && (
-                    <div className='flex justify-between items-center text-sm'>
-                      <span className='text-gray-600 dark:text-gray-400'>
-                        Costo de envío:
-                      </span>
-                      <span className='font-medium text-green-600 dark:text-green-400'>
-                        + S/ {Number(selectedOrder.deliveryCost).toFixed(2)}
-                      </span>
-                    </div>
-                  )}
+                {
+                  <div className='flex justify-between items-center text-sm'>
+                    <span className='text-gray-600 dark:text-gray-400'>
+                      Costo de envío:
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        selectedOrder.deliveryCost &&
+                        selectedOrder.deliveryCost > 0
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-gray-600 dark:text-gray-400'
+                      }`}
+                    >
+                      + S/ {Number(selectedOrder.deliveryCost).toFixed(2)}
+                    </span>
+                  </div>
+                }
 
                 <div className='border-t pt-3 mt-3 border-gray-200 dark:border-gray-700'>
                   <div className='flex justify-between items-center'>

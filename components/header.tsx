@@ -19,7 +19,6 @@ import {
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { SignedIn, UserButton, useUser } from '@clerk/nextjs'
-import { codigoCupon } from '@/data/cupon'
 import './header.css'
 import { dark } from '@clerk/themes'
 import { useUserRole } from '@/hooks/useUserRole'
@@ -35,32 +34,14 @@ const ShoppingCartPanel = dynamic(() => import('./ShoppingCartPanel'), {
   )
 })
 
-interface ProsItemsProduct {
-  id: number
-  name: string
-  price: number
-  image: string
-  quantity: number
-  size?: string
-}
-
 export default function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
-  const { cartItems, removeFromCart, clearCart, getCartTotal } = useCart()
+  const { cartItems } = useCart()
   const pathname = usePathname()
-  const { isSignedIn, isLoaded, user } = useUser()
-  const [disctount, setDiscount] = useState('')
+  const { isSignedIn, isLoaded } = useUser()
   const { theme } = useTheme()
   const { isAdminOrEditor } = useUserRole()
-
-  const getDiscount = () => {
-    if (disctount === codigoCupon) {
-      const calculateDiscount = ((getCartTotal() * 85) / 100).toFixed(2)
-      return (Math.round(Number(calculateDiscount) * 10) / 10).toFixed(2)
-    }
-    return getCartTotal().toFixed(2)
-  }
 
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen)

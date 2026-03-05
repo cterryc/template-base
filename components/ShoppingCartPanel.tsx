@@ -8,16 +8,13 @@ import { useEffect, useState } from 'react'
 // import { codigoCupon, mostrarCupon } from '../data/cupon'
 import { LuLoaderCircle } from 'react-icons/lu'
 
-import { LatLng } from 'leaflet'
 import FormToSend from './formToSend'
 
 import {
   Sheet,
   SheetContent,
   SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose
+  SheetTitle
 } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
@@ -119,7 +116,7 @@ export default function ShoppingCartPanel({
             Tu Carrito
           </SheetTitle>
         </SheetHeader>
-        
+
         <ScrollArea className='flex-1 px-6 py-4'>
           {cartItems.length === 0 ? (
             <p className='text-gray-500 text-center py-8'>
@@ -197,8 +194,8 @@ export default function ShoppingCartPanel({
                       cuponError.length > 0
                         ? 'text-red-400'
                         : descuento > 0
-                        ? 'text-green-600'
-                        : 'text-gray-600'
+                          ? 'text-green-600'
+                          : 'text-gray-600'
                     }`}
                   >
                     <span>Descuento:</span>
@@ -241,7 +238,7 @@ export default function ShoppingCartPanel({
             </>
           )}
         </ScrollArea>
-        
+
         {showCardClientName && (
           <FormToSend
             subTotal={subTotal}
