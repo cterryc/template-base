@@ -12,45 +12,44 @@ import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ConfigProvider } from '@/contexts/ConfigContext'
 import { shadcn } from '@clerk/themes'
+import { ecommerceLogo, ecommerceName } from '@/lib/constants'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Savior | Calidad y Estilo',
+  title: `${ecommerceName} | Calidad y Estilo`,
   description:
     'Descubre nuestra colección de ropa con diseños únicos. Polos, gorros y más.',
   keywords: 'ropa, polos, gorros, moda, casacas, pantalones',
   openGraph: {
-    title: 'Savior | Ropa de tendencia',
+    title: `${ecommerceName} | Ropa de tendencia`,
     description: 'Descubre nuestra colección de ropa con diseños únicos',
     type: 'website',
     locale: 'es_PE',
-    siteName: 'Savior',
-    url: 'https://savior.vercel.app',
+    siteName: `${ecommerceName}`,
+    url: `https://${ecommerceName.toLowerCase().replace(/ /g, '')}.vercel.app`,
     images: [
       {
-        url: 'https://res.cloudinary.com/dkw7q1u6z/image/upload/v1745110576/Logo_mk3nez.jpg',
+        url: ecommerceLogo,
         width: 1200,
         height: 630,
-        alt: 'Savior Logo',
+        alt: `${ecommerceName} Logo`,
         type: 'image/jpeg'
       }
     ]
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Savior | Ropa de tendencia',
+    title: `${ecommerceName} | Ropa de tendencia`,
     description: 'Descubre nuestra colección de ropa con diseños únicos',
-    images: [
-      'https://res.cloudinary.com/dkw7q1u6z/image/upload/v1745110576/Logo_mk3nez.jpg'
-    ]
+    images: [ecommerceLogo]
   },
   robots: {
     index: true,
     follow: true
   },
   icons: {
-    icon: 'https://res.cloudinary.com/dkw7q1u6z/image/upload/v1745110576/Logo_mk3nez.jpg'
+    icon: ecommerceLogo
   }
 }
 
@@ -59,18 +58,18 @@ const customEs = {
   signIn: {
     ...esMX.signIn,
     start: {
-      ...esMX.signIn?.start,
-      subtitle: 'para continuar con Savior'
+      ...esMX.signIn?.start
+      // subtitle: 'para continuar con ' + ecommerceName
     }
   },
   signUp: {
-    ...esMX.signUp,
-    start: { ...esMX.signUp?.start, subtitle: 'para continuar con Savior' }
+    ...esMX.signUp
+    // start: { ...esMX.signUp?.start, subtitle: 'para continuar con ' + ecommerceName }
   },
   formFieldHintText__optional: ''
 }
 
-// Apariencia personalizada con tema shadcn y colores de Savior
+// Apariencia personalizada con tema shadcn y colores de ecommerceName
 // Usa variables CSS para soportar modo claro/oscuro
 const clerkAppearance = {
   ...shadcn,
@@ -126,9 +125,8 @@ const clerkAppearance = {
   },
   layout: {
     ...shadcn.layout,
-    // Logo de Savior
-    logoImageUrl:
-      'https://res.cloudinary.com/dkw7q1u6z/image/upload/v1745110576/Logo_mk3nez.jpg',
+    // Logo de ecommerceName
+    logoImageUrl: ecommerceLogo,
     // Botones sociales como iconos (más limpio)
     socialButtonsVariant: 'iconButton' as const,
     // Posición de botones sociales

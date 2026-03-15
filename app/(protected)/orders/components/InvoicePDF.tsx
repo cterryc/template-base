@@ -1,4 +1,5 @@
 // app/components/InvoicePDF.tsx
+import { appUrl, ecommerceName } from '@/lib/constants'
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
 const styles = StyleSheet.create({
@@ -132,9 +133,9 @@ export function InvoicePDF({ orderData }: InvoicePDFProps) {
         {/* Encabezado */}
         <Text style={styles.title}>COMPROBANTE DE COMPRA</Text>
         <Text style={styles.companyInfo}>
-          SAVIOR PERU
+          {ecommerceName.toUpperCase()}
           {'\n'}
-          Web: saviorperu.com
+          Web: {appUrl}
           {'\n'}
           Whatsapp: (+51) 958284730
         </Text>
