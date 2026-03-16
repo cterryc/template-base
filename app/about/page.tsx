@@ -1,38 +1,23 @@
 'use client'
 
 import Image from 'next/image'
-import { fotoTienda } from '../../data/nosotros'
-import { useEffect, useState } from 'react'
+import { useConfigData } from '@/hooks/useConfigData'
+import { ecommerceName } from '@/lib/constants'
 
 export default function About() {
-  const [settings, setSettings] = useState({ fotoTienda: '' })
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/config')
+  const { getFotoTienda } = useConfigData()
+  const fotoTienda = getFotoTienda()
 
-        if (!response.ok) throw new Error(`Error ${response.status}`)
-
-        const data = await response.json()
-        setSettings(data.data.settings || {})
-      } catch (error) {
-        console.error('Error cargando config:', error)
-        setSettings({ fotoTienda: '' })
-      }
-    }
-
-    fetchSettings()
-  }, [])
   return (
     <div className='container mx-auto px-4 py-8'>
       <h1 className='text-3xl font-bold mb-8'>Sobre Nosotros</h1>
       <div className='grid grid-cols-1 md:grid-cols-2 gap-8 items-center'>
         <div>
           <p className='mb-4'>
-            Savior es una marca de ropa comprometida con ofrecer prendas de alta
-            calidad y estilo único que reflejan la personalidad de nuestros
-            clientes. Desde nuestro inicio, nos hemos dedicado a crear
-            colecciones que combinan tendencias actuales con un estilo
+            {ecommerceName} es una marca de ropa comprometida con ofrecer
+            prendas de alta calidad y estilo único que reflejan la personalidad
+            de nuestros clientes. Desde nuestro inicio, nos hemos dedicado a
+            crear colecciones que combinan tendencias actuales con un estilo
             atemporal.
           </p>
           <p className='mb-4'>
@@ -45,8 +30,8 @@ export default function About() {
         </div>
         <div className='relative min-h-96 md:h-full'>
           <Image
-            src={settings.fotoTienda || '/CargandoImagen.png'}
-            alt='Savior Showroom'
+            src={fotoTienda || '/CargandoImagen.png'}
+            alt={ecommerceName}
             fill
             className='object-cover rounded-lg'
             sizes='(max-width: 768px) 100vw, 50vw'

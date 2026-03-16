@@ -162,7 +162,7 @@ export default function Header() {
                     }}
                   >
                     <UserButton.MenuItems>
-                      {/* "Admin Savior" - Solo ADMIN/EDITOR */}
+                      {/* "Admin Panel" - Solo ADMIN/EDITOR */}
 
                       <UserButton.Link
                         label='Inicio'
@@ -227,7 +227,7 @@ export default function Header() {
                     }}
                   >
                     <UserButton.MenuItems>
-                      {/* "Admin Savior" - Solo ADMIN/EDITOR */}
+                      {/* "Admin Panel" - Solo ADMIN/EDITOR */}
                       {isAdminOrEditor ? (
                         <UserButton.Link
                           label='Admin Panel'
@@ -330,16 +330,16 @@ export default function Header() {
                           Mis pedidos
                         </Link>
                       )}
-                      {/* "Admin Savior" - Solo ADMIN/EDITOR */}
-                      {isAdminOrEditor && (
+                      {/* "Admin Panel" - Solo ADMIN/EDITOR */}
+                      {/* {isAdminOrEditor && (
                         <Link
                           href='/admin-panel'
                           className='text-lg hover:text-primary'
                           onClick={() => setIsOpen(false)}
                         >
-                          Admin Savior
+                          Admin Panel
                         </Link>
-                      )}
+                      )} */}
                     </nav>
                   </div>
 

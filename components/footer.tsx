@@ -1,31 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import { FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa'
+import { useConfigData } from '@/hooks/useConfigData'
+import { ecommerceName } from '@/lib/constants'
+
 export default function Footer() {
-  const [settings, setSettings] = useState({
-    instagram: '',
-    facebook: '',
-    tiktok: ''
-  })
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/config')
+  const { getInstagram, getFacebook, getTiktok } = useConfigData()
 
-        if (!response.ok) throw new Error(`Error ${response.status}`)
+  const instagram = getInstagram()
+  const facebook = getFacebook()
+  const tiktok = getTiktok()
 
-        const data = await response.json()
-        setSettings(data.data.settings || {})
-      } catch (error) {
-        console.error('Error cargando config:', error)
-        setSettings({ instagram: '', facebook: '', tiktok: '' })
-      }
-    }
-
-    fetchSettings()
-  }, [])
   return (
     <footer className='bg-secondary text-foreground'>
       <div className='container mx-auto px-4 py-8'>
@@ -58,27 +44,27 @@ export default function Footer() {
           <div>
             <h3 className='font-bold mb-2'>Follow Us</h3>
             <div className='flex flex-col'>
-              {settings.facebook && (
+              {facebook && (
                 <Link
-                  href={settings.facebook}
+                  href={facebook}
                   className='hover:text-primary flex items-center gap-1 mb-2'
                   target='_blank'
                 >
                   <FaFacebook className='h-8 w-7' /> Facebook
                 </Link>
               )}
-              {settings.instagram && (
+              {instagram && (
                 <Link
-                  href={settings.instagram}
+                  href={instagram}
                   className='hover:text-primary flex items-center gap-1 mb-2'
                   target='_blank'
                 >
                   <FaInstagram className='h-8 w-7' /> Instagram
                 </Link>
               )}
-              {settings.tiktok && (
+              {tiktok && (
                 <Link
-                  href={settings.tiktok}
+                  href={tiktok}
                   className='hover:text-primary flex items-center gap-1 mb-2'
                   target='_blank'
                 >
@@ -89,7 +75,7 @@ export default function Footer() {
           </div>
         </div>
         <div className='mt-8 text-center text-sm text-gray-500'>
-          © 2025 Savior. Todos los derechos reservados. By{' '}
+          © 2025 {ecommerceName}. Todos los derechos reservados. By{' '}
           <Link
             href='https://marteldev.com/'
             target='_blank'

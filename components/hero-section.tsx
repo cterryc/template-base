@@ -3,17 +3,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { optimizeCloudinaryUrl } from '@/lib/utils/image-optimizer'
-
-interface Settings {
-  imagenIzquierda?: string
-  imagenDerecha?: string
-  [key: string]: string | undefined
-}
+import { useConfigData } from '@/hooks/useConfigData'
 
 const HeroSection = () => {
-  const [settings, setSettings] = useState<Settings>({})
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { getImagenIzquierda, getImagenDerecha } = useConfigData()
+
+  const imagenIzquierda = getImagenIzquierda()
+  const imagenDerecha = getImagenDerecha()
+
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerHeight, setContainerHeight] = useState(500)
 
@@ -32,64 +29,14 @@ const HeroSection = () => {
     return () => window.removeEventListener('resize', updateHeight)
   }, [])
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch('/api/config')
-
-        if (!response.ok) throw new Error(`Error ${response.status}`)
-
-        const data = await response.json()
-        console.log('hero section', data)
-        setSettings(data.data.settings || {})
-        setError(null)
-      } catch (error) {
-        console.error('Error cargando config:', error)
-        setError('No se pudieron cargar las imágenes')
-        setSettings({})
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchSettings()
-  }, [])
-
-  // Skeleton con altura DINÁMICA
-  if (loading) {
-    return (
-      <section className='heroSection' style={{ height: containerHeight }}>
-        <div className='w-full h-full relative'>
-          <Image
-            src='/CargandoImagen.png'
-            alt='Imagen izquierda'
-            fill
-            className='object-cover'
-            sizes='50vw'
-          />
-        </div>
-        <div className='w-full h-full relative'>
-          <Image
-            src='/CargandoImagen.png'
-            alt='Imagen derecha'
-            fill
-            className='object-cover'
-            sizes='50vw'
-          />
-        </div>
-      </section>
-    )
-  }
-
   // Versión final CORREGIDA
   return (
     <section className='heroSection' style={{ height: '90vh' }}>
       <div className='w-full h-full relative'>
         <Image
           src={
-            settings.imagenIzquierda
-              ? optimizeCloudinaryUrl(settings.imagenIzquierda, 1200)
+            imagenIzquierda
+              ? optimizeCloudinaryUrl(imagenIzquierda, 1200)
               : '/placeholder.svg'
           }
           alt='Imagen izquierda'
@@ -102,8 +49,8 @@ const HeroSection = () => {
       <div className='w-full h-full relative'>
         <Image
           src={
-            settings.imagenDerecha
-              ? optimizeCloudinaryUrl(settings.imagenDerecha, 1200)
+            imagenDerecha
+              ? optimizeCloudinaryUrl(imagenDerecha, 1200)
               : '/placeholder.svg'
           }
           alt='Imagen derecha'

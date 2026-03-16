@@ -24,6 +24,7 @@ import {
   generateWhatsAppOrderMessage,
   FREE_DELIVERY_THRESHOLD
 } from '@/lib/utils/order-calculations'
+import { useConfigData } from '@/hooks/useConfigData'
 
 // --- Constantes ---
 const COUNTRY_CODE = '51'
@@ -68,13 +69,13 @@ const FormToSend = ({
   const { user } = useUser()
   const router = useRouter()
   const { toast } = useToast()
+  const { getMinimoDelivery, getMaximoDelivery, getTelefono, isLoading } = useConfigData()
 
   const [hasFullNameOverride, setHasFullNameOverride] = useState(false)
-  const [minimoDelivery, setMinimoDelivery] = useState(10)
-  const [maximoDelivery, setMaximoDelivery] = useState(15)
-  const [loadingSettings, setLoadingSettings] = useState(true)
+  const minimoDelivery = getMinimoDelivery()
+  const maximoDelivery = getMaximoDelivery()
+  const telefono = getTelefono()
   const [isSavingOrder, setIsSavingOrder] = useState(false)
-  const [telefono, setTelefono] = useState(958284730)
   const [markedLocation, setMarkedLocation] = useState<{
     lat: number
     lng: number
@@ -160,23 +161,6 @@ const FormToSend = ({
     watchedPhone,
     watchedGetlocation
   ])
-
-  // --- Fetch Settings ---
-  const fetchSettings = useCallback(async () => {
-    try {
-      const response = await fetch('/api/config')
-      if (!response.ok) throw new Error(`Error ${response.status}`)
-
-      const data = await response.json()
-      setMinimoDelivery(data?.data.settings.minimoDelivery || 10)
-      setMaximoDelivery(data?.data.settings.maximoDelivery || 15)
-      setTelefono(data?.data.settings.telefono)
-    } catch (error) {
-      console.error('Error cargando settings:', error)
-    } finally {
-      setLoadingSettings(false)
-    }
-  }, [])
 
   // --- Guardar Orden en Backend ---
   const saveOrderToBackend = useCallback(async () => {
@@ -425,8 +409,7 @@ const FormToSend = ({
   // --- Effects ---
   useEffect(() => {
     loadLocalStorage()
-    fetchSettings()
-  }, [loadLocalStorage, fetchSettings])
+  }, [loadLocalStorage])
 
   useEffect(() => {
     const userName = user?.fullName
@@ -444,7 +427,7 @@ const FormToSend = ({
   const isUserSignedIn = !!user?.id
   const buttonBackgroundColor = formValidation.isValid ? '#00d95f' : 'gray'
   const buttonPointerEvents =
-    !loadingSettings && !isSavingOrder && formValidation.isValid
+    !isLoading && !isSavingOrder && formValidation.isValid
       ? 'auto'
       : 'none'
 
@@ -523,7 +506,7 @@ const FormToSend = ({
           <>
             <div className='w-full h-full pb-4'>
               <label className='labelClientName'>Marca tu ubicación 📍*</label>
-              {loadingSettings ? (
+              {isLoading ? (
                 <div className='flex items-center justify-center h-64 border rounded-md'>
                   <RiLoader4Line className='animate-spin h-8 w-8 text-green-500' />
                 </div>
@@ -731,7 +714,7 @@ const FormToSend = ({
           type='button'
         >
           {isUserSignedIn ? (
-            loadingSettings || isSavingOrder ? (
+            isLoading || isSavingOrder ? (
               <span
                 className='linkWhatsapp'
                 style={{ backgroundColor: buttonBackgroundColor }}

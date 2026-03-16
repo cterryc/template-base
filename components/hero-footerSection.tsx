@@ -1,33 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Image from 'next/image'
-// import { imagenIzquierda } from '../data/fotosPortada'
+import { useConfigData } from '@/hooks/useConfigData'
 
 const HeroFooterSection = () => {
-  const [settings, setSettings] = useState({ imagenIzquierda: '' })
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/config')
+  const { getImagenIzquierda } = useConfigData()
+  const imagenIzquierda = getImagenIzquierda()
 
-        if (!response.ok) throw new Error(`Error ${response.status}`)
-
-        const data = await response.json()
-        setSettings(data.data.settings || {})
-      } catch (error) {
-        console.error('Error cargando settings:', error)
-        setSettings({ imagenIzquierda: '' })
-      }
-    }
-
-    fetchSettings()
-  }, [])
   return (
     <section className='heroFooterSection'>
       <div className='w-full h-full relative'>
         <Image
-          src={settings.imagenIzquierda || '/CargandoImagen.png'}
+          src={imagenIzquierda || '/CargandoImagen.png'}
           alt='Imagen footer'
           fill
           className='object-cover'

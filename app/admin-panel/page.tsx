@@ -55,7 +55,7 @@ const AdminPanel = () => {
 
   return (
     <>
-      <div className='flex w-full bg-gray-50 font-sans antialiased text-gray-900 dark:bg-gray-900 dark:text-gray-100'>
+      <div className='relative flex w-full bg-gray-50 font-sans antialiased text-gray-900 dark:bg-gray-900 dark:text-gray-100'>
         {/* Notificaciones Toast */}
         <Toaster position='top-right' richColors />
 
@@ -77,9 +77,18 @@ const AdminPanel = () => {
         )}
 
         {/* Sidebar - Desktop y Mobile */}
+        <div
+          className={`
+            fixed lg:static inset-y-0 left-0 z-0
+            w-64 flex-col border-r border-gray-200 bg-white 
+            lg:flex dark:bg-gray-800 dark:border-gray-700
+            transform transition-transform duration-300 ease-in-out
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          `}
+        ></div>
         <aside
           className={`
-            fixed lg:static inset-y-0 left-0 z-50
+            fixed lg:top-20 inset-y-0 left-0 z-50 lg:max-h-[500px]
             w-64 flex-col border-r border-gray-200 bg-white 
             lg:flex dark:bg-gray-800 dark:border-gray-700
             transform transition-transform duration-300 ease-in-out
@@ -90,7 +99,7 @@ const AdminPanel = () => {
             <div className='flex items-center gap-2'>
               <IoGridSharp className='text-blue-600 text-2xl dark:text-blue-400' />
               <h1 className='text-lg font-bold tracking-tight text-gray-900 dark:text-white'>
-                Admin E-com
+                Admin Panel
               </h1>
             </div>
             {/* Botón cerrar solo mobile */}

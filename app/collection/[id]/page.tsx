@@ -6,6 +6,7 @@ import { ProductReviews } from './reviews/reviews-list'
 import { ImageGallery } from './image-gallery'
 import ProductCard from '@/components/product-card'
 import Link from 'next/link'
+import { ecommerceName } from '@/lib/constants'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -46,7 +47,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${product.name} | Savior`,
+    title: `${product.name} | ${ecommerceName}`,
     description: `Compra ${product.name} al mejor precio`,
     openGraph: {
       images: [product.image],
@@ -100,7 +101,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
           {/* Columna Izquierda: Galería de Imágenes */}
           <div className='lg:col-span-7'>
             <ImageGallery
-              images={[product.image, product.image2, product.image3, product.image4].filter(
+              images={[
+                product.image,
+                product.image2,
+                product.image3,
+                product.image4
+              ].filter(
                 (img): img is string => img !== null && img !== undefined
               )}
               productName={product.name}
