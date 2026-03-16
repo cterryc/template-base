@@ -64,6 +64,8 @@ export async function POST(req: NextRequest) {
               ? Role.EDITOR
               : Role.USER
 
+        console.log(clerkId)
+
         await prisma.user.upsert({
           where: { clerkId },
           update: {

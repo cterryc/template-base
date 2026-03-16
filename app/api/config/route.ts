@@ -26,10 +26,13 @@ export async function GET() {
         ? lastUpdatedCupones
         : lastUpdatedSettings
 
-    const settingsObject = settings.reduce((acc, setting) => {
-      acc[setting.key] = setting.value
-      return acc
-    }, {} as Record<string, string>)
+    const settingsObject = settings.reduce(
+      (acc, setting) => {
+        acc[setting.key] = setting.value
+        return acc
+      },
+      {} as Record<string, string>
+    )
 
     return NextResponse.json({
       success: true,

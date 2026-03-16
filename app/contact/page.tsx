@@ -5,30 +5,42 @@ import Benefits from '@/components/benefits'
 import { IoBookOutline } from 'react-icons/io5'
 import Link from 'next/link'
 import { useConfigData } from '@/hooks/useConfigData'
-// import { FaFilePdf } from 'react-icons/fa6'
 import { FaFilePdf } from 'react-icons/fa'
-import { useEffect, useState } from 'react'
 
 export default function Contact() {
-  // const { getCorreo, getTelefono } = useConfigData()
-  const [settings, setSettings] = useState({ telefono: '', correo: '' })
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/config')
+  const data = useConfigData()
 
-        if (!response.ok) throw new Error(`Error ${response.status}`)
+  console.log('data', data)
 
-        const data = await response.json()
-        setSettings(data.data.settings || {})
-      } catch (error) {
-        console.error('Error cargando config:', error)
-        setSettings({ telefono: '', correo: '' })
-      }
-    }
+  const { getTelefono, getCorreo, isLoading } = data
 
-    fetchSettings()
-  }, [])
+  const telefono = getTelefono()
+  const correo = getCorreo()
+
+  if (isLoading) {
+    return (
+      <div className='container mx-auto px-4 py-8'>
+        <div className='animate-pulse'>
+          <div className='h-8 bg-gray-200 rounded w-1/3 mb-8'></div>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+            <div className='space-y-4'>
+              <div className='h-6 bg-gray-200 rounded w-1/2'></div>
+              <div className='h-4 bg-gray-200 rounded w-2/3'></div>
+              <div className='h-4 bg-gray-200 rounded w-1/2'></div>
+            </div>
+            <div className='space-y-4'>
+              <div className='h-6 bg-gray-200 rounded w-2/3'></div>
+              <div className='space-y-2'>
+                <div className='h-4 bg-gray-200 rounded'></div>
+                <div className='h-4 bg-gray-200 rounded'></div>
+                <div className='h-4 bg-gray-200 rounded'></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -39,10 +51,10 @@ export default function Contact() {
             Informacion de contacto
           </h2>
           <p className='mb-2 flex gap-2 items-center'>
-            <MdOutlineMailOutline />: {settings.correo}
+            <MdOutlineMailOutline />: {correo}
           </p>
           <p className='mb-2 flex gap-2 items-center'>
-            <MdOutlinePhoneIphone />: {settings.telefono}
+            <MdOutlinePhoneIphone />: {telefono}
           </p>
           <h3 className='text-xl font-semibold mt-6 mb-2'>Horio de atencion</h3>
           <p className='mb-1'>Lunes a Viernes: 9:00 AM - 6:00 PM</p>
@@ -60,12 +72,12 @@ export default function Contact() {
             <ul className='list-disc pl-5'>
               <li>
                 Imprimirlo , rellenarlo a mano, tomarle una foto o escanearlo, y
-                enviarlo por correo a: <strong>{settings.correo}.</strong>
+                enviarlo por correo a: <strong>{correo}.</strong>
               </li>
               <li>
                 O rellenarlo digitalmente desde tu dispositivo usando cualquier
                 app de PDF, y luego enviarlo al mismo correo:{' '}
-                <strong>{settings.correo}.</strong>
+                <strong>{correo}.</strong>
               </li>
             </ul>
             <li>¡Listo! Nos pondremos en contacto contigo pronto.</li>

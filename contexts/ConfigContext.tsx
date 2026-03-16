@@ -59,6 +59,9 @@ interface CacheData {
   etag: string
 }
 
+// Cache expiration time (5 minutes)
+const CACHE_TTL = 5 * 60 * 1000
+
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   // 🟢 ESTADO INICIAL: Siempre null para SSR
   const [configData, setConfigData] = useState<ConfigData | null>(null)
@@ -67,7 +70,6 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
 
   const abortControllerRef = useRef<AbortController | null>(null)
-  const hasLoadedRef = useRef(false)
 
   // 🟢 Ref para almacenar datos del cache temporalmente
   const cachedDataRef = useRef<CacheData | null>(null)
@@ -79,7 +81,17 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     try {
       const cached = localStorage.getItem(STORAGE_KEY)
       if (!cached) return null
-      return JSON.parse(cached)
+      const parsed = JSON.parse(cached)
+
+      // 🟢 Verificar si el cache ha expirado
+      const isExpired = Date.now() - parsed.timestamp > CACHE_TTL
+      if (isExpired) {
+        console.log('Cache expired, will refresh')
+        localStorage.removeItem(STORAGE_KEY)
+        return null
+      }
+
+      return parsed
     } catch (error) {
       console.warn('Error reading from cache:', error)
       return null
@@ -127,10 +139,6 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   // Función principal para cargar configuración
   const loadConfig = useCallback(
     async (forceRefresh: boolean = false) => {
-      // Prevenir ejecuciones múltiples
-      if (hasLoadedRef.current && !forceRefresh) return
-      hasLoadedRef.current = true
-
       setIsLoading(true)
       setError(null)
 
@@ -187,6 +195,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
           throw new Error(result.error || 'Failed to load configuration')
         }
 
+        console.log('result ConfigContext', result)
+
         const etag =
           response.headers.get('etag') ||
           result.data?.metadata?.etag ||
@@ -235,7 +245,6 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   // Función para re-fetch manual (fuerza recarga)
   const refetchConfig = useCallback(async () => {
-    hasLoadedRef.current = false
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY)
       cachedDataRef.current = null

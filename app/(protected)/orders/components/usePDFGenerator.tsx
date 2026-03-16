@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { pdf } from '@react-pdf/renderer'
 import { InvoicePDF } from '../components/InvoicePDF'
+import { useConfigData } from '@/hooks/useConfigData'
 
 interface OrderItem {
   producto: { name: string; price: string }
@@ -27,13 +28,15 @@ interface PDFData {
 }
 
 export function usePDFGenerator() {
+  const { getCorreo } = useConfigData()
+  const correo = getCorreo()
   const [isGenerating, setIsGenerating] = useState(false)
 
   const generatePDF = async (orderData: PDFData) => {
     setIsGenerating(true)
     try {
       // Crear el blob del PDF
-      const blob = await pdf(<InvoicePDF orderData={orderData} />).toBlob()
+      const blob = await pdf(<InvoicePDF orderData={orderData} correo={correo} />).toBlob()
 
       // Crear URL para el blob
       const url = URL.createObjectURL(blob)
@@ -63,7 +66,7 @@ export function usePDFGenerator() {
   const previewPDF = async (orderData: PDFData) => {
     setIsGenerating(true)
     try {
-      const blob = await pdf(<InvoicePDF orderData={orderData} />).toBlob()
+      const blob = await pdf(<InvoicePDF orderData={orderData} correo={correo} />).toBlob()
       const url = URL.createObjectURL(blob)
       window.open(url, '_blank')
 

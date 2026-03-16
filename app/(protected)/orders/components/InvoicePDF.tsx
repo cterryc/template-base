@@ -112,9 +112,10 @@ export interface InvoicePDFProps {
     deliveryCost?: string
     discount?: string
   }
+  correo: string
 }
 
-export function InvoicePDF({ orderData }: InvoicePDFProps) {
+export function InvoicePDF({ orderData, correo }: InvoicePDFProps) {
   const subtotal = parseFloat(orderData.totalPrice) || 0
   const delivery = parseFloat(orderData.deliveryCost || '0')
   const calculateDiscount = orderData.discount
@@ -228,7 +229,7 @@ export function InvoicePDF({ orderData }: InvoicePDFProps) {
         <View style={styles.footer}>
           <Text>Gracias por su compra</Text>
           <Text>Este documento es un comprobante de compra</Text>
-          <Text>Para consultas contactar a: saviorstore.pe@gmail.com</Text>
+          <Text>Para consultas contactar a: {correo}</Text>
         </View>
       </Page>
     </Document>
