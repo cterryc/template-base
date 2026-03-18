@@ -85,12 +85,12 @@ Ecommerce-Base/
 │   └── globals.css          # Global styles
 ├── components/
 │   ├── ui/                  # shadcn/ui components (50+)
-│   ├── header.tsx           # Main header (11 KB)
+│   ├── header.tsx           # Main header (14.3 KB)
 │   ├── ShoppingCartPanel.tsx # Cart sidebar (9 KB)
-│   ├── formToSend.tsx       # Checkout form (23 KB — needs refactoring)
+│   ├── formToSend.tsx       # Checkout form (23.6 KB — needs RHF+Zod refactor)
 │   └── Maps/                # Leaflet map components
 ├── contexts/
-│   ├── AuthContext.tsx      # Auth state (should migrate to Clerk auth())
+│   ├── AuthContext.tsx      # Auth state (uses Clerk useAuth())
 │   ├── CartContext.tsx      # Shopping cart state
 │   └── ConfigContext.tsx    # Global config state
 ├── lib/
@@ -172,9 +172,9 @@ NEXT_PUBLIC_CLOUDINARY_PRESET=...
 
 | Component | Size | Notes |
 |-----------|------|-------|
-| `header.tsx` | 11.3 KB | Navegación principal (Home, Productos, Nosotros, Contactanos). UserButton.MenuItems limpio: solo "Admin Savior" (ADMIN/EDITOR) y "Mis pedidos". Menú mobile incluye enlaces esenciales + condicionales por rol |
+| `header.tsx` | 14.3 KB | Navegación principal (Home, Productos, Nosotros, Contactanos). UserButton.MenuItems limpio: solo "Admin Savior" (ADMIN/EDITOR) y "Mis pedidos". Menú mobile incluye enlaces esenciales + condicionales por rol |
 | `ShoppingCartPanel.tsx` | 9 KB | Slide-out cart panel |
-| `formToSend.tsx` | 23 KB | Checkout form (needs RHF+Zod refactor) |
+| `formToSend.tsx` | 23.6 KB | Checkout form (needs RHF+Zod refactor) |
 | `product-card.tsx` | — | Product display card |
 
 ---
@@ -183,26 +183,25 @@ NEXT_PUBLIC_CLOUDINARY_PRESET=...
 
 ### High Priority
 
-1. **`formToSend.tsx`** — 23 KB monolithic component, needs React Hook Form + Zod refactor
-2. **`AuthContext.tsx`** — Reimplements Clerk functionality, should use `auth()` directly
-3. **Webhooks** — Clerk webhooks not fully implemented for DB sync
-4. **`proxy.ts`** — Middleware configuration incomplete for Next.js 16
+1. **`formToSend.tsx`** — 23.6 KB monolithic component, needs React Hook Form + Zod refactor
+2. **Webhooks** — Clerk webhooks not fully implemented for DB sync
+3. **`proxy.ts`** — Middleware configuration incomplete for Next.js 16
 
 ### Medium Priority
 
-5. **Performance** — Images unoptimized (`unoptimized: true` in config)
-6. **Cache** — `cacheComponents: true` commented out due to Clerk conflicts
-7. **Loading states** — Missing `loading.tsx` in key routes
-8. **Type safety** — Some areas lack proper TypeScript typing
+4. **Performance** — Images unoptimized (`unoptimized: true` in config)
+5. **Cache** — `cacheComponents: true` commented out due to Clerk conflicts
+6. **Type safety** — Some areas lack proper TypeScript typing
 
 ### Low Priority
 
-9. **Bundle size** — Could benefit from code splitting analysis
-10. **Accessibility** — UI needs WCAG audit
-11. **Structure** — Consider feature-based folder organization
+7. **Bundle size** — Could benefit from code splitting analysis
+8. **Accessibility** — UI needs WCAG audit
+9. **Structure** — Consider feature-based folder organization
 
 ### ✅ Completed
 
+- **Loading states** — `loading.tsx` implemented ✓
 - **Header UserButton.MenuItems** — Limpiado para mostrar solo "Admin Savior" (ADMIN/EDITOR) y "Mis pedidos". Navegación principal y mobile restauradas con enlaces completos + condicionales por rol
 - **Admin Panel Responsive** — Todo el admin panel ahora es fully responsive:
   - **Sidebar mobile** — Menú hamburguesa con drawer animado y overlay (`page.tsx`)
@@ -294,9 +293,6 @@ fix(cart): resolve quantity update bug
 
 ## 📚 Additional Documentation
 
-- **`PROJECT-UPDATE-BY-SKILLS.md`** — Comprehensive improvement plan with 15 tasks
-- **`NEW-FEATURES-PLAN.md`** — Feature implementation roadmap
-- **`.agent/skills/`** — AI skill definitions for code generation
 - **`skills-lock.json`** — Skill version tracking
 
 ---
@@ -326,9 +322,8 @@ fix(cart): resolve quantity update bug
 ## 📞 Support
 
 For issues or questions:
-1. Check `PROJECT-UPDATE-BY-SKILLS.md` for planned improvements
-2. Review `.agent/skills/` for implementation patterns
-3. Consult Next.js 16 and Clerk v6 documentation
+1. Check `skills-lock.json` for skill version tracking
+2. Consult Next.js 16 and Clerk v6 documentation
 
 ---
 
