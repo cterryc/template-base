@@ -19,7 +19,7 @@ import {
   MdOutlineWarning
 } from 'react-icons/md'
 import { toast } from 'sonner'
-import KpiCard from './KpiCard'
+import KpiCard from '@/components/shared/KpiCard'
 
 // --- Interfaces ---
 interface User {

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import KpiCard from './shared/KpiCard'
+import KpiCard from '@/components/shared/KpiCard'
 import { BiSolidCoupon } from 'react-icons/bi'
 import { LuActivity } from 'react-icons/lu'
 import { IoAdd } from 'react-icons/io5'

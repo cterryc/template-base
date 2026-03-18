@@ -19,27 +19,21 @@ import {
   SheetTitle
 } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import type { CartItem } from '@/types/products'
 
 interface ShoppingCartPanelProps {
   isOpen: boolean
   onClose: () => void
 }
 
-interface ProsItemsProduct {
-  id: number
-  name: string
-  price: number
-  image: string
-  quantity: number
-  size?: string
-}
+// Usamos CartItem de types/products.ts en lugar de definir ProsItemsProduct
 
 export default function ShoppingCartPanel({
   isOpen,
   onClose
 }: ShoppingCartPanelProps) {
   const { cartItems, removeFromCart, clearCart, getCartTotal } = useCart()
-  const [itemsProducts, setItemsProducts] = useState<ProsItemsProduct[]>([])
+  const [itemsProducts, setItemsProducts] = useState<CartItem[]>([])
   const [showCardClientName, setShowCardClientName] = useState(false)
   const [discount, setDiscount] = useState('')
   // const [location, setLocation] = useState<LatLng | null>(null)

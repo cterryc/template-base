@@ -1,115 +1,34 @@
 'use client'
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback
-} from 'react'
-import { useAuth } from '@clerk/nextjs'
-
-interface UserData {
-  id: string
-  role: 'ADMIN' | 'USER' | null
-  // Agrega otros campos que devuelva tu API aquí
-  [key: string]: any
-}
+import { createContext, useContext } from 'react'
+import { useUser } from '@clerk/nextjs'
 
 interface AuthContextType {
-  userData: UserData | null
+  userData: any | null
   isAdminOrEditor: boolean
+  userRole: 'ADMIN' | 'EDITOR' | 'USER' | null
   isLoading: boolean
-  error: string | null
-  refetchUserData: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { userId, isSignedIn } = useAuth()
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [isAdminOrEditor, setIsAdminOrEditor] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const { user, isLoaded } = useUser()
 
-  const fetchUserData = useCallback(
-    async (signal?: AbortSignal) => {
-      if (!isSignedIn || !userId) {
-        setUserData(null)
-        setIsAdminOrEditor(false)
-        setIsLoading(false)
-        return
-      }
+  // Obtener el rol del metadata público de Clerk
+  // Nota: Asegúrate de configurar el webhook de Clerk para sync con la DB
+  const userRole = (user?.publicMetadata?.role as 'ADMIN' | 'EDITOR' | 'USER' | null) || 'USER'
+  const isAdminOrEditor = userRole === 'ADMIN' || userRole === 'EDITOR'
 
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const response = await fetch(`/api/users/${userId}`, {
-          signal,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-
-        if (!response.ok) {
-          throw new Error('Error fetching user data')
-        }
-
-        const data = await response.json()
-
-        const userRole = data.data?.role || null
-
-        setUserData({
-          id: userId,
-          role: userRole,
-          ...data.data // Incluye todos los demás datos del usuario
-        })
-
-        setIsAdminOrEditor(userRole === 'ADMIN' || userRole === 'EDITOR')
-      } catch (error) {
-        // Solo manejar errores que no sean de aborto
-        if (error instanceof Error && error.name !== 'AbortError') {
-          console.error('Error fetching user:', error)
-          setError(error.message)
-        }
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [isSignedIn, userId]
-  )
-
-  // Función para re-fetch manualmente
-  const refetchUserData = useCallback(async () => {
-    await fetchUserData()
-  }, [fetchUserData])
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    // Pequeño delay para asegurar que Clerk esté listo
-    const timer = setTimeout(() => {
-      fetchUserData(controller.signal)
-    }, 100)
-
-    return () => {
-      clearTimeout(timer)
-      controller.abort()
-    }
-  }, [fetchUserData])
+  const value: AuthContextType = {
+    userData: user,
+    isAdminOrEditor,
+    userRole,
+    isLoading: !isLoaded
+  }
 
   return (
-    <AuthContext.Provider
-      value={{
-        userData,
-        isAdminOrEditor,
-        isLoading,
-        error,
-        refetchUserData
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

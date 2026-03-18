@@ -1,4 +1,4 @@
-'use clients'
+'use client'
 
 import { useState } from 'react'
 import { IconType } from 'react-icons'
@@ -6,11 +6,12 @@ import { IoMdEye, IoMdEyeOff } from 'react-icons/io'
 
 interface KpiCardProps {
   title: string
-  value: string
-  trend: string
+  value: string | number
+  trend?: string
   Icon: IconType
   color: 'blue' | 'indigo' | 'purple' | 'orange'
   isNegative?: boolean
+  showMoneyToggle?: boolean
 }
 
 const KpiCard: React.FC<KpiCardProps> = ({
@@ -19,10 +20,12 @@ const KpiCard: React.FC<KpiCardProps> = ({
   trend,
   Icon,
   color,
-  isNegative
+  isNegative = false,
+  showMoneyToggle = false
 }) => {
   const [showMoney, setShowMoney] = useState(false)
-  const [showBoton, setShowBoton] = useState(false)
+  const [showButton, setShowButton] = useState(false)
+
   const colorMap = {
     blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
     indigo:
@@ -32,14 +35,18 @@ const KpiCard: React.FC<KpiCardProps> = ({
     orange:
       'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
   }
+
   const trendColor = isNegative
     ? 'bg-red-50 text-red-600 dark:bg-red-900/30'
     : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30'
 
+  const shouldShowValue = showMoneyToggle ? showMoney : true
+  const displayValue = shouldShowValue ? value : '•••••'
+
   return (
     <div
-      onMouseEnter={() => setShowBoton(true)}
-      onMouseLeave={() => setShowBoton(false)}
+      onMouseEnter={() => showMoneyToggle && setShowButton(true)}
+      onMouseLeave={() => showMoneyToggle && setShowButton(false)}
       className='flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-all dark:bg-gray-800 dark:border-gray-700'
     >
       <div className='flex items-center justify-between'>
@@ -52,20 +59,32 @@ const KpiCard: React.FC<KpiCardProps> = ({
           <Icon size={24} />
         </div>
       </div>
+
       <div className='flex items-end justify-between'>
         <h3 className='text-xl md:text-2xl font-black text-gray-900 dark:text-white'>
-          {title === 'Ingresos' || title === 'Valor Inventario'
-            ? showMoney && value
-            : value}
+          {displayValue}
         </h3>
-        {((title === 'Ingresos' && showBoton) ||
-          (title === 'Valor Inventario' && showBoton)) && (
+
+        {showMoneyToggle && showButton && (
           <button
-            className='h-8 w-8 flex justify-center items-center'
+            className='h-8 w-8 flex justify-center items-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
             onClick={() => setShowMoney(!showMoney)}
+            aria-label={showMoney ? 'Ocultar valor' : 'Mostrar valor'}
           >
-            <IoMdEye className='h-4 w-4' />
+            {showMoney ? (
+              <IoMdEyeOff className='h-4 w-4 text-gray-600 dark:text-gray-400' />
+            ) : (
+              <IoMdEye className='h-4 w-4 text-gray-600 dark:text-gray-400' />
+            )}
           </button>
+        )}
+
+        {!showMoneyToggle && trend && (
+          <span
+            className={`text-xs font-bold px-2 py-1 rounded-lg ${trendColor}`}
+          >
+            {trend}
+          </span>
         )}
       </div>
     </div>

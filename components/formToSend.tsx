@@ -25,25 +25,19 @@ import {
   FREE_DELIVERY_THRESHOLD
 } from '@/lib/utils/order-calculations'
 import { useConfigData } from '@/hooks/useConfigData'
+import type { CartItem } from '@/types/products'
 
 // --- Constantes ---
 const COUNTRY_CODE = '51'
 const LOCAL_STORAGE_KEY = 'dataDeliverySend'
 
 // --- Interfaces ---
-interface ProsItemsProduct {
-  id: number
-  name: string
-  price: number
-  image: string
-  quantity: number
-  size?: string
-}
+// Usamos CartItem de types/products.ts en lugar de definir ProsItemsProduct
 
 interface IProps {
   subTotal: string
   setShowCardClientName: (value: boolean) => void
-  itemsProducts: ProsItemsProduct[]
+  itemsProducts: CartItem[]
   discountCode: string
   onClose: () => void
   discountPercentage: number

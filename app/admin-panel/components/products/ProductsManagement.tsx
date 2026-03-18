@@ -83,6 +83,8 @@ const ProductsManagement: React.FC = () => {
       if (!response.ok) throw new Error('Error al obtener productos')
       const result: ApiResponse = await response.json()
 
+      console.log('result 123', result)
+
       setProducts(result.data)
       setPagination(result.pagination)
 

@@ -21,7 +21,7 @@ import {
   MdLastPage
 } from 'react-icons/md'
 import { toast } from 'sonner'
-import KpiCard from './KpiCard'
+import KpiCard from '@/components/shared/KpiCard'
 import { useUser } from '@clerk/nextjs'
 import OrdersSkeleton from './skeleton/OrdersSkeleton'
 import { calculateTotalWithDiscount } from '@/lib/utils/order-calculations'

@@ -8,15 +8,15 @@ import {
   MdAttachMoney,
   MdStar
 } from 'react-icons/md'
-// import KpiCard from '../shared/KpiCard'
 import type { KpiData } from '../types'
-import KpiCard from '../KpiCard'
+import KpiCard from '@/components/shared/KpiCard'
 
 interface KpiDashboardProps {
   kpiData: KpiData
 }
 
 const KpiDashboard: React.FC<KpiDashboardProps> = ({ kpiData }) => {
+  console.log('kpiData 123', kpiData)
   const kpis = [
     {
       title: 'Total Productos',
@@ -42,7 +42,7 @@ const KpiDashboard: React.FC<KpiDashboardProps> = ({ kpiData }) => {
     {
       title: 'Valor Inventario',
       value: `S/ ${kpiData.inventoryValue.toFixed(2)}`,
-      trend: 'Productos disponibles',
+      trend: 'Total',
       Icon: MdAttachMoney,
       color: 'purple' as const
     }

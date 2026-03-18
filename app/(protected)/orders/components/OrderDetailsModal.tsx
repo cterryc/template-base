@@ -46,14 +46,19 @@ export default function OrderDetailsModal({
   isOpen,
   onClose
 }: OrderDetailsModalProps) {
-  const [userReviews, setUserReviews] = useState<Record<number, {
-    id: number
-    rating: number
-    comment: string | null
-    aiApproved: boolean | null
-    aiError: boolean
-    createdAt: Date
-  }>>({})
+  const [userReviews, setUserReviews] = useState<
+    Record<
+      number,
+      {
+        id: number
+        rating: number
+        comment: string | null
+        aiApproved: boolean | null
+        aiError: boolean
+        createdAt: Date
+      }
+    >
+  >({})
 
   // Hook debe llamarse antes de cualquier return
   const { generatePDF, isGenerating } = usePDFGenerator()
@@ -311,12 +316,17 @@ export default function OrderDetailsModal({
                             userReview={userReviews[item.producto.id] || null}
                             onReviewCreated={async () => {
                               // Recargar reviews después de crear una
-                              const reviews = await getUserReviewsForOrder(order.id)
+                              const reviews = await getUserReviewsForOrder(
+                                order.id
+                              )
                               setUserReviews(reviews)
                             }}
                           />
                         ) : (
-                          <span className='text-xs text-muted-foreground'>
+                          <span
+                            className='text-xs text-muted-foreground cursor-context-menu'
+                            title='Puedes dejar una reseña cuando el pedido sea entregado'
+                          >
                             Disponible al entregar
                           </span>
                         )}

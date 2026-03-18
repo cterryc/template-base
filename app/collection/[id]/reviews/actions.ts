@@ -125,7 +125,7 @@ export async function createReview(data: CreateReviewFormData) {
         aiModerated: true,
         aiApproved: isAiApproved ? true : null, // null = pendiente/rechazada/error
         aiReason: aiResult.reason,
-        aiModel: 'gemini-1.5-flash',
+        aiModel: process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite-preview',
         aiError: aiResult.error || false
       }
     })
@@ -229,9 +229,15 @@ export async function updateReview(
         rating: data.rating,
         comment: data.comment,
         aiModerated: commentChanged ? true : existingReview.aiModerated,
-        aiApproved: commentChanged ? (isAiApproved ? true : null) : existingReview.aiApproved,
+        aiApproved: commentChanged
+          ? isAiApproved
+            ? true
+            : null
+          : existingReview.aiApproved,
         aiReason: commentChanged ? aiResult.reason : existingReview.aiReason,
-        aiError: commentChanged ? (aiResult.error || false) : existingReview.aiError
+        aiError: commentChanged
+          ? aiResult.error || false
+          : existingReview.aiError
       }
     })
 
@@ -357,7 +363,7 @@ export async function getUserReviewsForOrder(orderId: number) {
     select: { productoId: true }
   })
 
-  const productIds = orderItems.map(item => item.productoId)
+  const productIds = orderItems.map((item) => item.productoId)
 
   // Obtener reviews para esos productos
   const reviews = await prisma.review.findMany({
@@ -377,8 +383,8 @@ export async function getUserReviewsForOrder(orderId: number) {
   })
 
   // Convertir a mapa para acceso rápido
-  const reviewsMap: Record<number, typeof reviews[0]> = {}
-  reviews.forEach(review => {
+  const reviewsMap: Record<number, (typeof reviews)[0]> = {}
+  reviews.forEach((review) => {
     reviewsMap[review.productoId] = review
   })
 
