@@ -61,11 +61,14 @@ export function clearStorage(): void {
 interface DeliveryStorageData {
   clientName?: string
   address?: string
-  locationToSend?: string
+  locationToSend?: 'lima_metropolitana' | 'provincia'
   agencia?: string
   dni?: string
   clientPhone?: string
-  email?: string
+  getlocation?: {
+    lat: number
+    lng: number
+  }
 }
 
 /**

@@ -8,6 +8,7 @@ import {
   useCallback,
   useRef
 } from 'react'
+import { useCache } from '@/hooks/useCache'
 
 // Tipos basados en tu esquema Prisma
 interface Cupon {
@@ -49,21 +50,10 @@ interface ConfigContextType {
 
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined)
 
-// Clave para localStorage
 const STORAGE_KEY = 'app_config_cache'
-
-// Interfaz para cache
-interface CacheData {
-  data: ConfigData
-  timestamp: number
-  etag: string
-}
-
-// Cache expiration time (5 minutes)
-const CACHE_TTL = 5 * 60 * 1000
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutos
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
-  // 🟢 ESTADO INICIAL: Siempre null para SSR
   const [configData, setConfigData] = useState<ConfigData | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -71,69 +61,24 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // 🟢 Ref para almacenar datos del cache temporalmente
-  const cachedDataRef = useRef<CacheData | null>(null)
+  // Usar hook de caché
+  const { getFromCache, saveToCache, removeFromCache, cachedDataRef } = useCache<ConfigData>({
+    storageKey: STORAGE_KEY,
+    ttl: CACHE_TTL
+  })
 
-  // Función para cargar desde cache (solo en cliente)
-  const loadFromCache = useCallback((): CacheData | null => {
-    if (typeof window === 'undefined') return null
-
-    try {
-      const cached = localStorage.getItem(STORAGE_KEY)
-      if (!cached) return null
-      const parsed = JSON.parse(cached)
-
-      // 🟢 Verificar si el cache ha expirado
-      const isExpired = Date.now() - parsed.timestamp > CACHE_TTL
-      if (isExpired) {
-        console.log('Cache expired, will refresh')
-        localStorage.removeItem(STORAGE_KEY)
-        return null
-      }
-
-      return parsed
-    } catch (error) {
-      console.warn('Error reading from cache:', error)
-      return null
-    }
-  }, [])
-
-  // Función para guardar en cache (solo en cliente)
-  const saveToCache = useCallback((data: ConfigData, etag: string) => {
-    if (typeof window === 'undefined') return
-
-    try {
-      const cacheData: CacheData = {
-        data,
-        timestamp: Date.now(),
-        etag
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cacheData))
-    } catch (error) {
-      console.warn('Error saving to cache:', error)
-    }
-  }, [])
-
-  // 🟢 Función para obtener un setting que PRIORIZA el cache
+  // Función para obtener un setting con fallback a caché
   const getSettingWithCache = useCallback(
     (key: string, defaultValue: string = '') => {
-      // 1. Primero: intentar con configData actual (si ya se cargó)
       if (configData?.settings && configData.settings[key]) {
         return configData.settings[key]
       }
-
-      // 2. Segundo: intentar con datos cacheados (si existen)
-      if (
-        cachedDataRef.current?.data?.settings &&
-        cachedDataRef.current.data.settings[key]
-      ) {
+      if (cachedDataRef.current?.data?.settings && cachedDataRef.current.data.settings[key]) {
         return cachedDataRef.current.data.settings[key]
       }
-
-      // 3. Tercero: retornar valor por defecto
       return defaultValue
     },
-    [configData]
+    [configData, cachedDataRef]
   )
 
   // Función principal para cargar configuración
@@ -143,42 +88,41 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       setError(null)
 
       try {
-        // 🟢 1. CARGAR CACHE INMEDIATAMENTE (solo en cliente)
-        let cachedData: CacheData | null = null
+        // Cargar caché inmediatamente (solo en cliente)
+        let cachedData: ConfigData | null = null
         if (typeof window !== 'undefined') {
-          cachedData = loadFromCache()
-          cachedDataRef.current = cachedData // Guardar referencia
+          const cacheResult = getFromCache()
+          cachedDataRef.current = cacheResult
 
-          // 🟢 ACTUALIZAR ESTADO INMEDIATAMENTE CON DATOS DEL CACHE
-          if (cachedData && !configData) {
-            setConfigData(cachedData.data)
-            setLastFetched(new Date(cachedData.timestamp))
-            setIsLoading(false) // Dejar de mostrar loading
+          if (cacheResult) {
+            cachedData = cacheResult.data
+            setConfigData(cachedData)
+            setLastFetched(new Date(cacheResult.timestamp))
+            setIsLoading(false)
           }
         }
 
-        // 2. Hacer fetch al servidor para verificar cambios
+        // Hacer fetch al servidor
         abortControllerRef.current = new AbortController()
 
         const headers: HeadersInit = {}
-        if (cachedData?.etag && !forceRefresh) {
-          headers['If-None-Match'] = cachedData.etag
+        if (cachedDataRef.current?.etag && !forceRefresh) {
+          headers['If-None-Match'] = cachedDataRef.current.etag
         }
 
         const response = await fetch('/api/config', {
           signal: abortControllerRef.current.signal,
           headers,
-          // 🟢 Evitar cache del navegador
           cache: 'no-store'
         })
 
-        // 3. Si 304 Not Modified, mantener cache
+        // Si 304 Not Modified, mantener caché
         if (response.status === 304) {
           setIsLoading(false)
           return
         }
 
-        // 4. Si hay error, mantener cache (si existe)
+        // Si hay error y tenemos caché, mantenerlo
         if (!response.ok) {
           if (cachedData) {
             console.warn('Server error, using cached config')
@@ -188,7 +132,6 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
           throw new Error(`Error ${response.status}: ${response.statusText}`)
         }
 
-        // 5. Procesar nueva data
         const result = await response.json()
 
         if (!result.success) {
@@ -202,27 +145,23 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
           result.data?.metadata?.etag ||
           `"${Date.now()}"`
 
-        // 6. Verificar si los datos son diferentes
-        const currentEtag = cachedData?.etag
+        // Verificar si los datos cambiaron
+        const currentEtag = cachedDataRef.current?.etag
         const hasChanged = !currentEtag || currentEtag !== etag
 
         if (hasChanged) {
-          // Guardar en cache
           saveToCache(result.data, etag)
-
-          // Actualizar estado
           setConfigData(result.data)
           setLastFetched(new Date())
         } else {
           console.log('Config unchanged (etag match)')
         }
       } catch (error) {
-        // Solo manejar errores que no sean de aborto
         if (error instanceof Error && error.name !== 'AbortError') {
           console.error('Error loading config:', error)
           setError(error.message)
 
-          // Si no tenemos datos y hubo error, establecer estructura vacía
+          // Si no tenemos datos, establecer estructura vacía
           if (!configData && !cachedDataRef.current) {
             setConfigData({
               settings: {},
@@ -240,21 +179,18 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false)
       }
     },
-    [loadFromCache, saveToCache, configData]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [getFromCache, saveToCache, cachedDataRef]
   )
 
-  // Función para re-fetch manual (fuerza recarga)
+  // Re-fetch manual
   const refetchConfig = useCallback(async () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY)
-      cachedDataRef.current = null
-    }
+    removeFromCache()
     await loadConfig(true)
-  }, [loadConfig])
+  }, [loadConfig, removeFromCache])
 
   // Obtener cupón activo
   const getActiveCoupon = useCallback(() => {
-    // 🟢 Primero de configData, luego de cache
     const data = configData || cachedDataRef.current?.data
     if (!data?.cupones || data.cupones.length === 0) return null
     return data.cupones.find((cupon) => cupon.mostrarCupon) || null
@@ -263,7 +199,6 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   // Buscar cupón por código
   const getCouponByCode = useCallback(
     (code: string) => {
-      // 🟢 Primero de configData, luego de cache
       const data = configData || cachedDataRef.current?.data
       if (!data?.cupones || data.cupones.length === 0) return null
       return (
@@ -275,7 +210,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     [configData]
   )
 
-  // 🟢 EFECTO PRINCIPAL: Cargar configuración después del mount
+  // Cargar configuración al montar
   useEffect(() => {
     loadConfig()
 

@@ -1,18 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
-import InteractiveMap from './Maps/Maps'
-import { X } from 'lucide-react'
-import './ShoppingCartPanel.css'
-import { agencias } from '../data/agencias'
-import { codigoCupon } from '../data/cupon'
-import { useUser } from '@clerk/nextjs'
-import { useCart } from '@/contexts/CartContext'
-import { ToastAction } from './ui/toast'
-import { useRouter } from 'next/navigation'
-import { useToast } from '@/hooks/use-toast'
-import { RiLoader4Line } from 'react-icons/ri'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -24,15 +12,24 @@ import {
   generateWhatsAppOrderMessage,
   FREE_DELIVERY_THRESHOLD
 } from '@/lib/utils/order-calculations'
+import { saveDeliveryData, loadDeliveryData } from '@/lib/utils/local-storage'
 import { useConfigData } from '@/hooks/useConfigData'
+import { useCouponValidator } from '@/hooks/useCouponValidator'
 import type { CartItem } from '@/types/products'
+import { useCart } from '@/contexts/CartContext'
+import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from './ui/toast'
+import InteractiveMap from './Maps/Maps'
+import { RiLoader4Line } from 'react-icons/ri'
+import { X } from 'lucide-react'
+import { agencias } from '../data/agencias'
+import { codigoCupon } from '../data/cupon'
+import Link from 'next/link'
 
 // --- Constantes ---
 const COUNTRY_CODE = '51'
-const LOCAL_STORAGE_KEY = 'dataDeliverySend'
-
-// --- Interfaces ---
-// Usamos CartItem de types/products.ts en lugar de definir ProsItemsProduct
 
 interface IProps {
   subTotal: string
@@ -43,14 +40,7 @@ interface IProps {
   discountPercentage: number
 }
 
-interface DeliveryData extends DeliveryFormData {
-  deliveryCost: number
-  agencia: string
-  dni: string
-  clientPhone: string
-}
-
-// --- Componente FormToSend ---
+// --- Componente Principal ---
 const FormToSend = ({
   subTotal,
   setShowCardClientName,
@@ -64,16 +54,15 @@ const FormToSend = ({
   const router = useRouter()
   const { toast } = useToast()
   const { getMinimoDelivery, getMaximoDelivery, getTelefono, isLoading } = useConfigData()
+  const { couponCode, discount: cuponDiscount, isValidating, validate: validateCoupon, clear: clearCoupon } = useCouponValidator()
 
   const [hasFullNameOverride, setHasFullNameOverride] = useState(false)
+  const [isSavingOrder, setIsSavingOrder] = useState(false)
+  const [markedLocation, setMarkedLocation] = useState<{ lat: number; lng: number } | null>(null)
+
   const minimoDelivery = getMinimoDelivery()
   const maximoDelivery = getMaximoDelivery()
   const telefono = getTelefono()
-  const [isSavingOrder, setIsSavingOrder] = useState(false)
-  const [markedLocation, setMarkedLocation] = useState<{
-    lat: number
-    lng: number
-  } | null>(null)
 
   // React Hook Form setup
   const form: UseFormReturn<DeliveryFormData> = useForm<DeliveryFormData>({
@@ -94,135 +83,76 @@ const FormToSend = ({
   const {
     watch,
     setValue,
-    formState: { errors }
+    formState: { errors },
+    register,
+    getValues
   } = form
+
   const watchedLocationToSend = watch('locationToSend')
   const watchedClientName = watch('clientName')
+  const watchedAddress = watch('address')
+  const watchedAgencia = watch('agencia')
   const watchedDni = watch('dni')
   const watchedPhone = watch('clientPhone')
-  const watchedAgencia = watch('agencia')
-  const watchedAddress = watch('address')
   const watchedGetlocation = watch('getlocation')
   const watchedDeliveryCost = watch('deliveryCost')
 
-  // --- Funciones de localStorage ---
-  const loadLocalStorage = useCallback(() => {
-    try {
-      const data = localStorage.getItem(LOCAL_STORAGE_KEY)
-      if (data) {
-        const parsedData = JSON.parse(data)
-        // Cargar datos en el formulario
-        if (parsedData.clientName) setValue('clientName', parsedData.clientName)
-        if (parsedData.address) setValue('address', parsedData.address)
-        if (parsedData.locationToSend)
-          setValue('locationToSend', parsedData.locationToSend)
-        if (parsedData.agencia) setValue('agencia', parsedData.agencia)
-        if (parsedData.dni) setValue('dni', parsedData.dni)
-        if (parsedData.clientPhone)
-          setValue('clientPhone', parsedData.clientPhone)
-        if (parsedData.getlocation) {
-          setValue('getlocation', parsedData.getlocation)
-          setMarkedLocation(parsedData.getlocation)
-        }
-        // deliveryCost se maneja por separado según el mapa
+  // --- Cargar datos guardados ---
+  useEffect(() => {
+    const savedData = loadDeliveryData()
+    if (savedData) {
+      if (savedData.clientName) setValue('clientName', savedData.clientName)
+      if (savedData.address) setValue('address', savedData.address)
+      if (savedData.locationToSend) setValue('locationToSend', savedData.locationToSend)
+      if (savedData.agencia) setValue('agencia', savedData.agencia)
+      if (savedData.dni) setValue('dni', savedData.dni)
+      if (savedData.clientPhone) setValue('clientPhone', savedData.clientPhone)
+      if (savedData.getlocation) {
+        setValue('getlocation', savedData.getlocation)
+        setMarkedLocation(savedData.getlocation)
       }
-    } catch (error) {
-      console.error('Error loading data from localStorage:', error)
     }
   }, [setValue])
 
-  const saveToLocalStorage = useCallback(() => {
-    try {
-      const data = {
-        clientName: watchedClientName,
-        address: watchedAddress,
-        locationToSend: watchedLocationToSend,
-        agencia: watchedAgencia,
-        dni: watchedDni,
-        clientPhone: watchedPhone,
-        getlocation: watchedGetlocation
-      }
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data))
-    } catch (error) {
-      console.error('Error saving to localStorage:', error)
-    }
-  }, [
-    watchedClientName,
-    watchedAddress,
-    watchedLocationToSend,
-    watchedAgencia,
-    watchedDni,
-    watchedPhone,
-    watchedGetlocation
-  ])
-
-  // --- Guardar Orden en Backend ---
-  const saveOrderToBackend = useCallback(async () => {
-    if (!user?.emailAddresses[0]?.emailAddress) {
-      console.error('No email address available')
-      return
-    }
-
-    setIsSavingOrder(true)
-    try {
-      const formDataValues = form.getValues()
-      const orderData = {
-        ...formDataValues,
-        email: user.emailAddresses[0].emailAddress,
-        products: itemsProducts.map((item) => ({
-          productoId: item.id,
-          quantity: item.quantity,
-          totalPrice: Number(item.price) * item.quantity,
-          unitPrice: item.price
-        })),
-        totalPrice: Number(getCartTotal()),
-        totalProducts: itemsProducts.reduce(
-          (total, item) => total + item.quantity,
-          0
-        ),
-        discount: discountPercentage,
-        deliveryCost:
-          getCartTotal() >= FREE_DELIVERY_THRESHOLD
-            ? 0
-            : formDataValues.deliveryCost
-      }
-
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
+  // --- Guardar datos automáticamente ---
+  useEffect(() => {
+    const subscription = watch((value) => {
+      saveDeliveryData({
+        clientName: value.clientName,
+        address: value.address,
+        locationToSend: value.locationToSend,
+        agencia: value.agencia,
+        dni: value.dni,
+        clientPhone: value.clientPhone,
+        getlocation: (value.getlocation?.lat && value.getlocation?.lng) 
+          ? { lat: value.getlocation.lat, lng: value.getlocation.lng } 
+          : undefined
       })
+    })
+    return () => subscription.unsubscribe()
+  }, [watch])
 
-      if (!response.ok) {
-        throw new Error('Error saving order to backend')
-      }
-    } catch (error) {
-      console.error('Error guardando orden:', error)
-    } finally {
-      setIsSavingOrder(false)
+  // --- Auto-completar nombre con datos de Clerk ---
+  useEffect(() => {
+    const userName = user?.fullName
+    if (userName && !hasFullNameOverride && !watchedClientName) {
+      setValue('clientName', userName)
     }
-  }, [
-    form,
-    user,
-    itemsProducts,
-    getCartTotal,
-    discountPercentage
-  ])
+  }, [user, hasFullNameOverride, watchedClientName, setValue])
 
-  // --- Cálculos usando función compartida ---
+  // --- Cálculos ---
   const calculations = useMemo(() => {
-    // Usar getCartTotal() como subtotal SIN descuento
-    // calculateOrderTotals aplicará el descuento correctamente
     return calculateOrderTotals({
       subtotal: getCartTotal(),
       deliveryCost: watchedDeliveryCost,
-      discountPercentage: discountPercentage,
+      discountPercentage: cuponDiscount > 0 ? cuponDiscount : discountPercentage,
       locationToSend: watchedLocationToSend,
       minimoDelivery,
       maximoDelivery
     })
   }, [
     watchedDeliveryCost,
+    cuponDiscount,
     discountPercentage,
     watchedLocationToSend,
     minimoDelivery,
@@ -232,34 +162,25 @@ const FormToSend = ({
 
   const { total, displayDelivery, subtotal: subtotalCalculado } = calculations
 
-  // --- Validación del Formulario ---
+  // --- Validación ---
   const formValidation = useMemo(() => {
-    // Verificar si hay errores de validación de Zod
     const hasErrors = Object.keys(errors).length > 0
 
-    // Validar que el carrito no esté vacío
     if (itemsProducts.length === 0) {
       return { isValid: false, message: 'El carrito está vacío' }
     }
 
-    // Validaciones según tipo de envío
     if (watchedLocationToSend === 'lima_metropolitana') {
-      // Lima: requiere nombre, dirección y mapa (SIEMPRE)
       if (!watchedClientName || watchedClientName.trim() === '') {
         return { isValid: false, message: 'Ingresa tu nombre' }
       }
       if (!watchedAddress || watchedAddress.trim() === '') {
         return { isValid: false, message: 'Ingresa tu dirección' }
       }
-      // Mapa SIEMPRE requerido para Lima
-      if (
-        !markedLocation ||
-        (markedLocation.lat === 0 && markedLocation.lng === 0)
-      ) {
+      if (!markedLocation || (markedLocation.lat === 0 && markedLocation.lng === 0)) {
         return { isValid: false, message: 'Marca tu ubicación en el mapa' }
       }
     } else if (watchedLocationToSend === 'provincia') {
-      // Provincia: requiere nombre, dirección, agencia, DNI y teléfono
       if (!watchedClientName || watchedClientName.trim() === '') {
         return { isValid: false, message: 'Ingresa tu nombre' }
       }
@@ -293,139 +214,100 @@ const FormToSend = ({
     markedLocation
   ])
 
-  // --- Generación de contenido WhatsApp ---
-  const generateWhatsAppContent = useCallback(() => {
-    const formDataValues = form.getValues()
-    const {
-      clientName,
-      locationToSend,
-      address,
-      dni,
-      clientPhone,
-      agencia,
-      getlocation
-    } = formDataValues
+  // --- Guardar orden ---
+  const saveOrderToBackend = useCallback(async () => {
+    if (!user?.emailAddresses[0]?.emailAddress) return
 
+    setIsSavingOrder(true)
+    try {
+      const formDataValues = getValues()
+      const orderData = {
+        ...formDataValues,
+        email: user.emailAddresses[0].emailAddress,
+        products: itemsProducts.map((item) => ({
+          productoId: item.id,
+          quantity: item.quantity,
+          totalPrice: Number(item.price) * item.quantity,
+          unitPrice: item.price
+        })),
+        totalPrice: Number(getCartTotal()),
+        totalProducts: itemsProducts.reduce((total, item) => total + item.quantity, 0),
+        discount: cuponDiscount > 0 ? cuponDiscount : discountPercentage,
+        deliveryCost: getCartTotal() >= FREE_DELIVERY_THRESHOLD ? 0 : formDataValues.deliveryCost
+      }
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      })
+
+      if (!response.ok) throw new Error('Error saving order')
+    } catch (error) {
+      console.error('Error guardando orden:', error)
+    } finally {
+      setIsSavingOrder(false)
+    }
+  }, [getValues, user, itemsProducts, getCartTotal, cuponDiscount, discountPercentage])
+
+  // --- Generar mensaje WhatsApp ---
+  const generateWhatsAppContent = useCallback(() => {
+    const formDataValues = getValues()
     return generateWhatsAppOrderMessage({
-      clientName,
-      locationToSend,
-      address,
-      dni,
-      clientPhone,
-      agencia,
+      ...formDataValues,
       items: itemsProducts,
-      subtotal: subtotalCalculado,  // Usar subtotal calculado (sin descuento)
+      subtotal: subtotalCalculado,
       deliveryDisplay: displayDelivery,
-      discountPercentage,
-      discountCode,
+      discountPercentage: cuponDiscount > 0 ? cuponDiscount : discountPercentage,
+      discountCode: couponCode || discountCode,
       codigoCupon,
       total,
-      getlocation
+      getlocation: formDataValues.getlocation
     })
-  }, [
-    form,
-    itemsProducts,
-    subtotalCalculado,
-    displayDelivery,
-    discountPercentage,
-    discountCode,
-    codigoCupon,
-    total
-  ])
+  }, [getValues, itemsProducts, subtotalCalculado, displayDelivery, cuponDiscount, discountPercentage, couponCode, discountCode, total])
 
   // --- Manejadores ---
-  // const handleInputChange = useCallback(
-  //   <K extends keyof DeliveryFormData>(key: K, value: DeliveryFormData[K]) => {
-  //     setValue(key, value)
-  //     saveToLocalStorage()
-  //   },
-  //   [setValue, saveToLocalStorage]
-  // )
-
-  const selectDelivery = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newLocation = event.target.value as
-        | 'lima_metropolitana'
-        | 'provincia'
-      setValue('locationToSend', newLocation)
-      // Resetear campos según el tipo de envío
-      if (newLocation === 'provincia') {
-        setValue('address', '')
-        setValue('deliveryCost', 0)
-        setValue('getlocation', { lat: 0, lng: 0 })
-        setMarkedLocation(null)
-      } else {
-        setValue('agencia', '')
-        setValue('dni', '')
-        setValue('clientPhone', '')
-      }
-      saveToLocalStorage()
-    },
-    [setValue, saveToLocalStorage]
-  )
-
-  const handleOrderSubmit = useCallback(
-    async (e?: React.MouseEvent) => {
-      // Prevenir ejecución duplicada
-      if (e) {
-        e.stopPropagation()
-      }
-
-      // Guardar orden en backend
-      await saveOrderToBackend()
-
-      // Cerrar modal y limpiar carrito
-      setShowCardClientName(false)
-      onClose()
-      clearCart()
-
-      // Mostrar toast
-      const { dismiss } = toast({
-        title: 'Pedido enviado con éxito',
-        description: 'Revisa tu pedido aquí',
-        action: (
-          <ToastAction
-            altText='Ver detalles'
-            onClick={() => {
-              dismiss()
-              router.push('/orders')
-            }}
-          >
-            Ver detalles
-          </ToastAction>
-        ),
-        duration: 10000
-      })
-    },
-    [saveOrderToBackend, onClose, clearCart, toast, router]
-  )
-
-  // --- Effects ---
-  useEffect(() => {
-    loadLocalStorage()
-  }, [loadLocalStorage])
-
-  useEffect(() => {
-    const userName = user?.fullName
-    if (userName && !hasFullNameOverride && !watchedClientName) {
-      setValue('clientName', userName)
+  const selectDelivery = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const newLocation = event.target.value as 'lima_metropolitana' | 'provincia'
+    setValue('locationToSend', newLocation)
+    
+    if (newLocation === 'provincia') {
+      setValue('address', '')
+      setValue('deliveryCost', 0)
+      setValue('getlocation', { lat: 0, lng: 0 })
+      setMarkedLocation(null)
+    } else {
+      setValue('agencia', '')
+      setValue('dni', '')
+      setValue('clientPhone', '')
     }
-  }, [user, hasFullNameOverride, watchedClientName, setValue])
+  }, [setValue])
 
-  // --- Render helpers ---
-  const whatsappHref = `https://wa.me/+${COUNTRY_CODE}${telefono}?text=${encodeURIComponent(
-    generateWhatsAppContent()
-  )}`
+  const handleOrderSubmit = useCallback(async () => {
+    await saveOrderToBackend()
+    setShowCardClientName(false)
+    onClose()
+    clearCart()
 
-  const { register } = form
+    toast({
+      title: 'Pedido enviado con éxito',
+      description: 'Revisa tu pedido aquí',
+      action: (
+        <ToastAction
+          altText='Ver detalles'
+          onClick={() => router.push('/orders')}
+        >
+          Ver detalles
+        </ToastAction>
+      ),
+      duration: 10000
+    })
+  }, [saveOrderToBackend, onClose, clearCart, toast, router, setShowCardClientName])
+
+  const whatsappHref = `https://wa.me/+${COUNTRY_CODE}${telefono}?text=${encodeURIComponent(generateWhatsAppContent())}`
   const isUserSignedIn = !!user?.id
   const buttonBackgroundColor = formValidation.isValid ? '#00d95f' : 'gray'
-  const buttonPointerEvents =
-    !isLoading && !isSavingOrder && formValidation.isValid
-      ? 'auto'
-      : 'none'
-
-  console.log('esto es telefono', telefono)
+  const buttonPointerEvents = !isLoading && !isSavingOrder && formValidation.isValid ? 'auto' : 'none'
 
   return (
     <main
@@ -436,11 +318,7 @@ const FormToSend = ({
         }
       }}
     >
-      <form
-        className='formContainer'
-        onClick={(e) => e.stopPropagation()}
-        // onMouseUp={(e) => e.stopPropagation()}
-      >
+      <form className='formContainer' onClick={(e) => e.stopPropagation()}>
         {/* Nombre del Cliente */}
         <div>
           <label htmlFor='inputName' className='labelClientName'>
@@ -451,12 +329,7 @@ const FormToSend = ({
             id='inputName'
             placeholder='Ingrese su nombre y apellido'
             {...register('clientName', {
-              onChange: (e) => {
-                if (!hasFullNameOverride) {
-                  setHasFullNameOverride(true)
-                }
-                saveToLocalStorage()
-              }
+              onChange: () => setHasFullNameOverride(true)
             })}
           />
           {errors.clientName && (
@@ -466,7 +339,7 @@ const FormToSend = ({
           )}
         </div>
 
-        {/* Selección de Tipo de Envío */}
+        {/* Tipo de Envío */}
         <div className='flex flex-col gap-2 justify-center text-sm'>
           <label className='labelClientName'>
             ¿Dónde deseas recibir tu pedido?*
@@ -495,7 +368,7 @@ const FormToSend = ({
           </label>
         </div>
 
-        {/* Formulario Dinámico según Tipo de Envío */}
+        {/* Formulario según tipo de envío */}
         {watchedLocationToSend === 'lima_metropolitana' && (
           <>
             <div className='w-full h-full pb-4'>
@@ -505,36 +378,20 @@ const FormToSend = ({
                   <RiLoader4Line className='animate-spin h-8 w-8 text-green-500' />
                 </div>
               ) : (
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  // onMouseDown={(e) => e.stopPropagation()}
-                  // onMouseUp={(e) => e.stopPropagation()}
-                  className='h-full'
-                >
-                  <InteractiveMap
-                    setDeliveryCost={(cost: number) => {
-                      const adjustedCost =
-                        cost > maximoDelivery
-                          ? maximoDelivery
-                          : cost < minimoDelivery
-                            ? minimoDelivery
-                            : cost
-                      setValue('deliveryCost', adjustedCost)
-                      saveToLocalStorage()
-                    }}
-                    setGetlocation={(loc: { lat: number; lng: number }) => {
-                      setValue('getlocation', loc)
-                      setMarkedLocation(loc)
-                      saveToLocalStorage()
-                    }}
-                    locationToSend={watchedGetlocation}
-                  />
-                </div>
+                <InteractiveMap
+                  setDeliveryCost={(cost: number) => {
+                    const adjustedCost = cost > maximoDelivery ? maximoDelivery : cost < minimoDelivery ? minimoDelivery : cost
+                    setValue('deliveryCost', adjustedCost)
+                  }}
+                  setGetlocation={(loc: { lat: number; lng: number }) => {
+                    setValue('getlocation', loc)
+                    setMarkedLocation(loc)
+                  }}
+                  locationToSend={watchedGetlocation}
+                />
               )}
               {errors.getlocation && (
-                <span className='text-orange-600 text-sm'>
-                  {errors.getlocation.message}
-                </span>
+                <span className='text-orange-600 text-sm'>{errors.getlocation.message}</span>
               )}
             </div>
             <div>
@@ -545,14 +402,10 @@ const FormToSend = ({
                 className='inputinputClientName'
                 id='inputAddress'
                 placeholder='Calle / N° de Casa / N° de Departamento'
-                {...register('address', {
-                  onChange: () => saveToLocalStorage()
-                })}
+                {...register('address')}
               />
               {errors.address && (
-                <span className='text-orange-600 text-sm'>
-                  {errors.address.message}
-                </span>
+                <span className='text-orange-600 text-sm'>{errors.address.message}</span>
               )}
             </div>
           </>
@@ -566,33 +419,20 @@ const FormToSend = ({
                 name='agencia'
                 id='agencia'
                 value={watchedAgencia}
-                onChange={(event) => {
-                  setValue('agencia', event.target.value)
-                  saveToLocalStorage()
-                }}
+                onChange={(e) => setValue('agencia', e.target.value)}
                 className={`rounded-md border focus:border-green-500 outline-none mt-1 ${
                   !watchedAgencia ? 'text-gray-400' : 'text-zinc-900'
-                } h-11 p-2 ${
-                  !watchedAgencia ? 'border-orange-400' : 'bg-white'
-                }`}
+                } h-11 p-2 ${!watchedAgencia ? 'border-orange-400' : 'bg-white'}`}
               >
-                <option value='' disabled>
-                  Seleccionar agencia
-                </option>
-                {agencias.map((eleAgencia) => (
-                  <option
-                    key={eleAgencia}
-                    value={eleAgencia}
-                    className='text-black'
-                  >
-                    {eleAgencia}
+                <option value='' disabled>Seleccionar agencia</option>
+                {agencias.map((agencia) => (
+                  <option key={agencia} value={agencia} className='text-black'>
+                    {agencia}
                   </option>
                 ))}
               </select>
               {errors.agencia && (
-                <span className='text-orange-600 text-sm'>
-                  {errors.agencia.message}
-                </span>
+                <span className='text-orange-600 text-sm'>{errors.agencia.message}</span>
               )}
 
               <div>
@@ -600,15 +440,11 @@ const FormToSend = ({
                 <input
                   className='inputinputClientName'
                   placeholder='Ingrese su DNI'
-                  {...register('dni', {
-                    onChange: () => saveToLocalStorage()
-                  })}
+                  {...register('dni')}
                   maxLength={8}
                 />
                 {errors.dni && (
-                  <span className='text-orange-600 text-sm'>
-                    {errors.dni.message}
-                  </span>
+                  <span className='text-orange-600 text-sm'>{errors.dni.message}</span>
                 )}
               </div>
 
@@ -617,14 +453,10 @@ const FormToSend = ({
                 <input
                   className='inputinputClientName'
                   placeholder='Ingrese su teléfono'
-                  {...register('clientPhone', {
-                    onChange: () => saveToLocalStorage()
-                  })}
+                  {...register('clientPhone')}
                 />
                 {errors.clientPhone && (
-                  <span className='text-orange-600 text-sm'>
-                    {errors.clientPhone.message}
-                  </span>
+                  <span className='text-orange-600 text-sm'>{errors.clientPhone.message}</span>
                 )}
               </div>
             </div>
@@ -637,45 +469,24 @@ const FormToSend = ({
                 className='inputinputClientName'
                 id='inputDeptProv'
                 placeholder='Escribe el Departamento y Provincia'
-                {...register('address', {
-                  onChange: () => saveToLocalStorage()
-                })}
+                {...register('address')}
               />
               {errors.address && (
-                <span className='text-orange-600 text-sm'>
-                  {errors.address.message}
-                </span>
+                <span className='text-orange-600 text-sm'>{errors.address.message}</span>
               )}
             </div>
           </>
         )}
 
         {/* Resumen de Costos */}
-        <div
-          className={`border ${
-            !formValidation.isValid ? 'border-orange-600' : 'border-green-500'
-          } px-2 py-1 rounded-sm`}
-        >
-          <div
-            className={
-              getCartTotal() >= FREE_DELIVERY_THRESHOLD
-                ? 'text-green-500'
-                : !formValidation.isValid
-                  ? 'text-orange-500'
-                  : 'text-green-500'
-            }
-          >
+        <div className={`border ${!formValidation.isValid ? 'border-orange-600' : 'border-green-500'} px-2 py-1 rounded-sm`}>
+          <div className={getCartTotal() >= FREE_DELIVERY_THRESHOLD ? 'text-green-500' : !formValidation.isValid ? 'text-orange-500' : 'text-green-500'}>
             {watchedLocationToSend === 'provincia' ? (
               <span>Recargo de agencia: (S/ 10.00 - S/ 15.00)</span>
             ) : (
               <>
                 <span>Delivery: </span>
-                <span>
-                  S/{' '}
-                  {typeof displayDelivery === 'number'
-                    ? displayDelivery.toFixed(2)
-                    : displayDelivery}
-                </span>
+                <span>S/ {typeof displayDelivery === 'number' ? displayDelivery.toFixed(2) : displayDelivery}</span>
               </>
             )}
           </div>
@@ -701,39 +512,35 @@ const FormToSend = ({
           style={{ pointerEvents: buttonPointerEvents }}
           onClick={(e) => {
             e.preventDefault()
+            e.stopPropagation()
           }}
-          title={
-            formValidation.isValid ? 'Realizar pedido' : formValidation.message
-          }
+          title={formValidation.isValid ? 'Realizar pedido' : formValidation.message}
           type='button'
         >
           {isUserSignedIn ? (
             isLoading || isSavingOrder ? (
-              <span
-                className='linkWhatsapp'
-                style={{ backgroundColor: buttonBackgroundColor }}
-              >
+              <span className='linkWhatsapp' style={{ backgroundColor: buttonBackgroundColor }}>
                 <RiLoader4Line className='animate-spin h-full max-w-9 w-full' />
               </span>
             ) : (
-              <Link
+              <a
                 href={whatsappHref}
                 style={{ backgroundColor: buttonBackgroundColor }}
                 className='linkWhatsapp'
-                onClick={handleOrderSubmit}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleOrderSubmit()
+                }}
                 target='_blank'
+                rel='noopener noreferrer'
               >
                 Realizar pedido{' '}
-                <img
-                  src='/BlackWhatsApp.svg'
-                  alt='whatsapp icon'
-                  className='h-8 [filter:brightness(0)_invert(1)]'
-                />
-              </Link>
+                <img src='/BlackWhatsApp.svg' alt='whatsapp icon' className='h-8 [filter:brightness(0)_invert(1)]' />
+              </a>
             )
           ) : (
             <Link
-              href={'/sign-in'}
+              href='/sign-in'
               className='linkWhatsapp'
               onClick={() => {
                 setShowCardClientName(false)
@@ -746,11 +553,7 @@ const FormToSend = ({
         </button>
 
         {/* Botón de Cerrar */}
-        <button
-          className='buttonCloseCardClientName'
-          onClick={() => setShowCardClientName(false)}
-          type='button'
-        >
+        <button className='buttonCloseCardClientName' onClick={() => setShowCardClientName(false)} type='button'>
           <X color='gray' />
         </button>
       </form>
