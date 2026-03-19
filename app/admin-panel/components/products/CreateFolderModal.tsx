@@ -38,7 +38,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
     setCreating(true)
 
     try {
-      const response = await fetch('/api/cloudinary-folder-create', {
+      const response = await fetch('/api/cloudinary/folder-create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -2,7 +2,7 @@
 
 import { useCart } from '@/contexts/CartContext'
 import { FaTrashAlt } from 'react-icons/fa'
-import '@/components/ShoppingCartPanel.css'
+import './ShoppingCartPanel.css'
 
 interface CartItemsListProps {
   onRemove: (id: number) => void

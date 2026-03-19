@@ -27,7 +27,7 @@ const DeleteFolderConfirm: React.FC<DeleteFolderConfirmProps> = ({
     const fetchAssetCount = async () => {
       try {
         const response = await fetch(
-          `/api/cloudinary-folder-assets-count?folder=${encodeURIComponent(folderPath)}`
+          `/api/cloudinary/folder-assets-count?folder=${encodeURIComponent(folderPath)}`
         )
         const result = await response.json()
         setAssetCount(result.count || 0)
@@ -46,7 +46,7 @@ const DeleteFolderConfirm: React.FC<DeleteFolderConfirmProps> = ({
     setDeleting(true)
 
     try {
-      const response = await fetch('/api/cloudinary-folder-delete', {
+      const response = await fetch('/api/cloudinary/folder-delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ folder: folderPath })
@@ -108,7 +108,8 @@ const DeleteFolderConfirm: React.FC<DeleteFolderConfirmProps> = ({
                   ¡Atención!
                 </p>
                 <p className='text-sm text-red-700 dark:text-red-400'>
-                  Esta acción eliminará permanentemente la carpeta y todo su contenido.
+                  Esta acción eliminará permanentemente la carpeta y todo su
+                  contenido.
                 </p>
               </div>
             </div>
@@ -125,7 +126,10 @@ const DeleteFolderConfirm: React.FC<DeleteFolderConfirmProps> = ({
                 <span className='truncate'>{folderName}</span>
               </div>
               <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                Path: <code className='bg-gray-200 dark:bg-gray-600 px-1.5 py-0.5 rounded'>{folderPath}</code>
+                Path:{' '}
+                <code className='bg-gray-200 dark:bg-gray-600 px-1.5 py-0.5 rounded'>
+                  {folderPath}
+                </code>
               </p>
             </div>
 
@@ -156,7 +160,8 @@ const DeleteFolderConfirm: React.FC<DeleteFolderConfirmProps> = ({
               className='mt-1 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500'
             />
             <span className='text-sm text-gray-600 dark:text-gray-400 select-none'>
-              Entiendo que esta acción es irreversible y eliminará permanentemente todos los archivos.
+              Entiendo que esta acción es irreversible y eliminará
+              permanentemente todos los archivos.
             </span>
           </label>
 

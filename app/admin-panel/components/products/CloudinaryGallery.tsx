@@ -75,8 +75,8 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     setLoadingFolders(true)
     try {
       const url = path
-        ? `/api/cloudinary-folders?path=${encodeURIComponent(path)}`
-        : '/api/cloudinary-folders'
+        ? `/api/cloudinary/folders?path=${encodeURIComponent(path)}`
+        : '/api/cloudinary/folders'
 
       const response = await fetch(url)
 
@@ -109,7 +109,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
       }
 
       try {
-        const url = `/api/cloudinary-assets?asset_folder=${encodeURIComponent(path)}&max_results=30${cursor ? `&next_cursor=${cursor}` : ''}`
+        const url = `/api/cloudinary/assets?asset_folder=${encodeURIComponent(path)}&max_results=30${cursor ? `&next_cursor=${cursor}` : ''}`
 
         const response = await fetch(url)
 
@@ -237,7 +237,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
     formData.append('file', file)
     formData.append('folder', currentPath || 'ecommerce-products')
 
-    const response = await fetch('/api/cloudinary-upload', {
+    const response = await fetch('/api/cloudinary/upload', {
       method: 'POST',
       body: formData
     })
@@ -435,7 +435,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
 
       console.log('Deleting image:', { imageUrl, publicId })
 
-      const response = await fetch('/api/delete-image', {
+      const response = await fetch('/api/cloudinary/delete-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageUrl, publicId })

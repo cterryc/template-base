@@ -18,7 +18,7 @@ import { MobileNavContent } from './header/MobileNav'
 import { UserMenuItems } from './header/UserMenuItems'
 
 // Lazy load ShoppingCartPanel - no se necesita SSR
-const ShoppingCartPanel = dynamic(() => import('./ShoppingCartPanel'), {
+const ShoppingCartPanel = dynamic(() => import('./cart/ShoppingCartPanel'), {
   ssr: false,
   loading: () => (
     <div className='fixed right-0 top-1/2 opacity-0 -translate-y-1/2 w-80 md:w-96 bg-background border-l p-4 z-50'>

@@ -36,8 +36,7 @@ const isAdminRoute = createRouteMatcher([
   '/api/agencias(.*)',
   '/api/inventory(.*)',
   '/api/reports(.*)',
-  '/api/cloudinary-list(.*)',
-  '/api/delete-image(.*)',
+  '/api/cloudinary(.*)',
   '/api/fotos(.*)'
 ])
 

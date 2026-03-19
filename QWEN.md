@@ -85,12 +85,13 @@ Ecommerce-Base/
 ├── components/
 │   ├── ui/                  # shadcn/ui components (36 activos)
 │   ├── header/              # Header components (DesktopNav, MobileNav, UserMenuItems)
-│   ├── cart/                # Cart components (CartItemsList, CouponInput, CartSummary)
-│   ├── checkout/            # Checkout components
+│   ├── cart/                # Cart components (ShoppingCartPanel, CartItemsList, CouponInput, CartSummary)
+│   ├── checkout/            # Checkout components (formToSend)
+│   ├── maps/                # Map components (maps.tsx)
+│   ├── shared/              # Shared components (KpiCard, ThemeToggle)
 │   ├── header.tsx           # Main header (4.2 KB — refactorizado)
-│   ├── ShoppingCartPanel.tsx # Cart sidebar (5.1 KB — refactorizado)
-│   ├── formToSend.tsx       # Checkout form (19.8 KB — refactorizado con RHF+Zod)
-│   └── Maps/                # Leaflet map components (8.5 KB — refactorizado)
+│   ├── header.css           # Header styles
+│   └── theme-provider.tsx   # Theme provider for next-themes
 ├── contexts/
 │   ├── AuthContext.tsx      # Auth state (usa useUser() de Clerk)
 │   ├── CartContext.tsx      # Shopping cart state
@@ -152,25 +153,441 @@ The project uses **Clerk** for authentication:
 
 ### Environment Variables Required
 
+**Archivo**: `.env` (root del proyecto)
+
 ```env
-# Clerk
+# ─── Clerk Authentication ──────────────────────────────────
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 CLERK_WEBHOOK_SIGNING_SECRET=whsec_...
 
-# Database
-DATABASE_URL=postgresql://...
+# Clerk Redirect URLs
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
 
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_API_KEY=...
-CLOUDINARY_API_SECRET=...
-NEXT_PUBLIC_CLOUDINARY_PRESET=...
+# ─── Database ─────────────────────────────────────────────
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+
+# ─── Cloudinary (Image Storage) ───────────────────────────
+CLOUDINARY_CLOUD_NAME=dxxxxxxx
+CLOUDINARY_API_KEY=xxxxxxxxxxxxx
+CLOUDINARY_API_SECRET=xxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_CLOUDINARY_PRESET=xxxxxxx
+
+# ─── Google AI (Review Moderation) ────────────────────────
+GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxx
+GEMINI_MODEL=gemini-1.5-flash
+
+# ─── Application ──────────────────────────────────────────
+NODE_ENV=development
 ```
+
+**Validación**: Las variables son validadas en `lib/env.ts` usando Zod schema.
 
 ---
 
-## 🎨 UI/UX
+## 🌐 API Routes
+
+**Ubicación**: `app/api/`
+
+### 🔐 Authentication Routes `(app/api/(auth)/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/api/sign-in` | Sign in con Clerk | ❌ |
+| `POST` | `/api/sign-up` | Sign up con Clerk | ❌ |
+
+### 👤 User Routes `(app/api/(user)/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/users/:id` | Obtener usuario por Clerk ID | ✅ |
+| `GET` | `/api/users` | Listar usuarios | ✅ Admin |
+| `POST` | `/api/updateuser` | Actualizar datos del usuario | ✅ |
+| `GET` | `/api/orders/:id` | Obtener orden por ID | ✅ |
+| `GET` | `/api/orders` | Listar órdenes del usuario | ✅ |
+| `POST` | `/api/orders` | Crear nueva orden | ✅ |
+| `GET` | `/api/orders/pdf` | Generar PDF de orden | ✅ |
+
+### 🛍️ Public Routes `(app/api/(public)/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/products` | Listar productos (filtros: category, estado) | ❌ |
+| `GET` | `/api/products/:id` | Obtener producto por ID | ❌ |
+| `GET` | `/api/categories` | Listar categorías | ❌ |
+| `GET` | `/api/categories/:id` | Obtener categoría por ID | ❌ |
+
+### 🔧 Admin Routes `(app/api/admin/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/admin/reviews` | Listar reviews para moderación | ✅ Admin |
+| `DELETE` | `/api/admin/reviews/:id` | Eliminar review | ✅ Admin |
+| `POST` | `/api/admin/reviews` | Crear/actualizar review | ✅ Admin |
+
+### 📦 Product Management `(app/api/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/productos-destacados` | Listar productos destacados | ❌ |
+| `POST` | `/api/productos-destacados` | Crear producto destacado | ✅ Admin |
+| `DELETE` | `/api/productos-destacados/:id` | Eliminar producto destacado | ✅ Admin |
+| `GET` | `/api/inventory` | Obtener inventario | ✅ Admin |
+| `GET` | `/api/dashboard/stats` | Estadísticas del dashboard | ✅ Admin |
+
+### 🎫 Coupon Routes `(app/api/cupones/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/cupones` | Listar cupones | ❌ |
+| `POST` | `/api/cupones` | Crear cupón | ✅ Admin |
+| `DELETE` | `/api/cupones/:id` | Eliminar cupón | ✅ Admin |
+| `GET` | `/api/cupones/codigo/:codigo` | Validar cupón por código | ❌ |
+| `GET` | `/api/cupones/validate` | Validar cupón (alternativo) | ❌ |
+
+### 🏢 Agency Routes `(app/api/agencias/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/agencias` | Listar agencias de envío | ❌ |
+| `POST` | `/api/agencias` | Crear agencia | ✅ Admin |
+| `DELETE` | `/api/agencias/:id` | Eliminar agencia | ✅ Admin |
+
+### 🖼️ Cloudinary Routes `(app/api/cloudinary/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/api/cloudinary/upload` | Subir imagen a Cloudinary | ✅ Admin |
+| `GET` | `/api/cloudinary/list` | Listar assets en Cloudinary | ✅ Admin |
+| `GET` | `/api/cloudinary/folders` | Listar folders en Cloudinary | ✅ Admin |
+| `POST` | `/api/cloudinary/folder-create` | Crear folder en Cloudinary | ✅ Admin |
+| `DELETE` | `/api/cloudinary/folder-delete` | Eliminar folder en Cloudinary | ✅ Admin |
+| `GET` | `/api/cloudinary/folder-assets-count` | Contar assets en folder | ✅ Admin |
+| `GET` | `/api/cloudinary/assets` | Listar assets | ✅ Admin |
+| `DELETE` | `/api/cloudinary/delete-image` | Eliminar imagen | ✅ Admin |
+
+### ⚙️ Config & Settings `(app/api/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/config` | Obtener configuración de la app | ❌ |
+| `GET` | `/api/settings` | Obtener settings | ✅ Admin |
+| `POST` | `/api/settings` | Actualizar settings | ✅ Admin |
+| `GET` | `/api/fotos` | Obtener fotos de la tienda | ❌ |
+| `POST` | `/api/fotos` | Actualizar fotos | ✅ Admin |
+| `GET` | `/api/colecciones` | Listar colecciones | ❌ |
+| `POST` | `/api/colecciones` | Crear colección | ✅ Admin |
+| `DELETE` | `/api/colecciones/:id` | Eliminar colección | ✅ Admin |
+
+### 📊 Reports `(app/api/reports/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/reports/sales` | Reporte de ventas | ✅ Admin |
+
+### 🔔 Webhooks `(app/api/webhooks/)`
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `POST` | `/api/webhooks/clerk` | Webhook de Clerk para sync con DB | 🔐 Secret |
+
+---
+
+## 🗄️ Database Schema Detallado
+
+**Archivo**: `prisma/schema.prisma`
+
+### Enums
+
+```typescript
+enum DeliveryLocation {
+  Lima        // Lima Metropolitana
+  Provincia   // Fuera de Lima
+  Null        // Sin definir
+}
+
+enum Role {
+  USER    // Usuario regular
+  ADMIN   // Administrador
+  EDITOR  // Editor (puede gestionar productos)
+}
+```
+
+### Modelos
+
+#### **User** - Usuarios de la aplicación
+```prisma
+model User {
+  id               Int              @id @default(autoincrement())
+  email            String           @unique
+  name             String?
+  deliveryLocation DeliveryLocation @default(Null)
+  orders           Orders[]
+  reviews          Review[]
+  clerkId          String?          @unique
+  role             Role             @default(USER)
+  location         Json?            // Ubicación del usuario
+  address          String?          // Dirección de entrega
+  agencia          String?          // Agencia seleccionada
+  dni              String?          // DNI del usuario
+  phone            String?          // Teléfono
+  department       String?          // Departamento/Provincia
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  
+  @@index([clerkId])   // Búsqueda por Clerk ID
+  @@index([email])     // Búsqueda por email
+  @@index([role])      // Filtrar por rol
+}
+```
+
+#### **Productos** - Catálogo de productos
+```prisma
+model Productos {
+  id         Int     @id @default(autoincrement())
+  name       String
+  category   String
+  estado     String
+  size       String?
+  price      Decimal
+  image      String
+  image2     String?
+  image3     String?
+  image4     String?
+  stock      Int     @default(1)
+  destacados ProductosDestacados[]
+  orderItems OrderItem[]
+  reviews    Review[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@index([category])
+  @@index([estado])
+  @@index([category, estado])
+}
+```
+
+#### **Orders** - Órdenes de compra
+```prisma
+model Orders {
+  id             Int         @id @default(autoincrement())
+  address        String
+  agencia        String?
+  clientName     String
+  clientPhone    String?
+  deliveryCost   Decimal     @default(0)
+  dni            String?
+  getlocation    Json        // Coordenadas {lat, lng}
+  locationToSend String      // 'lima_metropolitana' | 'provincia'
+  status         String      @default("Pendiente")
+  userId         Int
+  user           User        @relation(fields: [userId], references: [id])
+  orderItems     OrderItem[] @relation("OrderItemsOnOrder")
+  totalPrice     Decimal     @default(0)
+  totalProducts  Int         @default(0)
+  discount       Decimal     @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([createdAt(sort: Desc)])
+  @@index([status, createdAt])
+}
+```
+
+#### **OrderItem** - Items de la orden
+```prisma
+model OrderItem {
+  id         Int       @id @default(autoincrement())
+  order      Orders    @relation("OrderItemsOnOrder")
+  orderId    Int
+  producto   Productos @relation(fields: [productoId], references: [id])
+  productoId Int
+  quantity   Int       @default(1)
+  totalPrice Decimal
+  unitPrice  Decimal
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  @@index([orderId])
+  @@index([productoId])
+  @@index([orderId, productoId])
+}
+```
+
+#### **Cupon** - Cupones de descuento
+```prisma
+model Cupon {
+  id           Int     @id @default(autoincrement())
+  codigoCupon  String  @default("qwer")
+  mostrarCupon Boolean @default(false)
+  descuento    Int     @default(0)  // Porcentaje de descuento
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+```
+
+#### **Review** - Reseñas de productos (con moderación IA)
+```prisma
+model Review {
+  id          Int       @id @default(autoincrement())
+  rating      Int       // 1-5 estrellas
+  comment     String?
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  productoId  Int
+  producto    Productos @relation(fields: [productoId], references: [id])
+  verified    Boolean   @default(false)  // ¿Compró el producto?
+  
+  // Moderación con IA (Google Gemini)
+  aiModerated Boolean   @default(false)
+  aiApproved  Boolean?  // true = apta, false = no apta
+  aiReason    String?   // Razón si fue rechazada
+  aiModel     String?   @default("gemini-1.5-flash")
+  aiError     Boolean   @default(false)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([productoId])
+  @@index([userId])
+  @@index([verified])
+}
+```
+
+#### **Otros Modelos**
+
+| Modelo | Descripción | Campos Principales |
+|--------|-------------|-------------------|
+| `ProductosDestacados` | Productos en destaque | `productoId` (FK), `createdAt` |
+| `Coleccion` | Colecciones de ropa | `name`, `price`, `image` |
+| `Categories` | Categorías de productos | `name` (unique) |
+| `Agencia` | Agencias de envío | `agencias` (array), `minimoDelivery`, `maximoDelivery` |
+| `Fotos` | Fotos de la tienda | `imagenIzquierda`, `imagenDerecha`, `fotoTienda` |
+| `Setting` | Configuración de la app | `key` (PK), `value` |
+
+---
+
+## 📐 Zod Schemas
+
+**Ubicación**: `lib/schemas/`
+
+### `delivery.schema.ts`
+```typescript
+const DeliverySchema = z.object({
+  clientName: z.string().min(1, "El nombre es requerido"),
+  address: z.string().min(1, "La dirección es requerida"),
+  locationToSend: z.enum(['lima_metropolitana', 'provincia']),
+  deliveryCost: z.number().min(0),
+  agencia: z.string().optional(),
+  dni: z.string().min(8, "DNI debe tener 8 dígitos").optional(),
+  clientPhone: z.string().min(7, "Teléfono inválido").optional(),
+  getlocation: z.object({
+    lat: z.number(),
+    lng: z.number()
+  }),
+  email: z.string().email().optional()
+})
+```
+
+### `product.schema.ts`
+- Schema para validación de productos (CRUD admin)
+
+### `user.schema.ts`
+- Schema para validación de usuarios
+
+### `index.ts`
+- Exporta todos los schemas
+
+---
+
+## 🧩 Contextos React
+
+### `CartContext` - Estado del carrito
+- **Ubicación**: `contexts/CartContext.tsx`
+- **Funciones**: `addToCart`, `removeFromCart`, `clearCart`, `getCartTotal`
+- **Persistencia**: localStorage
+
+### `AuthContext` - Estado de autenticación
+- **Ubicación**: `contexts/AuthContext.tsx`
+- **Proveedor**: Clerk (`useUser()`)
+- **Funciones**: `useAuthContext`, `useUserRole`
+- **Roles**: USER, ADMIN, EDITOR
+
+### `ConfigContext` - Configuración de la app
+- **Ubicación**: `contexts/ConfigContext.tsx`
+- **Cache**: localStorage con TTL de 5 minutos
+- **Funciones**: `useConfig`, `getSetting`, `getActiveCoupon`, `getCouponByCode`, `refetchConfig`
+
+---
+
+## 🪝 Custom Hooks
+
+| Hook | Descripción | Ubicación |
+|------|-------------|-----------|
+| `useUserRole` | Verifica si el usuario es ADMIN/EDITOR | `hooks/useUserRole.ts` |
+| `useCouponValidator` | Valida cupones de descuento | `hooks/useCouponValidator.ts` |
+| `useRouteCalculation` | Calcula rutas y delivery | `hooks/useRouteCalculation.ts` |
+| `useCache` | Hook genérico para caché en localStorage | `hooks/useCache.ts` |
+| `useConfigData` | Obtiene configuración de la app | `hooks/useConfigData.ts` |
+| `use-toast` | Muestra notificaciones toast | `hooks/use-toast.ts` |
+| `use-mobile` | Detecta si es dispositivo móvil | `hooks/use-mobile.tsx` |
+
+---
+
+## 🔄 Flujos Principales
+
+### 🛒 Flujo de Compra
+
+1. **Usuario agrega productos al carrito** → `CartContext.addToCart()`
+2. **Usuario abre carrito** → `ShoppingCartPanel.tsx`
+3. **Usuario ingresa cupón (opcional)** → `useCouponValidator.validate()`
+4. **Usuario hace click en "Continuar"** → Muestra `formToSend.tsx`
+5. **Usuario completa formulario de delivery**:
+   - Lima Metropolitana: Requiere mapa con ubicación
+   - Provincia: Requiere agencia, DNI, teléfono
+6. **Sistema calcula delivery**:
+   - Lima: `distance * 1.2` (usando OpenRouteService)
+   - Provincia: S/ 10-15 (según configuración)
+7. **Usuario hace click en "Realizar pedido"** → `handleOrderSubmit()`
+8. **Orden se guarda en DB** → `POST /api/orders`
+9. **Usuario es redirigido a WhatsApp** → Mensaje pre-llenado con detalles de orden
+
+### 📝 Moderación de Reviews con IA
+
+1. **Usuario envía review** → `POST /api/reviews`
+2. **Review se guarda con `aiModerated: false`**
+3. **Sistema llama a Google Gemini API** → `ai-moderation.ts`
+4. **IA evalúa review** (contenido inapropiado, spam, etc.)
+5. **Resultado se guarda**:
+   - `aiApproved: true` → Review publicada
+   - `aiApproved: false` → Review rechazada (con razón en `aiReason`)
+   - `aiError: true` → Error en moderación (revisar manualmente)
+
+### 🔄 Sync Clerk ↔ Database
+
+1. **Usuario se registra en Clerk** → Webhook `user.created`
+2. **Webhook se dispara** → `POST /api/webhooks/clerk`
+3. **Usuario se crea en DB** → `prisma.user.create()` con `clerkId`
+4. **Usuario actualiza perfil** → Webhook `user.updated`
+5. **DB se actualiza** → `prisma.user.update()`
+
+### 📊 Cálculo de Delivery (Lima)
+
+1. **Usuario marca ubicación en mapa** → `Maps.tsx` click handler
+2. **Sistema calcula ruta** → `calculateRoute()` con OpenRouteService API
+3. **API retorna distancia en km** → `routeData.distance`
+4. **Fórmula aplicada**: `Math.ceil(distancia * 1.2)`
+5. **Costo se guarda en formulario** → `setValue('deliveryCost', cost)`
+
+---
+
+## 🎯 Known Issues & TODOs
 
 ### Design System
 
@@ -184,9 +601,9 @@ NEXT_PUBLIC_CLOUDINARY_PRESET=...
 | Component | Size | Notes |
 |-----------|------|-------|
 | `header.tsx` | 4.2 KB | Refactorizado: Componentes separados (DesktopNav, MobileNav, UserMenuItems). Navegación principal y mobile con enlaces completos + condicionales por rol |
-| `ShoppingCartPanel.tsx` | 5.1 KB | Refactorizado: Componentes separados (CartItemsList, CouponInput, CartSummary) |
-| `formToSend.tsx` | ~20 KB | Refactorizado con React Hook Form + Zod. Usa lib/utils/local-storage.ts para persistencia. **Restaurado**: cálculo de delivery y Link a WhatsApp funcional |
-| `Maps/Maps.tsx` | ~10 KB | **Restaurado**: Lógica completa de cálculo de rutas con OpenRouteService. Fórmula original: `Math.ceil(distancia * 1.2)` |
+| `cart/ShoppingCartPanel.tsx` | 5.1 KB | Refactorizado: Componentes separados (CartItemsList, CouponInput, CartSummary) |
+| `checkout/formToSend.tsx` | ~20 KB | Refactorizado con React Hook Form + Zod. Usa lib/utils/local-storage.ts para persistencia. **Restaurado**: cálculo de delivery y Link a WhatsApp funcional |
+| `maps/maps.tsx` | ~10 KB | **Restaurado**: Lógica completa de cálculo de rutas con OpenRouteService. Fórmula original: `Math.ceil(distancia * 1.2)` |
 | `product-card.tsx` | — | Product display card |
 
 ---
