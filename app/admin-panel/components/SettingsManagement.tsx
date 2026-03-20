@@ -211,14 +211,14 @@ const SettingsManagement: React.FC = () => {
       let response: Response
       if (selectedColeccion) {
         // Actualizar
-        response = await fetch(`/api/colecciones/${selectedColeccion.id}`, {
+        response = await fetch(`/api/admin/colecciones/${selectedColeccion.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(validatedData)
         })
       } else {
         // Crear
-        response = await fetch('/api/colecciones', {
+        response = await fetch('/api/admin/colecciones', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(validatedData)
@@ -258,7 +258,7 @@ const SettingsManagement: React.FC = () => {
     if (!confirm('¿Estás seguro de eliminar esta colección?')) return
 
     try {
-      const response = await fetch(`/api/colecciones/${id}`, {
+      const response = await fetch(`/api/admin/colecciones/${id}`, {
         method: 'DELETE'
       })
 

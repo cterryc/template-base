@@ -148,7 +148,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       }
 
       const url =
-        mode === 'create' ? '/api/products' : `/api/products/${product?.id}`
+        mode === 'create' ? '/api/admin/products' : `/api/admin/products/${product?.id}`
       const method = mode === 'create' ? 'POST' : 'PUT'
 
       const response = await fetch(url, {

@@ -44,7 +44,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
 
     setIsDeleting(id)
     try {
-      const response = await fetch(`/api/products/${id}`, { method: 'DELETE' })
+      const response = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' })
       if (response.ok) {
         toast.success('Producto eliminado exitosamente')
         onDeleteProduct()
@@ -71,7 +71,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     }
 
     try {
-      const response = await fetch(`/api/products/${product.id}`, {
+      const response = await fetch(`/api/admin/products/${product.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

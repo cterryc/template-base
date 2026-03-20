@@ -6,19 +6,19 @@
 
 ### Tech Stack
 
-| Category | Technology |
-|----------|-----------|
-| **Framework** | Next.js 16.1.6 (App Router) |
-| **Runtime** | React 19.2.4 |
-| **Language** | TypeScript 5 |
-| **Authentication** | Clerk (@clerk/nextjs ^6.35.5) |
-| **Database** | PostgreSQL via Prisma v7 + @prisma/adapter-pg |
-| **UI Components** | shadcn/ui (Radix UI) — 36 components |
-| **Styling** | Tailwind CSS v3 + CSS Variables |
-| **Images** | Cloudinary (unoptimized: true) |
-| **Maps** | Leaflet + react-leaflet |
-| **State** | React Context API (CartContext, AuthContext, ConfigContext) |
-| **Forms** | React Hook Form + Zod (formToSend.tsx) |
+| Category           | Technology                                                  |
+| ------------------ | ----------------------------------------------------------- |
+| **Framework**      | Next.js 16.1.6 (App Router)                                 |
+| **Runtime**        | React 19.2.4                                                |
+| **Language**       | TypeScript 5                                                |
+| **Authentication** | Clerk (@clerk/nextjs ^6.35.5)                               |
+| **Database**       | PostgreSQL via Prisma v7 + @prisma/adapter-pg               |
+| **UI Components**  | shadcn/ui (Radix UI) — 36 components                        |
+| **Styling**        | Tailwind CSS v3 + CSS Variables                             |
+| **Images**         | Cloudinary (unoptimized: true)                              |
+| **Maps**           | Leaflet + react-leaflet                                     |
+| **State**          | React Context API (CartContext, AuthContext, ConfigContext) |
+| **Forms**          | React Hook Form + Zod (formToSend.tsx)                      |
 
 ---
 
@@ -71,8 +71,15 @@ Ecommerce-Base/
 │   ├── admin-panel/         # Admin dashboard
 │   ├── api/                 # Route handlers
 │   │   ├── (auth)/          # Auth-related APIs
-│   │   ├── (public)/        # Public APIs
-│   │   └── (user)/          # User-specific APIs
+│   │   ├── (public)/        # Public APIs (GET only)
+│   │   │   ├── products/    # Products list (GET)
+│   │   │   ├── categories/  # Categories list (GET)
+│   │   │   └── colecciones/ # Collections list (GET)
+│   │   ├── (user)/          # User-specific APIs
+│   │   └── admin/           # Admin-only APIs (POST/PUT/DELETE)
+│   │       ├── products/    # Products CRUD (auth required)
+│   │       ├── colecciones/ # Collections CRUD (auth required)
+│   │       └── reviews/     # Reviews moderation
 │   ├── collection/          # Product catalog
 │   ├── about/               # About page
 │   ├── contact/             # Contact page
@@ -148,8 +155,44 @@ The project uses **Clerk** for authentication:
 
 - **Root Layout**: `ClerkProvider` wraps the entire app
 - **Protected Routes**: Routes under `(protected)/` and `admin-panel/` require authentication
-- **User Roles**: USER, ADMIN, EDITOR (stored in database)
+- **User Roles**: USER, ADMIN, EDITOR (stored in database + Clerk publicMetadata)
 - **Session Cleanup**: `/cleanup-session` route handles logout
+
+### 🔒 API Route Security
+
+**Rutas Públicas** (`app/api/(public)/`):
+
+- Solo métodos `GET` para lectura de datos
+- Sin autenticación requerida
+- Ejemplos: listar productos, categorías, colecciones
+
+**Rutas Admin** (`app/api/admin/`):
+
+- Métodos `POST`, `PUT`, `DELETE` protegidos
+- Requieren autenticación con Clerk (`auth()`)
+- Verifican rol `ADMIN` o `EDITOR` en `sessionClaims.metadata`
+- Ejemplos: crear/editar/eliminar productos y colecciones
+
+**Ejemplo de protección en rutas admin**:
+
+```typescript
+import { auth } from '@clerk/nextjs/server'
+
+export async function POST(req: Request) {
+  const { userId, sessionClaims } = await auth()
+
+  if (!userId) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+  if (role !== 'ADMIN' && role !== 'EDITOR') {
+    return NextResponse.json({ error: 'Rol no autorizado' }, { status: 403 })
+  }
+
+  // ... lógica de admin
+}
+```
 
 ### Environment Variables Required
 
@@ -194,104 +237,108 @@ NODE_ENV=development
 
 ### 🔐 Authentication Routes `(app/api/(auth)/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `POST` | `/api/sign-in` | Sign in con Clerk | ❌ |
-| `POST` | `/api/sign-up` | Sign up con Clerk | ❌ |
+| Método | Ruta           | Descripción       | Auth |
+| ------ | -------------- | ----------------- | ---- |
+| `POST` | `/api/sign-in` | Sign in con Clerk | ❌   |
+| `POST` | `/api/sign-up` | Sign up con Clerk | ❌   |
 
 ### 👤 User Routes `(app/api/(user)/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `GET` | `/api/users/:id` | Obtener usuario por Clerk ID | ✅ |
-| `GET` | `/api/users` | Listar usuarios | ✅ Admin |
-| `POST` | `/api/updateuser` | Actualizar datos del usuario | ✅ |
-| `GET` | `/api/orders/:id` | Obtener orden por ID | ✅ |
-| `GET` | `/api/orders` | Listar órdenes del usuario | ✅ |
-| `POST` | `/api/orders` | Crear nueva orden | ✅ |
-| `GET` | `/api/orders/pdf` | Generar PDF de orden | ✅ |
+| Método | Ruta              | Descripción                  | Auth     |
+| ------ | ----------------- | ---------------------------- | -------- |
+| `GET`  | `/api/users/:id`  | Obtener usuario por Clerk ID | ✅       |
+| `GET`  | `/api/users`      | Listar usuarios              | ✅ Admin |
+| `POST` | `/api/updateuser` | Actualizar datos del usuario | ✅       |
+| `GET`  | `/api/orders/:id` | Obtener orden por ID         | ✅       |
+| `GET`  | `/api/orders`     | Listar órdenes del usuario   | ✅       |
+| `POST` | `/api/orders`     | Crear nueva orden            | ✅       |
+| `GET`  | `/api/orders/pdf` | Generar PDF de orden         | ✅       |
 
 ### 🛍️ Public Routes `(app/api/(public)/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `GET` | `/api/products` | Listar productos (filtros: category, estado) | ❌ |
-| `GET` | `/api/products/:id` | Obtener producto por ID | ❌ |
-| `GET` | `/api/categories` | Listar categorías | ❌ |
-| `GET` | `/api/categories/:id` | Obtener categoría por ID | ❌ |
+| Método | Ruta                  | Descripción                                  | Auth |
+| ------ | --------------------- | -------------------------------------------- | ---- |
+| `GET`  | `/api/products`       | Listar productos (filtros: category, estado) | ❌   |
+| `GET`  | `/api/products/:id`   | Obtener producto por ID                      | ❌   |
+| `GET`  | `/api/categories`     | Listar categorías                            | ❌   |
+| `GET`  | `/api/categories/:id` | Obtener categoría por ID                     | ❌   |
+| `GET`  | `/api/colecciones`    | Listar colecciones                           | ❌   |
 
 ### 🔧 Admin Routes `(app/api/admin/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `GET` | `/api/admin/reviews` | Listar reviews para moderación | ✅ Admin |
-| `DELETE` | `/api/admin/reviews/:id` | Eliminar review | ✅ Admin |
-| `POST` | `/api/admin/reviews` | Crear/actualizar review | ✅ Admin |
+| Método   | Ruta                         | Descripción                    | Auth            |
+| -------- | ---------------------------- | ------------------------------ | --------------- |
+| `GET`    | `/api/admin/reviews`         | Listar reviews para moderación | ✅ Admin        |
+| `DELETE` | `/api/admin/reviews/:id`     | Eliminar review                | ✅ Admin        |
+| `POST`   | `/api/admin/reviews`         | Crear/actualizar review        | ✅ Admin        |
+| `POST`   | `/api/admin/products`        | Crear producto                 | ✅ Admin/Editor |
+| `PUT`    | `/api/admin/products/:id`    | Actualizar producto            | ✅ Admin/Editor |
+| `DELETE` | `/api/admin/products/:id`    | Eliminar producto              | ✅ Admin/Editor |
+| `POST`   | `/api/admin/colecciones`     | Crear colección                | ✅ Admin/Editor |
+| `PUT`    | `/api/admin/colecciones/:id` | Actualizar colección           | ✅ Admin/Editor |
+| `DELETE` | `/api/admin/colecciones/:id` | Eliminar colección             | ✅ Admin/Editor |
 
 ### 📦 Product Management `(app/api/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `GET` | `/api/productos-destacados` | Listar productos destacados | ❌ |
-| `POST` | `/api/productos-destacados` | Crear producto destacado | ✅ Admin |
+| Método   | Ruta                            | Descripción                 | Auth     |
+| -------- | ------------------------------- | --------------------------- | -------- |
+| `GET`    | `/api/productos-destacados`     | Listar productos destacados | ❌       |
+| `POST`   | `/api/productos-destacados`     | Crear producto destacado    | ✅ Admin |
 | `DELETE` | `/api/productos-destacados/:id` | Eliminar producto destacado | ✅ Admin |
-| `GET` | `/api/inventory` | Obtener inventario | ✅ Admin |
-| `GET` | `/api/dashboard/stats` | Estadísticas del dashboard | ✅ Admin |
+| `GET`    | `/api/inventory`                | Obtener inventario          | ✅ Admin |
+| `GET`    | `/api/dashboard/stats`          | Estadísticas del dashboard  | ✅ Admin |
 
 ### 🎫 Coupon Routes `(app/api/cupones/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `GET` | `/api/cupones` | Listar cupones | ❌ |
-| `POST` | `/api/cupones` | Crear cupón | ✅ Admin |
-| `DELETE` | `/api/cupones/:id` | Eliminar cupón | ✅ Admin |
-| `GET` | `/api/cupones/codigo/:codigo` | Validar cupón por código | ❌ |
-| `GET` | `/api/cupones/validate` | Validar cupón (alternativo) | ❌ |
+| Método   | Ruta                          | Descripción                 | Auth     |
+| -------- | ----------------------------- | --------------------------- | -------- |
+| `GET`    | `/api/cupones`                | Listar cupones              | ❌       |
+| `POST`   | `/api/cupones`                | Crear cupón                 | ✅ Admin |
+| `DELETE` | `/api/cupones/:id`            | Eliminar cupón              | ✅ Admin |
+| `GET`    | `/api/cupones/codigo/:codigo` | Validar cupón por código    | ❌       |
+| `GET`    | `/api/cupones/validate`       | Validar cupón (alternativo) | ❌       |
 
 ### 🏢 Agency Routes `(app/api/agencias/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `GET` | `/api/agencias` | Listar agencias de envío | ❌ |
-| `POST` | `/api/agencias` | Crear agencia | ✅ Admin |
-| `DELETE` | `/api/agencias/:id` | Eliminar agencia | ✅ Admin |
+| Método   | Ruta                | Descripción              | Auth     |
+| -------- | ------------------- | ------------------------ | -------- |
+| `GET`    | `/api/agencias`     | Listar agencias de envío | ❌       |
+| `POST`   | `/api/agencias`     | Crear agencia            | ✅ Admin |
+| `DELETE` | `/api/agencias/:id` | Eliminar agencia         | ✅ Admin |
 
 ### 🖼️ Cloudinary Routes `(app/api/cloudinary/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `POST` | `/api/cloudinary/upload` | Subir imagen a Cloudinary | ✅ Admin |
-| `GET` | `/api/cloudinary/list` | Listar assets en Cloudinary | ✅ Admin |
-| `GET` | `/api/cloudinary/folders` | Listar folders en Cloudinary | ✅ Admin |
-| `POST` | `/api/cloudinary/folder-create` | Crear folder en Cloudinary | ✅ Admin |
-| `DELETE` | `/api/cloudinary/folder-delete` | Eliminar folder en Cloudinary | ✅ Admin |
-| `GET` | `/api/cloudinary/folder-assets-count` | Contar assets en folder | ✅ Admin |
-| `GET` | `/api/cloudinary/assets` | Listar assets | ✅ Admin |
-| `DELETE` | `/api/cloudinary/delete-image` | Eliminar imagen | ✅ Admin |
+| Método   | Ruta                                  | Descripción                   | Auth     |
+| -------- | ------------------------------------- | ----------------------------- | -------- |
+| `POST`   | `/api/cloudinary/upload`              | Subir imagen a Cloudinary     | ✅ Admin |
+| `GET`    | `/api/cloudinary/list`                | Listar assets en Cloudinary   | ✅ Admin |
+| `GET`    | `/api/cloudinary/folders`             | Listar folders en Cloudinary  | ✅ Admin |
+| `POST`   | `/api/cloudinary/folder-create`       | Crear folder en Cloudinary    | ✅ Admin |
+| `DELETE` | `/api/cloudinary/folder-delete`       | Eliminar folder en Cloudinary | ✅ Admin |
+| `GET`    | `/api/cloudinary/folder-assets-count` | Contar assets en folder       | ✅ Admin |
+| `GET`    | `/api/cloudinary/assets`              | Listar assets                 | ✅ Admin |
+| `DELETE` | `/api/cloudinary/delete-image`        | Eliminar imagen               | ✅ Admin |
 
 ### ⚙️ Config & Settings `(app/api/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `GET` | `/api/config` | Obtener configuración de la app | ❌ |
-| `GET` | `/api/settings` | Obtener settings | ✅ Admin |
-| `POST` | `/api/settings` | Actualizar settings | ✅ Admin |
-| `GET` | `/api/fotos` | Obtener fotos de la tienda | ❌ |
-| `POST` | `/api/fotos` | Actualizar fotos | ✅ Admin |
-| `GET` | `/api/colecciones` | Listar colecciones | ❌ |
-| `POST` | `/api/colecciones` | Crear colección | ✅ Admin |
-| `DELETE` | `/api/colecciones/:id` | Eliminar colección | ✅ Admin |
+| Método | Ruta            | Descripción                     | Auth     |
+| ------ | --------------- | ------------------------------- | -------- |
+| `GET`  | `/api/config`   | Obtener configuración de la app | ❌       |
+| `GET`  | `/api/settings` | Obtener settings                | ✅ Admin |
+| `POST` | `/api/settings` | Actualizar settings             | ✅ Admin |
+| `GET`  | `/api/fotos`    | Obtener fotos de la tienda      | ❌       |
+| `POST` | `/api/fotos`    | Actualizar fotos                | ✅ Admin |
 
 ### 📊 Reports `(app/api/reports/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
-| `GET` | `/api/reports/sales` | Reporte de ventas | ✅ Admin |
+| Método | Ruta                 | Descripción       | Auth     |
+| ------ | -------------------- | ----------------- | -------- |
+| `GET`  | `/api/reports/sales` | Reporte de ventas | ✅ Admin |
 
 ### 🔔 Webhooks `(app/api/webhooks/)`
 
-| Método | Ruta | Descripción | Auth |
-|--------|------|-------------|------|
+| Método | Ruta                  | Descripción                       | Auth      |
+| ------ | --------------------- | --------------------------------- | --------- |
 | `POST` | `/api/webhooks/clerk` | Webhook de Clerk para sync con DB | 🔐 Secret |
 
 ---
@@ -319,6 +366,7 @@ enum Role {
 ### Modelos
 
 #### **User** - Usuarios de la aplicación
+
 ```prisma
 model User {
   id               Int              @id @default(autoincrement())
@@ -337,7 +385,7 @@ model User {
   department       String?          // Departamento/Provincia
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  
+
   @@index([clerkId])   // Búsqueda por Clerk ID
   @@index([email])     // Búsqueda por email
   @@index([role])      // Filtrar por rol
@@ -345,6 +393,7 @@ model User {
 ```
 
 #### **Productos** - Catálogo de productos
+
 ```prisma
 model Productos {
   id         Int     @id @default(autoincrement())
@@ -363,7 +412,7 @@ model Productos {
   reviews    Review[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
+
   @@index([category])
   @@index([estado])
   @@index([category, estado])
@@ -371,6 +420,7 @@ model Productos {
 ```
 
 #### **Orders** - Órdenes de compra
+
 ```prisma
 model Orders {
   id             Int         @id @default(autoincrement())
@@ -391,7 +441,7 @@ model Orders {
   discount       Decimal     @default(0)
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
-  
+
   @@index([userId])
   @@index([status])
   @@index([userId, status])
@@ -401,6 +451,7 @@ model Orders {
 ```
 
 #### **OrderItem** - Items de la orden
+
 ```prisma
 model OrderItem {
   id         Int       @id @default(autoincrement())
@@ -413,7 +464,7 @@ model OrderItem {
   unitPrice  Decimal
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
-  
+
   @@index([orderId])
   @@index([productoId])
   @@index([orderId, productoId])
@@ -421,6 +472,7 @@ model OrderItem {
 ```
 
 #### **Cupon** - Cupones de descuento
+
 ```prisma
 model Cupon {
   id           Int     @id @default(autoincrement())
@@ -433,6 +485,7 @@ model Cupon {
 ```
 
 #### **Review** - Reseñas de productos (con moderación IA)
+
 ```prisma
 model Review {
   id          Int       @id @default(autoincrement())
@@ -443,17 +496,17 @@ model Review {
   productoId  Int
   producto    Productos @relation(fields: [productoId], references: [id])
   verified    Boolean   @default(false)  // ¿Compró el producto?
-  
+
   // Moderación con IA (Google Gemini)
   aiModerated Boolean   @default(false)
   aiApproved  Boolean?  // true = apta, false = no apta
   aiReason    String?   // Razón si fue rechazada
   aiModel     String?   @default("gemini-1.5-flash")
   aiError     Boolean   @default(false)
-  
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@index([productoId])
   @@index([userId])
   @@index([verified])
@@ -462,14 +515,14 @@ model Review {
 
 #### **Otros Modelos**
 
-| Modelo | Descripción | Campos Principales |
-|--------|-------------|-------------------|
-| `ProductosDestacados` | Productos en destaque | `productoId` (FK), `createdAt` |
-| `Coleccion` | Colecciones de ropa | `name`, `price`, `image` |
-| `Categories` | Categorías de productos | `name` (unique) |
-| `Agencia` | Agencias de envío | `agencias` (array), `minimoDelivery`, `maximoDelivery` |
-| `Fotos` | Fotos de la tienda | `imagenIzquierda`, `imagenDerecha`, `fotoTienda` |
-| `Setting` | Configuración de la app | `key` (PK), `value` |
+| Modelo                | Descripción             | Campos Principales                                     |
+| --------------------- | ----------------------- | ------------------------------------------------------ |
+| `ProductosDestacados` | Productos en destaque   | `productoId` (FK), `createdAt`                         |
+| `Coleccion`           | Colecciones de ropa     | `name`, `price`, `image`                               |
+| `Categories`          | Categorías de productos | `name` (unique)                                        |
+| `Agencia`             | Agencias de envío       | `agencias` (array), `minimoDelivery`, `maximoDelivery` |
+| `Fotos`               | Fotos de la tienda      | `imagenIzquierda`, `imagenDerecha`, `fotoTienda`       |
+| `Setting`             | Configuración de la app | `key` (PK), `value`                                    |
 
 ---
 
@@ -478,15 +531,16 @@ model Review {
 **Ubicación**: `lib/schemas/`
 
 ### `delivery.schema.ts`
+
 ```typescript
 const DeliverySchema = z.object({
-  clientName: z.string().min(1, "El nombre es requerido"),
-  address: z.string().min(1, "La dirección es requerida"),
+  clientName: z.string().min(1, 'El nombre es requerido'),
+  address: z.string().min(1, 'La dirección es requerida'),
   locationToSend: z.enum(['lima_metropolitana', 'provincia']),
   deliveryCost: z.number().min(0),
   agencia: z.string().optional(),
-  dni: z.string().min(8, "DNI debe tener 8 dígitos").optional(),
-  clientPhone: z.string().min(7, "Teléfono inválido").optional(),
+  dni: z.string().min(8, 'DNI debe tener 8 dígitos').optional(),
+  clientPhone: z.string().min(7, 'Teléfono inválido').optional(),
   getlocation: z.object({
     lat: z.number(),
     lng: z.number()
@@ -496,12 +550,15 @@ const DeliverySchema = z.object({
 ```
 
 ### `product.schema.ts`
+
 - Schema para validación de productos (CRUD admin)
 
 ### `user.schema.ts`
+
 - Schema para validación de usuarios
 
 ### `index.ts`
+
 - Exporta todos los schemas
 
 ---
@@ -509,17 +566,20 @@ const DeliverySchema = z.object({
 ## 🧩 Contextos React
 
 ### `CartContext` - Estado del carrito
+
 - **Ubicación**: `contexts/CartContext.tsx`
 - **Funciones**: `addToCart`, `removeFromCart`, `clearCart`, `getCartTotal`
 - **Persistencia**: localStorage
 
 ### `AuthContext` - Estado de autenticación
+
 - **Ubicación**: `contexts/AuthContext.tsx`
 - **Proveedor**: Clerk (`useUser()`)
 - **Funciones**: `useAuthContext`, `useUserRole`
 - **Roles**: USER, ADMIN, EDITOR
 
 ### `ConfigContext` - Configuración de la app
+
 - **Ubicación**: `contexts/ConfigContext.tsx`
 - **Cache**: localStorage con TTL de 5 minutos
 - **Funciones**: `useConfig`, `getSetting`, `getActiveCoupon`, `getCouponByCode`, `refetchConfig`
@@ -528,15 +588,15 @@ const DeliverySchema = z.object({
 
 ## 🪝 Custom Hooks
 
-| Hook | Descripción | Ubicación |
-|------|-------------|-----------|
-| `useUserRole` | Verifica si el usuario es ADMIN/EDITOR | `hooks/useUserRole.ts` |
-| `useCouponValidator` | Valida cupones de descuento | `hooks/useCouponValidator.ts` |
-| `useRouteCalculation` | Calcula rutas y delivery | `hooks/useRouteCalculation.ts` |
-| `useCache` | Hook genérico para caché en localStorage | `hooks/useCache.ts` |
-| `useConfigData` | Obtiene configuración de la app | `hooks/useConfigData.ts` |
-| `use-toast` | Muestra notificaciones toast | `hooks/use-toast.ts` |
-| `use-mobile` | Detecta si es dispositivo móvil | `hooks/use-mobile.tsx` |
+| Hook                  | Descripción                              | Ubicación                      |
+| --------------------- | ---------------------------------------- | ------------------------------ |
+| `useUserRole`         | Verifica si el usuario es ADMIN/EDITOR   | `hooks/useUserRole.ts`         |
+| `useCouponValidator`  | Valida cupones de descuento              | `hooks/useCouponValidator.ts`  |
+| `useRouteCalculation` | Calcula rutas y delivery                 | `hooks/useRouteCalculation.ts` |
+| `useCache`            | Hook genérico para caché en localStorage | `hooks/useCache.ts`            |
+| `useConfigData`       | Obtiene configuración de la app          | `hooks/useConfigData.ts`       |
+| `use-toast`           | Muestra notificaciones toast             | `hooks/use-toast.ts`           |
+| `use-mobile`          | Detecta si es dispositivo móvil          | `hooks/use-mobile.tsx`         |
 
 ---
 
@@ -598,13 +658,13 @@ const DeliverySchema = z.object({
 
 ### Key Components
 
-| Component | Size | Notes |
-|-----------|------|-------|
-| `header.tsx` | 4.2 KB | Refactorizado: Componentes separados (DesktopNav, MobileNav, UserMenuItems). Navegación principal y mobile con enlaces completos + condicionales por rol |
-| `cart/ShoppingCartPanel.tsx` | 5.1 KB | Refactorizado: Componentes separados (CartItemsList, CouponInput, CartSummary) |
-| `checkout/formToSend.tsx` | ~20 KB | Refactorizado con React Hook Form + Zod. Usa lib/utils/local-storage.ts para persistencia. **Restaurado**: cálculo de delivery y Link a WhatsApp funcional |
-| `maps/maps.tsx` | ~10 KB | **Restaurado**: Lógica completa de cálculo de rutas con OpenRouteService. Fórmula original: `Math.ceil(distancia * 1.2)` |
-| `product-card.tsx` | — | Product display card |
+| Component                    | Size   | Notes                                                                                                                                                      |
+| ---------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `header.tsx`                 | 4.2 KB | Refactorizado: Componentes separados (DesktopNav, MobileNav, UserMenuItems). Navegación principal y mobile con enlaces completos + condicionales por rol   |
+| `cart/ShoppingCartPanel.tsx` | 5.1 KB | Refactorizado: Componentes separados (CartItemsList, CouponInput, CartSummary)                                                                             |
+| `checkout/formToSend.tsx`    | ~20 KB | Refactorizado con React Hook Form + Zod. Usa lib/utils/local-storage.ts para persistencia. **Restaurado**: cálculo de delivery y Link a WhatsApp funcional |
+| `maps/maps.tsx`              | ~10 KB | **Restaurado**: Lógica completa de cálculo de rutas con OpenRouteService. Fórmula original: `Math.ceil(distancia * 1.2)`                                   |
+| `product-card.tsx`           | —      | Product display card                                                                                                                                       |
 
 ---
 
@@ -627,6 +687,12 @@ const DeliverySchema = z.object({
 7. **Accessibility** — UI needs WCAG audit
 
 ### ✅ Completed
+
+- **Seguridad de API Routes** — Marzo 2026:
+  - **Products**: POST/PUT/DELETE movidos a `/api/admin/products/` con autenticación Clerk
+  - **Colecciones**: POST/PUT/DELETE movidos a `/api/admin/colecciones/` con autenticación Clerk
+  - **Verificación de rol**: ADMIN o EDITOR requeridos para rutas admin
+  - **Rutas públicas**: Solo GET en `/api/(public)/` para lectura sin auth
 
 - **Refactorización Masiva de Código** — Marzo 2026:
   - **formToSend.tsx**: 762 → ~565 líneas (-26%) — React Hook Form + Zod implementado
@@ -705,6 +771,7 @@ const DeliverySchema = z.object({
 ### Commit Messages
 
 No specific convention enforced. Standard practice:
+
 ```
 <type>(<scope>): <description>
 
@@ -801,6 +868,7 @@ fix(cart): resolve quantity update bug
 ## 📞 Support
 
 For issues or questions:
+
 1. Check `skills-lock.json` for skill version tracking
 2. Review `types/products.ts` for shared type definitions
 3. Check custom hooks in `hooks/` directory for reusable logic
@@ -809,4 +877,4 @@ For issues or questions:
 
 ---
 
-*Last updated: March 2026 — Refactorización + Fixes Completados*
+_Last updated: March 2026 — Refactorización + Fixes Completados_

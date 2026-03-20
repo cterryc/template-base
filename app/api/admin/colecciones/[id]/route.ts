@@ -1,6 +1,23 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
+
+// Verificar autenticación y rol
+async function checkAuth() {
+  const { userId, sessionClaims } = await auth()
+
+  if (!userId) {
+    return { authorized: false, error: 'No autorizado' }
+  }
+
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+  if (role !== 'ADMIN' && role !== 'EDITOR') {
+    return { authorized: false, error: 'Rol no autorizado. Se requiere ADMIN o EDITOR' }
+  }
+
+  return { authorized: true }
+}
 
 // Esquema de validación
 const updateColeccionSchema = z.object({
@@ -9,11 +26,17 @@ const updateColeccionSchema = z.object({
   image: z.string().url().optional()
 })
 
+// PUT - Actualizar colección (Solo Admin/Editor)
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authCheck = await checkAuth()
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.error }, { status: 401 })
+    }
+
     const { id: idParam } = await params
     const id = parseInt(idParam)
 
@@ -91,11 +114,17 @@ export async function PUT(
   }
 }
 
+// DELETE - Eliminar colección (Solo Admin/Editor)
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authCheck = await checkAuth()
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.error }, { status: 401 })
+    }
+
     const { id: idParam } = await params
     const id = parseInt(idParam)
 
