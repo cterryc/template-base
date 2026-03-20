@@ -98,7 +98,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             cachedData = cacheResult.data
             setConfigData(cachedData)
             setLastFetched(new Date(cacheResult.timestamp))
-            setIsLoading(false)
+            // No marcar isLoading = false aquí, dejar que el fetch continúe
           }
         }
 
@@ -106,7 +106,12 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         abortControllerRef.current = new AbortController()
 
         const headers: HeadersInit = {}
-        if (cachedDataRef.current?.etag && !forceRefresh) {
+        // Verificar si caché expiró (TTL de 5 minutos)
+        const cacheExpired = cachedDataRef.current && 
+          (Date.now() - cachedDataRef.current.timestamp > CACHE_TTL)
+        
+        // Solo usar etag si caché no ha expirado
+        if (cachedDataRef.current?.etag && !forceRefresh && !cacheExpired) {
           headers['If-None-Match'] = cachedDataRef.current.etag
         }
 

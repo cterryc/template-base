@@ -12,8 +12,10 @@ export async function GET() {
 
     // Calcular timestamp de última modificación
     const lastUpdatedSettings = settings.reduce((latest, setting) => {
-      // Nota: Si tus settings no tienen updatedAt, usa createdAt
-      return latest
+      const date = setting.updatedAt 
+        ? new Date(setting.updatedAt)
+        : new Date(setting.createdAt)
+      return date > latest ? date : latest
     }, new Date(0))
 
     const lastUpdatedCupones = cupones.reduce((latest, cupon) => {
