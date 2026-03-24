@@ -23,11 +23,11 @@ interface RouteCalculationResult {
 
 /**
  * Hook para calcular rutas entre dos puntos usando OpenRouteService
- * 
+ *
  * @example
  * ```tsx
  * const { routeInfo, isLoading, calculateRoute } = useRouteCalculation()
- * 
+ *
  * useEffect(() => {
  *   if (userPosition && destinationPosition) {
  *     calculateRoute(userPosition, destinationPosition)
@@ -79,7 +79,7 @@ export function useRouteCalculation(): RouteCalculationResult {
           throw new Error('No se pudo calcular la ruta')
         }
       }
-    } catch (err) {
+    } catch (_) {
       setError('Error calculando la ruta')
       setRouteInfo(null)
     } finally {
@@ -103,7 +103,7 @@ export function useRouteCalculation(): RouteCalculationResult {
 
 /**
  * Hook para calcular el costo de delivery basado en distancia
- * 
+ *
  * @param distance - Distancia en kilómetros
  * @param minimoDelivery - Costo mínimo
  * @param maximoDelivery - Costo máximo
@@ -120,7 +120,10 @@ export function useDeliveryCost(
     if (distance && distance > 0) {
       // S/ 1.5 por km, con mínimo y máximo
       const calculated = distance * 1.5
-      const adjusted = Math.max(minimoDelivery, Math.min(maximoDelivery, calculated))
+      const adjusted = Math.max(
+        minimoDelivery,
+        Math.min(maximoDelivery, calculated)
+      )
       setDeliveryCost(adjusted)
     }
   }, [distance, minimoDelivery, maximoDelivery])

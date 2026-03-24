@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
-export async function GET(req: NextRequest) {
+export async function GET(_: NextRequest) {
   try {
     // Solo debería haber un registro de fotos (configuración del sitio)
     const fotos = await prisma.fotos.findFirst({

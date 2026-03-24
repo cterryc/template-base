@@ -56,7 +56,7 @@ export default function InteractiveMap({
           setMapLoaded(true)
         }
         document.head.appendChild(script)
-      } catch (error) {
+      } catch (_) {
         setError('Error cargando el mapa')
       }
     }
@@ -73,7 +73,7 @@ export default function InteractiveMap({
             lng: position.coords.longitude
           })
         },
-        (error) => {
+        (_) => {
           setError(
             'No se pudo obtener la ubicación. Usando ubicación por defecto.'
           )
@@ -203,6 +203,50 @@ export default function InteractiveMap({
     }
   }, [mapLoaded, userPosition])
 
+  // Ruta de fallback
+  const calculateFallbackRoute = (start: Position, end: Position) => {
+    const distance = calculateStraightLineDistance(start, end)
+
+    const coordinates: [number, number][] = []
+    coordinates.push([start.lat, start.lng])
+
+    const latDiff = end.lat - start.lat
+    const lngDiff = end.lng - start.lng
+
+    for (let i = 1; i < 4; i++) {
+      const ratio = i / 4
+      const intermediateLat =
+        start.lat + latDiff * ratio + (Math.random() - 0.5) * 0.001
+      const intermediateLng =
+        start.lng + lngDiff * ratio + (Math.random() - 0.5) * 0.001
+      coordinates.push([intermediateLat, intermediateLng])
+    }
+
+    coordinates.push([end.lat, end.lng])
+
+    return {
+      distance: distance * 1.3,
+      duration: distance * 1.3 * 2,
+      coordinates
+    }
+  }
+
+  // Mostrar la ruta en el mapa y calcular costo
+  const displayRoute = (routeData: RouteInfo) => {
+    const { map } = mapInstanceRef.current
+
+    if (mapInstanceRef.current.routeLine) {
+      map.removeLayer(mapInstanceRef.current.routeLine)
+    }
+
+    // Calcular costo de delivery
+    // Fórmula original: distancia * 1.2, redondeado hacia arriba
+    const costDelivery = Math.ceil(routeData.distance * 10) / 10
+    setDeliveryCost(Math.ceil(costDelivery * 1.2))
+
+    setRouteInfo(routeData)
+  }
+
   // Calcular ruta usando OpenRouteService
   const calculateRoute = async () => {
     if (!destinationPosition) return
@@ -310,50 +354,6 @@ export default function InteractiveMap({
       console.error('Error con OpenRouteService:', error)
       return null
     }
-  }
-
-  // Ruta de fallback
-  const calculateFallbackRoute = (start: Position, end: Position) => {
-    const distance = calculateStraightLineDistance(start, end)
-
-    const coordinates: [number, number][] = []
-    coordinates.push([start.lat, start.lng])
-
-    const latDiff = end.lat - start.lat
-    const lngDiff = end.lng - start.lng
-
-    for (let i = 1; i < 4; i++) {
-      const ratio = i / 4
-      const intermediateLat =
-        start.lat + latDiff * ratio + (Math.random() - 0.5) * 0.001
-      const intermediateLng =
-        start.lng + lngDiff * ratio + (Math.random() - 0.5) * 0.001
-      coordinates.push([intermediateLat, intermediateLng])
-    }
-
-    coordinates.push([end.lat, end.lng])
-
-    return {
-      distance: distance * 1.3,
-      duration: distance * 1.3 * 2,
-      coordinates
-    }
-  }
-
-  // Mostrar la ruta en el mapa y calcular costo
-  const displayRoute = (routeData: RouteInfo) => {
-    const { map } = mapInstanceRef.current
-
-    if (mapInstanceRef.current.routeLine) {
-      map.removeLayer(mapInstanceRef.current.routeLine)
-    }
-
-    // Calcular costo de delivery
-    // Fórmula original: distancia * 1.2, redondeado hacia arriba
-    const costDelivery = Math.ceil(routeData.distance * 10) / 10
-    setDeliveryCost(Math.ceil(costDelivery * 1.2))
-
-    setRouteInfo(routeData)
   }
 
   // Calcular distancia en línea recta

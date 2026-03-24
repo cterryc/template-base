@@ -13,7 +13,7 @@ import {
 import { RiArrowUpDoubleLine } from 'react-icons/ri'
 import './page.css'
 import { ProductsProps } from './interface'
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 
 interface Pagination {
   page: number
@@ -32,7 +32,6 @@ export default function Collection() {
   const [filter, setFilter] = useState(category || '')
   const [sort, setSort] = useState('name')
   const [showCategory, setShowCategory] = useState(category || 'all')
-  const [isVisible, setIsVisible] = useState(false)
   const [products, setProducts] = useState<ProductsProps[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
   const [page, setPage] = useState(1)
@@ -58,17 +57,6 @@ export default function Collection() {
 
   useEffect(() => {
     getProducts()
-
-    const toggleVisibility = () => {
-      if (window.scrollY > 300) {
-        setIsVisible(true)
-      } else {
-        setIsVisible(false)
-      }
-    }
-
-    window.addEventListener('scroll', toggleVisibility)
-    return () => window.removeEventListener('scroll', toggleVisibility)
   }, [page, filter, sort])
 
   useEffect(() => {
@@ -82,7 +70,6 @@ export default function Collection() {
     })
   }
 
-  const pathname = usePathname() // Obtenemos la ruta actual
   const router = useRouter()
   const handleFilterChange = (value: string) => {
     // Actualizar URL con query param
@@ -93,7 +80,7 @@ export default function Collection() {
       newParams.delete('category')
     }
     router.push(`/collection?${newParams}`)
-    
+
     setFilter(value === 'all' ? '' : value)
     setShowCategory(value)
     setPage(1)
@@ -172,7 +159,6 @@ export default function Collection() {
       )}
 
       {/* Botón scroll to top */}
-      {/* {isVisible && ( */}
       <button
         onClick={scrollToTop}
         className='buttonUp'
@@ -180,7 +166,6 @@ export default function Collection() {
       >
         <RiArrowUpDoubleLine className='w-10 h-10' />
       </button>
-      {/* )} */}
     </div>
   )
 }

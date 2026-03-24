@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image' // Para el logo/loader, si lo necesitas
 
 export default function CleanupPage() {
   const router = useRouter()
@@ -17,7 +16,7 @@ export default function CleanupPage() {
       if (typeof window !== 'undefined') {
         try {
           localStorage.removeItem('dataDeliverySend') // ⬅️ **TU CLAVE DE LOCALSTORAGE**
-        } catch (error) {
+        } catch (_) {
           setMessage(
             'Ocurrió un error al Cerrar Sesión. Redirigiendo igualmente...'
           )

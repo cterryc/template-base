@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/contexts/CartContext'
-import { MdOutlineShoppingCart } from 'react-icons/md'
 import { FiCheckCircle } from 'react-icons/fi'
 import { ImSpinner2 } from 'react-icons/im'
 

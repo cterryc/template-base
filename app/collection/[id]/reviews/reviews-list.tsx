@@ -1,9 +1,4 @@
-import {
-  getProductReviews,
-  canUserReview,
-  createReview,
-  type CreateReviewFormData
-} from './actions'
+import { getProductReviews, canUserReview } from './actions'
 import { StarsDisplay } from './stars-display'
 import { VerifiedBadge } from './verified-badge'
 import { CreateReviewForm } from './create-review-form'

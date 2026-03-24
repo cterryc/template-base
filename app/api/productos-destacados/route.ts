@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidatePath } from 'next/cache'
 import type { Prisma } from '@/app/generated/prisma/client'
 
 export async function GET(req: NextRequest) {

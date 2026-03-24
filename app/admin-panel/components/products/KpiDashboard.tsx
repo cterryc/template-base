@@ -5,8 +5,7 @@ import {
   MdInventory2,
   MdLocalShipping,
   MdWarning,
-  MdAttachMoney,
-  MdStar
+  MdAttachMoney
 } from 'react-icons/md'
 import type { KpiData } from '../types'
 import KpiCard from '@/components/shared/KpiCard'
