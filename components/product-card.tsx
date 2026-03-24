@@ -31,7 +31,6 @@ export default function ProductCard({
   const { addToCart } = useCart()
   const [image, setImage] = useState<string>(product.image)
   const [selectedSize, setSelectedSize] = useState<string>('') // Estado para el tamañ
-  const [quantity, setQuantity] = useState(1) // Estado para la cantidad
   const [buttonState, setButtonState] = useState<
     'idle' | 'loading' | 'success'
   >('idle')
@@ -43,7 +42,7 @@ export default function ProductCard({
         id: product.id,
         name: product.name,
         price: product.price,
-        quantity: quantity,
+        quantity: 1,
         image: product.image,
         size: selectedSize
       })

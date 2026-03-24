@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import prisma from '@/lib/prisma'
+import type { Prisma } from '@/app/generated/prisma/client'
 
 export async function GET(req: NextRequest) {
   const { userId: clerkId } = await auth()
@@ -21,26 +22,26 @@ export async function GET(req: NextRequest) {
   const skip = (page - 1) * limit
 
   try {
-    const where: any = {
-      AND: [
-        {
-          OR: [
-            { comment: { contains: search, mode: 'insensitive' } },
-            { user: { name: { contains: search, mode: 'insensitive' } } },
-            { producto: { name: { contains: search, mode: 'insensitive' } } }
-          ]
-        }
-      ]
-    }
+    const andConditions: Prisma.ReviewWhereInput[] = [
+      {
+        OR: [
+          { comment: { contains: search, mode: 'insensitive' } },
+          { user: { name: { contains: search, mode: 'insensitive' } } },
+          { producto: { name: { contains: search, mode: 'insensitive' } } }
+        ]
+      }
+    ]
 
     // Filtro de estado
     if (status === 'approved') {
-      where.AND.push({ aiApproved: true })
+      andConditions.push({ aiApproved: true })
     } else if (status === 'rejected') {
-      where.AND.push({ aiApproved: false })
+      andConditions.push({ aiApproved: false })
     } else if (status === 'pending') {
-      where.AND.push({ aiApproved: null })
+      andConditions.push({ aiApproved: null })
     }
+
+    const where: Prisma.ReviewWhereInput = { AND: andConditions }
 
     const [reviews, total] = await Promise.all([
       prisma.review.findMany({

@@ -1,5 +1,3 @@
-import { fileURLToPath } from 'url'
-
 /**
  * Next.js Configuration
  *
@@ -11,11 +9,11 @@ let userConfig = undefined
 try {
   // Try to import ESM first (v0.dev generated config)
   userConfig = await import('./v0-user-next.config.mjs')
-} catch (e) {
+} catch {
   try {
     // Fallback to CJS import
     userConfig = await import('./v0-user-next.config')
-  } catch (innerError) {
+  } catch {
     // Ignore error - no user config exists
   }
 }

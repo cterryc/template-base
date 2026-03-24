@@ -19,7 +19,6 @@ import SettingsManagement from './components/SettingsManagement'
 import CuponesCRUD from './components/CuponesCRUD'
 import ReviewsManagement from './components/ReviewsManagement'
 import { MdRateReview } from 'react-icons/md'
-import { Button } from '@/components/ui/button'
 
 const paths = [
   { name: 'Órdenes', path: 'orders', icon: MdShoppingBag },

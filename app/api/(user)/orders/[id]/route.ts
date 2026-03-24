@@ -41,7 +41,7 @@ export async function GET(
       )
 
     return NextResponse.json({ data: order })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: 'Error interno' }, { status: 500 })
   }
 }
@@ -178,7 +178,7 @@ export async function DELETE(
     await prisma.orders.delete({ where: { id } })
 
     return NextResponse.json({ message: 'Orden eliminada correctamente' })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: 'Error al eliminar' }, { status: 500 })
   }
 }

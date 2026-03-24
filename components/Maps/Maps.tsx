@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Navigation, DollarSign } from 'lucide-react'
+import { Navigation } from 'lucide-react'
 import { FaRegTrashAlt } from 'react-icons/fa'
 
 interface Position {
@@ -38,8 +38,8 @@ export default function InteractiveMap({
     useState<Position | null>(null)
   const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Cargar Leaflet dinámicamente
   useEffect(() => {
@@ -203,6 +203,46 @@ export default function InteractiveMap({
     }
   }, [mapLoaded, userPosition])
 
+  // Calcular ruta usando OpenRouteService
+  const calculateRoute = async () => {
+    if (!destinationPosition) return
+
+    // Ubicación fija para testing (Mercado Central de Lima)
+    const testUserPosition = {
+      lat: -11.993006368779662,
+      lng: -77.04907178878786
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const routeData = await getRouteFromORS(
+        testUserPosition,
+        destinationPosition
+      )
+
+      if (routeData) {
+        displayRoute(routeData)
+      } else {
+        const fallbackRoute = calculateFallbackRoute(
+          testUserPosition,
+          destinationPosition
+        )
+        displayRoute(fallbackRoute)
+      }
+    } catch (error) {
+      console.error('Error calculando ruta:', error)
+      const fallbackRoute = calculateFallbackRoute(
+        testUserPosition,
+        destinationPosition
+      )
+      displayRoute(fallbackRoute)
+    }
+
+    setLoading(false)
+  }
+
   // Manejar cambios en destinationPosition y calcular ruta
   useEffect(() => {
     if (mapInstanceRef.current && destinationPosition) {
@@ -230,43 +270,6 @@ export default function InteractiveMap({
       }
     }
   }, [destinationPosition, userPosition])
-
-  // Calcular ruta usando OpenRouteService
-  const calculateRoute = async () => {
-    if (!destinationPosition) return
-
-    // Ubicación fija para testing (Mercado Central de Lima)
-    const testUserPosition = {
-      lat: -11.993006368779662,
-      lng: -77.04907178878786
-    }
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      const routeData = await getRouteFromORS(testUserPosition, destinationPosition)
-
-      if (routeData) {
-        displayRoute(routeData)
-      } else {
-        const fallbackRoute = calculateFallbackRoute(
-          testUserPosition,
-          destinationPosition
-        )
-        displayRoute(fallbackRoute)
-      }
-    } catch (error) {
-      console.error('Error calculando ruta:', error)
-      const fallbackRoute = calculateFallbackRoute(
-        testUserPosition,
-        destinationPosition
-      )
-      displayRoute(fallbackRoute)
-    }
-
-    setLoading(false)
-  }
 
   // Obtener ruta de OpenRouteService
   const getRouteFromORS = async (start: Position, end: Position) => {
@@ -339,7 +342,6 @@ export default function InteractiveMap({
 
   // Mostrar la ruta en el mapa y calcular costo
   const displayRoute = (routeData: RouteInfo) => {
-    const L = (window as any).L
     const { map } = mapInstanceRef.current
 
     if (mapInstanceRef.current.routeLine) {

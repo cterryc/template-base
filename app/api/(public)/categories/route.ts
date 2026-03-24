@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const categories = await prisma.categories.findMany({
       orderBy: {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(categories, { status: 200 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener las categorías' },
       { status: 500 }
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(category, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al crear la categoría' },
       { status: 500 }

@@ -1,12 +1,12 @@
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { Role } from '@/app/generated/prisma/enums'
-import { string, z } from 'zod'
+import { z } from 'zod'
 import { clerkClient } from '@clerk/nextjs/server'
 
 // En Next.js 15, params es una Promise que debe ser awaited
 export async function GET(
-  req: NextRequest,
+  _: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

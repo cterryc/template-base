@@ -9,8 +9,7 @@ import {
   MdFolder,
   MdArrowBack,
   MdHome,
-  MdCloudUpload,
-  MdMoreVert
+  MdCloudUpload
 } from 'react-icons/md'
 import { FaFolderPlus } from 'react-icons/fa'
 import { toast } from 'sonner'
@@ -39,7 +38,6 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
 }) => {
   // Navegación por carpetas
   const [currentPath, setCurrentPath] = useState<string>('')
-  const [folderHistory, setFolderHistory] = useState<string[]>([])
   const [subfolders, setSubfolders] = useState<CloudinaryFolder[]>([])
 
   // Imágenes de la carpeta actual
@@ -158,7 +156,6 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
   // Navegar a una carpeta
   const navigateTo = useCallback(
     (path: string) => {
-      setFolderHistory((prev) => [...prev, currentPath])
       setCurrentPath(path)
       setSelectedImages([])
       setAssets([])
@@ -177,7 +174,6 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
 
   // Ir a la raíz
   const navigateToRoot = useCallback(() => {
-    setFolderHistory([])
     setCurrentPath('')
     setAssets([])
     setNextCursor(null)
@@ -484,7 +480,7 @@ const CloudinaryGallery: React.FC<CloudinaryGalleryProps> = ({
       const parts = currentPath.split('/')
       let accumulatedPath = ''
 
-      parts.forEach((part, index) => {
+      parts.forEach((part) => {
         accumulatedPath = accumulatedPath ? `${accumulatedPath}/${part}` : part
 
         paths.push({

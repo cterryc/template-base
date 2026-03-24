@@ -9,7 +9,6 @@ import { usePDFGenerator } from './components/usePDFGenerator'
 import {
   FileText,
   Eye,
-  Search,
   ChevronUp,
   ChevronDown,
   Info
@@ -238,7 +237,7 @@ export default function OrdersList({
       </div>
       {/* Filtros y Búsqueda - Optimizados para 375px */}
       <div className='flex flex-col gap-3 p-3 bg-card border border-border rounded-lg shadow-sm'>
-        <div className='flex sm:flex-row gap-2'>
+        <div className='flex flex-col sm:flex-row gap-2'>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -250,6 +249,16 @@ export default function OrdersList({
             <option value='enviado'>Enviado</option>
             <option value='entregado'>Entregado</option>
             <option value='cancelado'>Cancelado</option>
+          </select>
+
+          <select
+            value={sortField}
+            onChange={(e) => setSortField(e.target.value as 'date' | 'total' | 'name')}
+            className='w-full sm:w-auto px-3 py-2 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20'
+          >
+            <option value='date'>Fecha</option>
+            <option value='total'>Total</option>
+            <option value='name'>Cliente</option>
           </select>
 
           <button
@@ -539,12 +548,10 @@ export default function OrdersList({
                 Búsqueda: "{searchTerm}"
               </span>
             )}
-            {sortField !== 'date' && (
-              <span className='px-2 py-1 text-xs bg-accent rounded'>
-                Ordenado por: {sortField === 'total' ? 'Total' : 'Cliente'} (
-                {sortOrder === 'asc' ? 'Asc' : 'Desc'})
-              </span>
-            )}
+            <span className='px-2 py-1 text-xs bg-accent rounded'>
+              Ordenado por: {sortField === 'date' ? 'Fecha' : sortField === 'total' ? 'Total' : 'Cliente'} (
+              {sortOrder === 'asc' ? 'Asc' : 'Desc'})
+            </span>
           </div>
         </div>
 

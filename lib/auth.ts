@@ -84,7 +84,7 @@ export async function getOptionalUser() {
  * Verificar si el usuario es admin (para Route Handlers)
  * Devuelve Response 401/403 si no tiene permisos
  */
-export async function isAdminUser(request: Request) {
+export async function isAdminUser() {
   const { userId, sessionClaims } = await auth()
 
   if (!userId) {

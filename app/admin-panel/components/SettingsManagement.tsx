@@ -266,7 +266,7 @@ const SettingsManagement: React.FC = () => {
 
       toast.success('Colección eliminada exitosamente')
       fetchColecciones(searchTerm)
-    } catch (error) {
+    } catch {
       toast.error('Error al eliminar la colección')
     }
   }

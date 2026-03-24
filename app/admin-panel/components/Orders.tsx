@@ -152,7 +152,7 @@ const OdersManagement: React.FC = () => {
           // Asumimos que el backend devuelve JSON con un campo "message"
           const errorData = await res.json()
           errorMessage = errorData.message || errorData.error || errorMessage
-        } catch (e) {
+        } catch {
           // Si no es JSON, intentamos como texto
           try {
             errorMessage = (await res.text()) || errorMessage
@@ -217,7 +217,7 @@ const OdersManagement: React.FC = () => {
       } else {
         throw new Error()
       }
-    } catch (error) {
+    } catch {
       toast.error('No se pudo eliminar la orden')
     } finally {
       setIsDeleting(null)

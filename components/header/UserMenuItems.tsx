@@ -21,10 +21,6 @@ export function UserMenuItems({ showNavigationLinks = false }: UserMenuItemsProp
   const { isAdminOrEditor } = useUserRole()
   const { theme } = useTheme()
 
-  const appearance = {
-    theme: theme === 'dark' ? dark : 'simple'
-  }
-
   const adminIcon = (
     <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
   )

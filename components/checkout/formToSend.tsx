@@ -21,7 +21,7 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { ToastAction } from '../ui/toast'
-import InteractiveMap from '../maps/maps'
+import InteractiveMap from '../maps/Maps'
 import { RiLoader4Line } from 'react-icons/ri'
 import { X } from 'lucide-react'
 import { agencias } from '../../data/agencias'
@@ -53,12 +53,19 @@ const FormToSend = ({
   const { user } = useUser()
   const router = useRouter()
   const { toast } = useToast()
-  const { getMinimoDelivery, getMaximoDelivery, getTelefono, isLoading } = useConfigData()
-  const { couponCode, discount: cuponDiscount, isValidating, validate: validateCoupon, clear: clearCoupon } = useCouponValidator()
+  const { getMinimoDelivery, getMaximoDelivery, getTelefono, isLoading } =
+    useConfigData()
+  const {
+    couponCode,
+    discount: cuponDiscount
+  } = useCouponValidator()
 
   const [hasFullNameOverride, setHasFullNameOverride] = useState(false)
   const [isSavingOrder, setIsSavingOrder] = useState(false)
-  const [markedLocation, setMarkedLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [markedLocation, setMarkedLocation] = useState<{
+    lat: number
+    lng: number
+  } | null>(null)
 
   const minimoDelivery = getMinimoDelivery()
   const maximoDelivery = getMaximoDelivery()
@@ -103,7 +110,8 @@ const FormToSend = ({
     if (savedData) {
       if (savedData.clientName) setValue('clientName', savedData.clientName)
       if (savedData.address) setValue('address', savedData.address)
-      if (savedData.locationToSend) setValue('locationToSend', savedData.locationToSend)
+      if (savedData.locationToSend)
+        setValue('locationToSend', savedData.locationToSend)
       if (savedData.agencia) setValue('agencia', savedData.agencia)
       if (savedData.dni) setValue('dni', savedData.dni)
       if (savedData.clientPhone) setValue('clientPhone', savedData.clientPhone)
@@ -124,9 +132,10 @@ const FormToSend = ({
         agencia: value.agencia,
         dni: value.dni,
         clientPhone: value.clientPhone,
-        getlocation: (value.getlocation?.lat && value.getlocation?.lng) 
-          ? { lat: value.getlocation.lat, lng: value.getlocation.lng } 
-          : undefined
+        getlocation:
+          value.getlocation?.lat && value.getlocation?.lng
+            ? { lat: value.getlocation.lat, lng: value.getlocation.lng }
+            : undefined
       })
     })
     return () => subscription.unsubscribe()
@@ -145,7 +154,8 @@ const FormToSend = ({
     return calculateOrderTotals({
       subtotal: getCartTotal(),
       deliveryCost: watchedDeliveryCost,
-      discountPercentage: cuponDiscount > 0 ? cuponDiscount : discountPercentage,
+      discountPercentage:
+        cuponDiscount > 0 ? cuponDiscount : discountPercentage,
       locationToSend: watchedLocationToSend,
       minimoDelivery,
       maximoDelivery
@@ -177,7 +187,10 @@ const FormToSend = ({
       if (!watchedAddress || watchedAddress.trim() === '') {
         return { isValid: false, message: 'Ingresa tu dirección' }
       }
-      if (!markedLocation || (markedLocation.lat === 0 && markedLocation.lng === 0)) {
+      if (
+        !markedLocation ||
+        (markedLocation.lat === 0 && markedLocation.lng === 0)
+      ) {
         return { isValid: false, message: 'Marca tu ubicación en el mapa' }
       }
     } else if (watchedLocationToSend === 'provincia') {
@@ -231,9 +244,15 @@ const FormToSend = ({
           unitPrice: item.price
         })),
         totalPrice: Number(getCartTotal()),
-        totalProducts: itemsProducts.reduce((total, item) => total + item.quantity, 0),
+        totalProducts: itemsProducts.reduce(
+          (total, item) => total + item.quantity,
+          0
+        ),
         discount: cuponDiscount > 0 ? cuponDiscount : discountPercentage,
-        deliveryCost: getCartTotal() >= FREE_DELIVERY_THRESHOLD ? 0 : formDataValues.deliveryCost
+        deliveryCost:
+          getCartTotal() >= FREE_DELIVERY_THRESHOLD
+            ? 0
+            : formDataValues.deliveryCost
       }
 
       const response = await fetch('/api/orders', {
@@ -248,7 +267,14 @@ const FormToSend = ({
     } finally {
       setIsSavingOrder(false)
     }
-  }, [getValues, user, itemsProducts, getCartTotal, cuponDiscount, discountPercentage])
+  }, [
+    getValues,
+    user,
+    itemsProducts,
+    getCartTotal,
+    cuponDiscount,
+    discountPercentage
+  ])
 
   // --- Generar mensaje WhatsApp ---
   const generateWhatsAppContent = useCallback(() => {
@@ -258,30 +284,46 @@ const FormToSend = ({
       items: itemsProducts,
       subtotal: subtotalCalculado,
       deliveryDisplay: displayDelivery,
-      discountPercentage: cuponDiscount > 0 ? cuponDiscount : discountPercentage,
+      discountPercentage:
+        cuponDiscount > 0 ? cuponDiscount : discountPercentage,
       discountCode: couponCode || discountCode,
       codigoCupon,
       total,
       getlocation: formDataValues.getlocation
     })
-  }, [getValues, itemsProducts, subtotalCalculado, displayDelivery, cuponDiscount, discountPercentage, couponCode, discountCode, total])
+  }, [
+    getValues,
+    itemsProducts,
+    subtotalCalculado,
+    displayDelivery,
+    cuponDiscount,
+    discountPercentage,
+    couponCode,
+    discountCode,
+    total
+  ])
 
   // --- Manejadores ---
-  const selectDelivery = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const newLocation = event.target.value as 'lima_metropolitana' | 'provincia'
-    setValue('locationToSend', newLocation)
-    
-    if (newLocation === 'provincia') {
-      setValue('address', '')
-      setValue('deliveryCost', 0)
-      setValue('getlocation', { lat: 0, lng: 0 })
-      setMarkedLocation(null)
-    } else {
-      setValue('agencia', '')
-      setValue('dni', '')
-      setValue('clientPhone', '')
-    }
-  }, [setValue])
+  const selectDelivery = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const newLocation = event.target.value as
+        | 'lima_metropolitana'
+        | 'provincia'
+      setValue('locationToSend', newLocation)
+
+      if (newLocation === 'provincia') {
+        setValue('address', '')
+        setValue('deliveryCost', 0)
+        setValue('getlocation', { lat: 0, lng: 0 })
+        setMarkedLocation(null)
+      } else {
+        setValue('agencia', '')
+        setValue('dni', '')
+        setValue('clientPhone', '')
+      }
+    },
+    [setValue]
+  )
 
   const handleOrderSubmit = useCallback(async () => {
     await saveOrderToBackend()
@@ -302,12 +344,20 @@ const FormToSend = ({
       ),
       duration: 10000
     })
-  }, [saveOrderToBackend, onClose, clearCart, toast, router, setShowCardClientName])
+  }, [
+    saveOrderToBackend,
+    onClose,
+    clearCart,
+    toast,
+    router,
+    setShowCardClientName
+  ])
 
   const whatsappHref = `https://wa.me/+${COUNTRY_CODE}${telefono}?text=${encodeURIComponent(generateWhatsAppContent())}`
   const isUserSignedIn = !!user?.id
   const buttonBackgroundColor = formValidation.isValid ? '#00d95f' : 'gray'
-  const buttonPointerEvents = !isLoading && !isSavingOrder && formValidation.isValid ? 'auto' : 'none'
+  const buttonPointerEvents =
+    !isLoading && !isSavingOrder && formValidation.isValid ? 'auto' : 'none'
 
   return (
     <main
@@ -380,7 +430,12 @@ const FormToSend = ({
               ) : (
                 <InteractiveMap
                   setDeliveryCost={(cost: number) => {
-                    const adjustedCost = cost > maximoDelivery ? maximoDelivery : cost < minimoDelivery ? minimoDelivery : cost
+                    const adjustedCost =
+                      cost > maximoDelivery
+                        ? maximoDelivery
+                        : cost < minimoDelivery
+                          ? minimoDelivery
+                          : cost
                     setValue('deliveryCost', adjustedCost)
                   }}
                   setGetlocation={(loc: { lat: number; lng: number }) => {
@@ -391,7 +446,9 @@ const FormToSend = ({
                 />
               )}
               {errors.getlocation && (
-                <span className='text-orange-600 text-sm'>{errors.getlocation.message}</span>
+                <span className='text-orange-600 text-sm'>
+                  {errors.getlocation.message}
+                </span>
               )}
             </div>
             <div>
@@ -405,7 +462,9 @@ const FormToSend = ({
                 {...register('address')}
               />
               {errors.address && (
-                <span className='text-orange-600 text-sm'>{errors.address.message}</span>
+                <span className='text-orange-600 text-sm'>
+                  {errors.address.message}
+                </span>
               )}
             </div>
           </>
@@ -424,7 +483,9 @@ const FormToSend = ({
                   !watchedAgencia ? 'text-gray-400' : 'text-zinc-900'
                 } h-11 p-2 ${!watchedAgencia ? 'border-orange-400' : 'bg-white'}`}
               >
-                <option value='' disabled>Seleccionar agencia</option>
+                <option value='' disabled>
+                  Seleccionar agencia
+                </option>
                 {agencias.map((agencia) => (
                   <option key={agencia} value={agencia} className='text-black'>
                     {agencia}
@@ -432,7 +493,9 @@ const FormToSend = ({
                 ))}
               </select>
               {errors.agencia && (
-                <span className='text-orange-600 text-sm'>{errors.agencia.message}</span>
+                <span className='text-orange-600 text-sm'>
+                  {errors.agencia.message}
+                </span>
               )}
 
               <div>
@@ -444,7 +507,9 @@ const FormToSend = ({
                   maxLength={8}
                 />
                 {errors.dni && (
-                  <span className='text-orange-600 text-sm'>{errors.dni.message}</span>
+                  <span className='text-orange-600 text-sm'>
+                    {errors.dni.message}
+                  </span>
                 )}
               </div>
 
@@ -456,7 +521,9 @@ const FormToSend = ({
                   {...register('clientPhone')}
                 />
                 {errors.clientPhone && (
-                  <span className='text-orange-600 text-sm'>{errors.clientPhone.message}</span>
+                  <span className='text-orange-600 text-sm'>
+                    {errors.clientPhone.message}
+                  </span>
                 )}
               </div>
             </div>
@@ -472,21 +539,38 @@ const FormToSend = ({
                 {...register('address')}
               />
               {errors.address && (
-                <span className='text-orange-600 text-sm'>{errors.address.message}</span>
+                <span className='text-orange-600 text-sm'>
+                  {errors.address.message}
+                </span>
               )}
             </div>
           </>
         )}
 
         {/* Resumen de Costos */}
-        <div className={`border ${!formValidation.isValid ? 'border-orange-600' : 'border-green-500'} px-2 py-1 rounded-sm`}>
-          <div className={getCartTotal() >= FREE_DELIVERY_THRESHOLD ? 'text-green-500' : !formValidation.isValid ? 'text-orange-500' : 'text-green-500'}>
+        <div
+          className={`border ${!formValidation.isValid ? 'border-orange-600' : 'border-green-500'} px-2 py-1 rounded-sm`}
+        >
+          <div
+            className={
+              getCartTotal() >= FREE_DELIVERY_THRESHOLD
+                ? 'text-green-500'
+                : !formValidation.isValid
+                  ? 'text-orange-500'
+                  : 'text-green-500'
+            }
+          >
             {watchedLocationToSend === 'provincia' ? (
               <span>Recargo de agencia: (S/ 10.00 - S/ 15.00)</span>
             ) : (
               <>
                 <span>Delivery: </span>
-                <span>S/ {typeof displayDelivery === 'number' ? displayDelivery.toFixed(2) : displayDelivery}</span>
+                <span>
+                  S/{' '}
+                  {typeof displayDelivery === 'number'
+                    ? displayDelivery.toFixed(2)
+                    : displayDelivery}
+                </span>
               </>
             )}
           </div>
@@ -514,12 +598,17 @@ const FormToSend = ({
             e.preventDefault()
             e.stopPropagation()
           }}
-          title={formValidation.isValid ? 'Realizar pedido' : formValidation.message}
+          title={
+            formValidation.isValid ? 'Realizar pedido' : formValidation.message
+          }
           type='button'
         >
           {isUserSignedIn ? (
             isLoading || isSavingOrder ? (
-              <span className='linkWhatsapp' style={{ backgroundColor: buttonBackgroundColor }}>
+              <span
+                className='linkWhatsapp'
+                style={{ backgroundColor: buttonBackgroundColor }}
+              >
                 <RiLoader4Line className='animate-spin h-full max-w-9 w-full' />
               </span>
             ) : (
@@ -535,7 +624,11 @@ const FormToSend = ({
                 rel='noopener noreferrer'
               >
                 Realizar pedido{' '}
-                <img src='/BlackWhatsApp.svg' alt='whatsapp icon' className='h-8 [filter:brightness(0)_invert(1)]' />
+                <img
+                  src='/BlackWhatsApp.svg'
+                  alt='whatsapp icon'
+                  className='h-8 [filter:brightness(0)_invert(1)]'
+                />
               </a>
             )
           ) : (
@@ -553,7 +646,11 @@ const FormToSend = ({
         </button>
 
         {/* Botón de Cerrar */}
-        <button className='buttonCloseCardClientName' onClick={() => setShowCardClientName(false)} type='button'>
+        <button
+          className='buttonCloseCardClientName'
+          onClick={() => setShowCardClientName(false)}
+          type='button'
+        >
           <X color='gray' />
         </button>
       </form>

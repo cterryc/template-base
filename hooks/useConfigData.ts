@@ -10,7 +10,6 @@ export function useConfigData() {
     error,
     refetchConfig,
     getSetting,
-    getActiveCoupon,
     getCouponByCode,
     lastFetched
   } = useConfig()

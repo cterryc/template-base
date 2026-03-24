@@ -3,7 +3,6 @@ import {
   productRepository,
   type FindProductsParams
 } from '@/lib/repositories/product.repository'
-import type { Prisma } from '@/app/generated/prisma/client'
 
 /**
  * Product Service
@@ -54,7 +53,7 @@ export class ProductService {
 
     const transformedProducts = products.map((product) => ({
       ...product,
-      destacado: (product as any).destacados?.length > 0 || false
+      destacado: product.destacados?.length > 0 || false
     }))
 
     return {

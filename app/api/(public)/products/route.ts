@@ -6,9 +6,9 @@ import { Prisma } from '@/app/generated/prisma/client'
 // Nota: Con cacheComponents: true, el caché se maneja vía lib/cache/products.ts
 // usando 'use cache' + cacheLife('hours'). Esta ruta es dinámica por defecto.
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url)
+    const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1', 10)
     const pageSize = 16
     const filter = searchParams.get('filter') || ''

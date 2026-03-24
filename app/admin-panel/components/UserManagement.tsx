@@ -8,7 +8,6 @@ import {
   MdEmail,
   MdPhone,
   MdShoppingCart,
-  MdCalendarToday,
   MdOutlineAdminPanelSettings,
   MdOutlinePerson,
   MdChevronLeft,
@@ -211,7 +210,7 @@ const UserManagement: React.FC = () => {
       setSelectedUser(null)
       setIsEditing(false)
       setEditForm({})
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar el usuario')
     } finally {
       setIsUpdating(false)
@@ -246,7 +245,7 @@ const UserManagement: React.FC = () => {
         const error = await response.json()
         toast.error(error.message || 'No se pudo eliminar el usuario')
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al eliminar el usuario')
     } finally {
       setIsDeleting(null)
@@ -274,7 +273,7 @@ const UserManagement: React.FC = () => {
       if (selectedUser?.id === userId) {
         fetchUserDetails(userId)
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al cambiar el rol')
     }
   }
@@ -289,8 +288,6 @@ const UserManagement: React.FC = () => {
   // --- Iconos para KPIs ---
   const AdminIcon = () => <MdOutlineAdminPanelSettings size={24} />
   const UserIcon = () => <MdOutlinePerson size={24} />
-  const OrdersIcon = () => <MdShoppingCart size={24} />
-  const ActivityIcon = () => <MdCalendarToday size={24} />
 
   return (
     <>

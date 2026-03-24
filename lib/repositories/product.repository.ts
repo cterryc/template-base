@@ -15,9 +15,9 @@ export interface FindProductsParams {
 }
 
 export interface ProductRepository {
-  findById(id: number): Promise<Productos & { destacados: any[]; orderItems: any[] } | null>
+  findById(id: number): Promise<Productos & { destacados: Prisma.ProductosDestacadosGetPayload<{}>[]; orderItems: Prisma.OrderItemGetPayload<{}>[] } | null>
   findAll(params: FindProductsParams): Promise<{
-    products: Productos[]
+    products: (Productos & { destacados: Prisma.ProductosDestacadosGetPayload<{}>[] })[]
     totalCount: number
   }>
   create(data: Prisma.ProductosCreateInput): Promise<Productos>
@@ -28,7 +28,7 @@ export interface ProductRepository {
 }
 
 export class PrismaProductRepository implements ProductRepository {
-  async findById(id: number): Promise<Productos & { destacados: any[]; orderItems: any[] } | null> {
+  async findById(id: number): Promise<Productos & { destacados: Prisma.ProductosDestacadosGetPayload<{}>[]; orderItems: Prisma.OrderItemGetPayload<{}>[] } | null> {
     return prisma.productos.findUnique({
       where: { id },
       include: {
@@ -39,7 +39,7 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async findAll(params: FindProductsParams): Promise<{
-    products: Productos[]
+    products: (Productos & { destacados: Prisma.ProductosDestacadosGetPayload<{}>[] })[]
     totalCount: number
   }> {
     const {

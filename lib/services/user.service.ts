@@ -17,7 +17,7 @@ export interface CreateUserDTO {
   department?: string
 }
 
-export interface UpdateUserDTO extends Partial<Omit<CreateUserDTO, 'clerkId'>> {}
+export type UpdateUserDTO = Partial<Omit<CreateUserDTO, 'clerkId'>>
 
 export class UserService {
   constructor(private repository = userRepository) {}

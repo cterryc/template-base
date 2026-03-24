@@ -3,21 +3,18 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ClipboardList } from 'lucide-react'
-import { MdOutlineShoppingCart } from 'react-icons/md'
 import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
 import { useCart } from '@/contexts/CartContext'
 import { ThemeToggle } from './ThemeToggle'
 import { Sheet, SheetTrigger } from '@/components/ui/sheet'
-import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { SignedIn, SignedOut } from '@clerk/nextjs'
 import './header.css'
 import { DesktopNav } from './header/DesktopNav'
 import { MobileNavContent } from './header/MobileNav'
 import { UserMenuItems } from './header/UserMenuItems'
-
-// Lazy load ShoppingCartPanel - no se necesita SSR
+import { MdOutlineShoppingCart } from 'react-icons/md'
 const ShoppingCartPanel = dynamic(() => import('./cart/ShoppingCartPanel'), {
   ssr: false,
   loading: () => (
@@ -31,7 +28,6 @@ export default function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { cartItems } = useCart()
-  const pathname = usePathname()
 
   const toggleCart = () => setIsCartOpen(!isCartOpen)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
@@ -68,7 +64,11 @@ export default function Header() {
           <ThemeToggle />
 
           {/* Shopping Cart */}
-          <button onClick={toggleCart} className='relative p-2' aria-label='Abrir carrito'>
+          <button
+            onClick={toggleCart}
+            className='relative p-2'
+            aria-label='Abrir carrito'
+          >
             <MdOutlineShoppingCart className='text-2xl' />
             {cartItems.length > 0 && (
               <span className='absolute top-0 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center'>

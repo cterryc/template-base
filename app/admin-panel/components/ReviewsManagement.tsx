@@ -8,16 +8,11 @@ import {
   MdClose,
   MdChevronLeft,
   MdChevronRight,
-  MdFirstPage,
-  MdLastPage,
   MdCheckCircle,
   MdCancel,
-  MdRateReview,
-  MdPerson,
   MdStar
 } from 'react-icons/md'
 import { toast } from 'sonner'
-import { useUser } from '@clerk/nextjs'
 
 interface Review {
   id: number
@@ -47,7 +42,6 @@ interface ApiResponse {
 }
 
 const ReviewsManagement: React.FC = () => {
-  const { isLoaded } = useUser()
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -64,7 +58,6 @@ const ReviewsManagement: React.FC = () => {
 
   // Estados para Funcionalidad
   const [selectedReview, setSelectedReview] = useState<Review | null>(null)
-  const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
 
   const fetchReviews = useCallback(
@@ -135,7 +128,7 @@ const ReviewsManagement: React.FC = () => {
           prev ? { ...prev, aiApproved: approved, aiModerated: true } : null
         )
       }
-    } catch (error) {
+    } catch {
       toast.error('No se pudo actualizar la reseña')
     } finally {
       setIsUpdating(false)
@@ -150,7 +143,6 @@ const ReviewsManagement: React.FC = () => {
     )
       return
 
-    setIsDeleting(id)
     try {
       const response = await fetch(`/api/admin/reviews/${id}`, {
         method: 'DELETE'
@@ -169,10 +161,8 @@ const ReviewsManagement: React.FC = () => {
       } else {
         throw new Error()
       }
-    } catch (error) {
+    } catch {
       toast.error('No se pudo eliminar la reseña')
-    } finally {
-      setIsDeleting(null)
     }
   }
 

@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     let y = itemHeaderTop + 25
     doc.font('Helvetica')
 
-    orderData.orderItems.forEach((item: any, i: number) => {
+    orderData.orderItems.forEach((item: any) => {
       if (y > 700) {
         doc.addPage()
         y = 50

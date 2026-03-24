@@ -26,7 +26,7 @@ export async function GET(
     }
 
     return NextResponse.json(category, { status: 200 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener la categoría' },
       { status: 500 }
@@ -89,7 +89,7 @@ export async function PUT(
     })
 
     return NextResponse.json(updatedCategory, { status: 200 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al actualizar la categoría' },
       { status: 500 }
@@ -129,7 +129,7 @@ export async function DELETE(
       { message: 'Categoría eliminada correctamente' },
       { status: 200 }
     )
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al eliminar la categoría' },
       { status: 500 }
