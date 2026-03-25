@@ -56,7 +56,7 @@ export default function InteractiveMap({
           setMapLoaded(true)
         }
         document.head.appendChild(script)
-      } catch (_) {
+      } catch {
         setError('Error cargando el mapa')
       }
     }
@@ -73,7 +73,7 @@ export default function InteractiveMap({
             lng: position.coords.longitude
           })
         },
-        (_) => {
+        () => {
           setError(
             'No se pudo obtener la ubicación. Usando ubicación por defecto.'
           )
@@ -203,6 +203,25 @@ export default function InteractiveMap({
     }
   }, [mapLoaded, userPosition])
 
+  // Calcular distancia en línea recta
+  const calculateStraightLineDistance = (
+    pos1: Position,
+    pos2: Position
+  ): number => {
+    const R = 6371
+    const dLat = ((pos2.lat - pos1.lat) * Math.PI) / 180
+    const dLng = ((pos2.lng - pos1.lng) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((pos1.lat * Math.PI) / 180) *
+        Math.cos((pos2.lat * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    const distance = R * c
+    return distance
+  }
+
   // Ruta de fallback
   const calculateFallbackRoute = (start: Position, end: Position) => {
     const distance = calculateStraightLineDistance(start, end)
@@ -245,6 +264,47 @@ export default function InteractiveMap({
     setDeliveryCost(Math.ceil(costDelivery * 1.2))
 
     setRouteInfo(routeData)
+  }
+
+  // Obtener ruta de OpenRouteService
+  const getRouteFromORS = async (start: Position, end: Position) => {
+    try {
+      const response = await fetch(
+        `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf62487d47185c1a574927a757648458453cc2&start=${start.lng},${start.lat}&end=${end.lng},${end.lat}`,
+        {
+          headers: {
+            Accept:
+              'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
+          }
+        }
+      )
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = await response.json()
+
+      if (data.features && data.features[0]) {
+        const route = data.features[0]
+        const coordinates = route.geometry.coordinates.map(
+          (coord: [number, number]) => [coord[1], coord[0]]
+        )
+        const distance = route.properties.segments[0].distance / 1000
+        const duration = route.properties.segments[0].duration / 60
+
+        return {
+          distance,
+          duration,
+          coordinates
+        }
+      }
+
+      return null
+    } catch (error) {
+      console.error('Error con OpenRouteService:', error)
+      return null
+    }
   }
 
   // Calcular ruta usando OpenRouteService
@@ -314,66 +374,6 @@ export default function InteractiveMap({
       }
     }
   }, [destinationPosition, userPosition])
-
-  // Obtener ruta de OpenRouteService
-  const getRouteFromORS = async (start: Position, end: Position) => {
-    try {
-      const response = await fetch(
-        `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf62487d47185c1a574927a757648458453cc2&start=${start.lng},${start.lat}&end=${end.lng},${end.lat}`,
-        {
-          headers: {
-            Accept:
-              'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
-          }
-        }
-      )
-
-      if (!response.ok) {
-        return null
-      }
-
-      const data = await response.json()
-
-      if (data.features && data.features[0]) {
-        const route = data.features[0]
-        const coordinates = route.geometry.coordinates.map(
-          (coord: [number, number]) => [coord[1], coord[0]]
-        )
-        const distance = route.properties.segments[0].distance / 1000
-        const duration = route.properties.segments[0].duration / 60
-
-        return {
-          distance,
-          duration,
-          coordinates
-        }
-      }
-
-      return null
-    } catch (error) {
-      console.error('Error con OpenRouteService:', error)
-      return null
-    }
-  }
-
-  // Calcular distancia en línea recta
-  const calculateStraightLineDistance = (
-    pos1: Position,
-    pos2: Position
-  ): number => {
-    const R = 6371
-    const dLat = ((pos2.lat - pos1.lat) * Math.PI) / 180
-    const dLng = ((pos2.lng - pos1.lng) * Math.PI) / 180
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((pos1.lat * Math.PI) / 180) *
-        Math.cos((pos2.lat * Math.PI) / 180) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    const distance = R * c
-    return distance
-  }
 
   const resetRoute = () => {
     if (mapInstanceRef.current) {

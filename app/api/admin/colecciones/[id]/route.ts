@@ -13,7 +13,10 @@ async function checkAuth() {
 
   const role = (sessionClaims?.metadata as { role?: string })?.role
   if (role !== 'ADMIN' && role !== 'EDITOR') {
-    return { authorized: false, error: 'Rol no autorizado. Se requiere ADMIN o EDITOR' }
+    return {
+      authorized: false,
+      error: 'Rol no autorizado. Se requiere ADMIN o EDITOR'
+    }
   }
 
   return { authorized: true }
@@ -116,7 +119,7 @@ export async function PUT(
 
 // DELETE - Eliminar colección (Solo Admin/Editor)
 export async function DELETE(
-  req: NextRequest,
+  _: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

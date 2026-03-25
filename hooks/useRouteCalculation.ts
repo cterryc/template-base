@@ -79,7 +79,7 @@ export function useRouteCalculation(): RouteCalculationResult {
           throw new Error('No se pudo calcular la ruta')
         }
       }
-    } catch (_) {
+    } catch {
       setError('Error calculando la ruta')
       setRouteInfo(null)
     } finally {

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // GET - Obtener un producto por ID (Público)
 export async function GET(
-  req: NextRequest,
+  _: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
