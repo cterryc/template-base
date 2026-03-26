@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#c8c6c6",
+              "on-tertiary-container": "#3b3b3b",
+              "inverse-on-surface": "#f1f1f1",
+              "on-tertiary-fixed-variant": "#474747",
+              "tertiary-fixed": "#e4e2e2",
+              "primary-fixed": "#e5e2e1",
+              "on-surface-variant": "#4e4639",
+              "on-secondary-container": "#785a1a",
+              "inverse-primary": "#c8c6c5",
+              "background": "#f9f9f9",
+              "on-tertiary-fixed": "#1b1c1c",
+              "on-surface": "#1a1c1c",
+              "surface-container-highest": "#e2e2e2",
+              "error": "#ba1a1a",
+              "primary-fixed-dim": "#c8c6c5",
+              "error-container": "#ffdad6",
+              "on-tertiary": "#ffffff",
+              "outline": "#7f7667",
+              "secondary-fixed": "#ffdea5",
+              "surface-dim": "#dadada",
+              "on-primary-container": "#3b3b3b",
+              "on-secondary-fixed": "#261900",
+              "surface-tint": "#5f5e5e",
+              "primary": "#5f5e5e",
+              "surface-container-high": "#e8e8e8",
+              "secondary": "#775a19",
+              "surface-container": "#eeeeee",
+              "surface-container-low": "#f3f3f3",
+              "secondary-container": "#fed488",
+              "on-primary-fixed": "#1c1b1b",
+              "on-secondary-fixed-variant": "#5d4201",
+              "surface-bright": "#f9f9f9",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary": "#ffffff",
+              "primary-container": "#a7a5a4",
+              "on-error-container": "#93000a",
+              "outline-variant": "#d1c5b4",
+              "inverse-surface": "#2f3131",
+              "tertiary-container": "#a6a5a5",
+              "on-primary": "#ffffff",
+              "surface": "#f9f9f9",
+              "secondary-fixed-dim": "#e9c176",
+              "surface-variant": "#e2e2e2",
+              "on-error": "#ffffff",
+              "on-primary-fixed-variant": "#474746",
+              "on-background": "#1a1c1c",
+              "tertiary": "#5e5e5e"
+            },
+            fontFamily: {
+              "headline": ["Noto Serif"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
+            background: rgba(249, 249, 249, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .metallic-gradient {
+            background: linear-gradient(135deg, #775a19 0%, #e9c176 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 glass-nav shadow-sm">
+<div class="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-6">
+<button class="text-on-surface hover:text-secondary transition-colors duration-300 scale-95 active:scale-100">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<nav class="hidden md:flex gap-8 items-center">
+<a class="text-[#C5A059] font-semibold font-serif tracking-tighter uppercase text-sm" href="#">New Arrivals</a>
+<a class="text-on-surface opacity-80 hover:text-secondary transition-colors duration-300 font-serif tracking-tighter uppercase text-sm" href="#">Collections</a>
+<a class="text-on-surface opacity-80 hover:text-secondary transition-colors duration-300 font-serif tracking-tighter uppercase text-sm" href="#">Editorial</a>
+</nav>
+</div>
+<a class="text-2xl font-serif italic text-on-surface tracking-tighter uppercase" href="/">THE CURATED</a>
+<div class="flex items-center gap-6">
+<button class="hidden md:block text-on-surface opacity-80 hover:text-secondary transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="text-on-surface hover:text-secondary transition-colors duration-300 scale-95 active:scale-100">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-24">
+<!-- Hero Section -->
+<section class="relative min-h-[795px] flex items-center overflow-hidden px-8 md:px-24">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12 w-full items-center">
+<div class="md:col-span-6 z-10">
+<span class="font-label text-xs uppercase tracking-[0.3em] text-secondary mb-6 block">Winter Collection 2024</span>
+<h1 class="font-headline text-5xl md:text-8xl font-bold tracking-tighter leading-tight mb-8 -ml-1">
+                        The Art of <br/> <span class="italic font-normal">Quiet Luxury</span>
+</h1>
+<p class="font-body text-lg text-on-surface-variant max-w-md mb-12 leading-relaxed">
+                        Discover a collection where architectural precision meets the softness of fine vellum. Curated for those who speak in whispers.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-6">
+<button class="metallic-gradient text-on-secondary px-10 py-5 rounded-lg font-label uppercase tracking-widest text-xs font-bold shadow-xl hover:shadow-secondary/20 transition-all active:scale-95">
+                            Shop The Edit
+                        </button>
+<button class="border border-outline-variant/20 px-10 py-5 rounded-lg font-label uppercase tracking-widest text-xs font-bold hover:bg-surface-container-low transition-all">
+                            View Lookbook
+                        </button>
+</div>
+</div>
+<div class="md:col-span-6 relative h-[600px] md:h-[800px]">
+<div class="absolute inset-0 bg-surface-container-low rounded-lg transform translate-x-8 translate-y-8 -z-10"></div>
+<img alt="High-end minimalist aesthetic" class="w-full h-full object-cover rounded-lg shadow-2xl" data-alt="Close-up of a high-end beige cashmere coat on a minimalist mannequin with soft morning light casting long shadows in a marble studio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgcwpswcoapFQfnEW5S0q_RJXkQkwhqC5JuWzJHlEzkvMGQ1yyT0-zKOv54xChPt42XojafK3JCjBVGOhKPIkas1jnGnO4OpZSt8WhDDMIGlLlaXpazV_8eQ44dGHtkhvT40NIeVJYWQghiOQ-wEZtVe1ZnrqbZa0-Kj2CBsIJPO9WhqTVoNfew6RVaVMu8xq7MTNvsa1c4kvKUdTzobPW1C88zGVE7Fexj034U3wBs3WY8CAScFIRx6Fu-AsRP_QfMkbSVxy0JDNN"/>
+</div>
+</div>
+</section>
+<!-- Featured Products (Bento Grid Style) -->
+<section class="py-32 px-8 max-w-screen-2xl mx-auto">
+<div class="mb-20 flex justify-between items-end">
+<div>
+<h2 class="font-headline text-4xl font-bold tracking-tight">Curated Essentials</h2>
+<p class="text-on-surface-variant mt-2 font-body">Selected pieces for a timeless wardrobe</p>
+</div>
+<a class="font-label text-xs uppercase tracking-widest text-secondary underline underline-offset-8 font-bold hover:opacity-70 transition-opacity" href="#">Explore All</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+<!-- Large Featured Item -->
+<div class="md:col-span-2 md:row-span-2 group cursor-pointer">
+<div class="relative overflow-hidden rounded-lg aspect-[4/5] bg-surface-container-low">
+<img alt="Featured Product" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A luxurious minimalist leather handbag in tan brown placed on an architectural concrete pedestal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6UGASh1-ap45jqt65ZS9_sUlxXBbW1u5-qHBJ0kZth54RUQV4wH5Ut7uI-rhODkCaNIZYj3zIfy9AIFYCSaRWZbh7vMxvJV4pqXGMChQy7lO5_IvtkPBMKHwFUjhz7J5lNXd791SK_LoJXu0REM26ARH9Ixfs3FzKVKOrUUDuzPDeRWl3IxUdftBgMN2oILjhJ0A-H9lxdgeUF76Gb8yKBqiH2TP_NTqMdoYn8ndjWmCrN2gQwBfu8kl_BPRMsUnn-xnh79F_-aw9"/>
+<div class="absolute bottom-8 left-8 text-white">
+<p class="font-label text-[10px] uppercase tracking-widest opacity-80">Accessories</p>
+<h3 class="font-headline text-2xl font-bold mt-2">The Structured Tote</h3>
+</div>
+</div>
+</div>
+<!-- Smaller Items -->
+<div class="group cursor-pointer">
+<div class="relative overflow-hidden rounded-lg aspect-square bg-surface-container-low mb-6">
+<img alt="Product 2" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Premium silk scarf with golden abstract patterns folded neatly on a white silk background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2V4ZvpSPyza5BvtlE8q6TLhoppD8KQf1G1KBHlDyH3BAoycct2syxwOc9RoOMOMB29WY8-lwgKOFvKpQMMG-7SviIOAImKfj0PsIQOIoKXFVtQ2jFxfR6sHNz1DZeGmMuyi1b-yNteCflJBqM-DMf1BG90MeV1B78ULN4D48HVfX1d-HyD7kClTBaza2_olG6NnDcDv9lPFp6OuMVQhE-H-DCX8PBT3oyl5OKO14Xtwy1fjsveEdlifF8D3kpwQYP3_X_REj-9Pbk"/>
+</div>
+<h3 class="font-headline text-lg font-bold">Silk Heritage Scarf</h3>
+<p class="font-body text-on-surface-variant text-sm">$240.00</p>
+</div>
+<div class="group cursor-pointer">
+<div class="relative overflow-hidden rounded-lg aspect-square bg-surface-container-low mb-6">
+<img alt="Product 3" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Close-up of a gold-plated minimal watch on a dark wooden surface with warm atmospheric lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7IFiJlsJ3K7tbSa9eHRjzrguradTzArBzfPArrcUHOALWnKvca1_VzFWFZi38OXZdOuiJmeo3fYciTiwO2n72jZ1LcIBj2M49LFYScMjT9tPbtpZVMvwjKNxKnPyHj4aHWLlQxWAck18EEpy8a3aWliCC3rCmYbgF0UPgdCYRSndyrausbnJavQIZ6hSdLi-rdjFIAmHjNVZgJf9zLzqmTMXF--N4wpkfQM2_SZSbmJxMds_OoKlcWmG__P2mdZ6JCHNnC-AWBzfi"/>
+</div>
+<h3 class="font-headline text-lg font-bold">The Horizon Watch</h3>
+<p class="font-body text-on-surface-variant text-sm">$850.00</p>
+</div>
+<div class="md:col-span-2 group cursor-pointer">
+<div class="relative overflow-hidden rounded-lg aspect-[16/9] bg-surface-container-low">
+<img alt="Product 4" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A pair of hand-crafted leather loafers in dark espresso on a pristine white floor with sharp shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuh-56eYtA6vxhU0Sma4qiMRHiXTjMFO9w_NivrMGjUQ8bNDwnqthTz5boiv0UHITcyjBTqnotd08ZfxtMVpglq_qeQQM_ulQy06RBuE9J4rJMGzl4fDX6H2qzWBRk-KLt51L2wqkaIc4lo7FzF0ms_WVGO8SfrLwB5oXqVF7H1GMHg7UQkZDUvhnowB19VJJMKuB7LqrjPBbXM8Wtmoz_Dbzf6L2CQ_2wguLzjyiIgUo0sqH0P8j0CefaXxPpHKuSyikpL3qlcCIX"/>
+<div class="absolute inset-0 flex flex-col justify-center px-12 bg-black/10 group-hover:bg-black/20 transition-colors">
+<h3 class="font-headline text-3xl font-bold text-white">Footwear Mastery</h3>
+<p class="text-white/80 mt-2 font-body max-w-xs">Traditional craftsmanship meets modern silhouettes.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Best Sellers -->
+<section class="bg-surface-container-low py-32">
+<div class="max-w-screen-2xl mx-auto px-8">
+<div class="text-center mb-20">
+<span class="font-label text-xs uppercase tracking-[0.3em] text-secondary mb-4 block">Proven Favourites</span>
+<h2 class="font-headline text-5xl font-bold tracking-tight">The Bestsellers Edit</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+<!-- Item 1 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-full aspect-[3/4] mb-8 relative group overflow-hidden bg-surface-container-lowest shadow-sm rounded-lg">
+<img alt="Bestseller 1" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="High-neck knit sweater in ivory white, draped elegantly against a soft grey background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhNPUblRRMuoIQhc7rYlgdLsgcx3R74139tsRk5QmWUiMp4Wuxjh95Bl7MQxDWhcCaCsVX38MkjAEhfczqobn6f8ghujRQ2KPeIiXghMH3zf0ap8aeoxfUbY1aCI0Wrdj1DnbpCkNJwk9_ocCeaP1_ktTmxdf8tdcv4bwhXvY4cNRxy-niJ2pNM4LwzeKPTPZwBPTJ0YhR55Pjp557IWNSNSPkaMygaL2F7qXKzMYm-4mN1c6FjKrf6pw4Pnd-oA_UCwjqSI_TeyQL"/>
+<button class="absolute bottom-0 left-0 right-0 bg-on-surface text-white py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 font-label text-[10px] uppercase tracking-widest font-bold">Add to Bag</button>
+</div>
+<div class="flex items-center gap-1 mb-2 text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-[10px] font-label text-on-surface-variant ml-2">(124)</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-1">Cashmere Mock Neck</h3>
+<p class="font-body text-secondary-container-on font-bold">$385.00</p>
+</div>
+<!-- Item 2 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-full aspect-[3/4] mb-8 relative group overflow-hidden bg-surface-container-lowest shadow-sm rounded-lg">
+<img alt="Bestseller 2" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Architectural gold hoop earrings resting on a white petal with soft focus lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVB3YP_6G2jytYy15swAMn_rJLrgoDeFz-dSHyz3vfiQ-_16KGfOy_uuN1BrVTWrki6s2NttShNFrMU--eQbebZXKWF9dP6JCKWdnMkwDl-FVWXHVOAK5hUvYZvBG9ZNo3ObmgennfjXn7N2kQKureysCTjDnWzv0c7lemLuGY7undA38I3FA3QcCd1vhQj4WZlUUOlxn0LP-52OQKmAopY9BsyFReG91y86nyirgr2o7SG6bpKzh2yW6uj57zhKmDeysDwR7hLqZ4"/>
+<button class="absolute bottom-0 left-0 right-0 bg-on-surface text-white py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 font-label text-[10px] uppercase tracking-widest font-bold">Add to Bag</button>
+</div>
+<div class="flex items-center gap-1 mb-2 text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0.5;">star_half</span>
+<span class="text-[10px] font-label text-on-surface-variant ml-2">(89)</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-1">Sculptural Hoops</h3>
+<p class="font-body text-secondary-container-on font-bold">$195.00</p>
+</div>
+<!-- Item 3 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-full aspect-[3/4] mb-8 relative group overflow-hidden bg-surface-container-lowest shadow-sm rounded-lg">
+<img alt="Bestseller 3" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Tailored wool trousers in charcoal grey hanging on a vintage wooden rack." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJtcpMJ0TrZ5Mm--y5IFQFJUrVoR1G_pm7e8bXDddA7JnONcGOICvilgcn5gBCqo7vMPPel9hKiGHjsNby-H_YKT7wePoONcK0Ts0ZPmsVZCvT-96Dp1f7mq-TbeoPWHnr1CWKOc0lcy27YZOSgz3jlSRCmP_N__hbAUv-rrTCdMTwC0tfCi7SrhGx6y53QwGQfPO73YxCe-6IEglCze-fL1SrBzwwSrvIrBeuq-GjAoxG_Y2T5EVMySESbxgUCj5k4KuzZn-BEx5D"/>
+<button class="absolute bottom-0 left-0 right-0 bg-on-surface text-white py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 font-label text-[10px] uppercase tracking-widest font-bold">Add to Bag</button>
+</div>
+<div class="flex items-center gap-1 mb-2 text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-[10px] font-label text-on-surface-variant ml-2">(210)</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-1">The Essential Trouser</h3>
+<p class="font-body text-secondary-container-on font-bold">$520.00</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Benefits Section -->
+<section class="py-24 border-y border-outline-variant/10">
+<div class="max-w-screen-2xl mx-auto px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 flex items-center justify-center text-secondary mb-6">
+<span class="material-symbols-outlined text-3xl" data-icon="local_shipping">local_shipping</span>
+</div>
+<h4 class="font-label text-xs uppercase tracking-widest font-bold mb-2">Global Delivery</h4>
+<p class="text-xs text-on-surface-variant">Complimentary shipping on all international orders.</p>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 flex items-center justify-center text-secondary mb-6">
+<span class="material-symbols-outlined text-3xl" data-icon="package_2">package_2</span>
+</div>
+<h4 class="font-label text-xs uppercase tracking-widest font-bold mb-2">Concierge Returns</h4>
+<p class="text-xs text-on-surface-variant">Hassle-free returns with doorstep collection.</p>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 flex items-center justify-center text-secondary mb-6">
+<span class="material-symbols-outlined text-3xl" data-icon="verified">verified</span>
+</div>
+<h4 class="font-label text-xs uppercase tracking-widest font-bold mb-2">Verified Artisan</h4>
+<p class="text-xs text-on-surface-variant">Every piece is authenticated by our curation team.</p>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 flex items-center justify-center text-secondary mb-6">
+<span class="material-symbols-outlined text-3xl" data-icon="support_agent">support_agent</span>
+</div>
+<h4 class="font-label text-xs uppercase tracking-widest font-bold mb-2">Personal Stylist</h4>
+<p class="text-xs text-on-surface-variant">24/7 access to our editorial styling team.</p>
+</div>
+</div>
+</section>
+<!-- High-Conversion Footer CTA -->
+<section class="py-40 px-8">
+<div class="max-w-4xl mx-auto text-center bg-surface-container-lowest p-20 rounded-xl shadow-2xl relative overflow-hidden">
+<!-- Background visual element -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-24 -left-24 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl"></div>
+<h2 class="font-headline text-5xl font-bold tracking-tight mb-6">Join The Curated Circle</h2>
+<p class="text-on-surface-variant mb-12 max-w-lg mx-auto leading-relaxed">
+                    Gain exclusive access to pre-launches, private editorials, and member-only collection events.
+                </p>
+<form class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+<input class="flex-grow bg-surface-container-high border-none px-6 py-4 rounded-lg focus:ring-1 focus:ring-secondary transition-all font-body text-sm" placeholder="Your email address" type="email"/>
+<button class="metallic-gradient text-on-secondary px-8 py-4 rounded-lg font-label uppercase tracking-widest text-xs font-bold hover:opacity-90 transition-opacity" type="submit">
+                        Subscribe
+                    </button>
+</form>
+<p class="mt-6 text-[10px] uppercase tracking-widest text-on-surface-variant/60 font-label">By subscribing, you agree to our privacy policy.</p>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low w-full mt-24">
+<div class="max-w-7xl mx-auto px-8 py-20 grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="md:col-span-1">
+<a class="font-serif text-xl text-on-surface block mb-8" href="#">THE CURATED</a>
+<p class="font-sans text-xs uppercase tracking-widest leading-loose opacity-60">
+                    A digital destination for refined living and architectural fashion.
+                </p>
+</div>
+<div>
+<h5 class="font-label text-xs uppercase tracking-[0.2em] font-bold mb-8 text-secondary">Discover</h5>
+<ul class="space-y-4">
+<li><a class="font-sans text-xs uppercase tracking-widest leading-loose text-on-surface opacity-60 hover:opacity-100 hover:text-secondary transition-opacity" href="#">Sustainability</a></li>
+<li><a class="font-sans text-xs uppercase tracking-widest leading-loose text-on-surface opacity-60 hover:opacity-100 hover:text-secondary transition-opacity" href="#">Shipping &amp; Returns</a></li>
+<li><a class="font-sans text-xs uppercase tracking-widest leading-loose text-on-surface opacity-60 hover:opacity-100 hover:text-secondary transition-opacity" href="#">The Editorial</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label text-xs uppercase tracking-[0.2em] font-bold mb-8 text-secondary">Information</h5>
+<ul class="space-y-4">
+<li><a class="font-sans text-xs uppercase tracking-widest leading-loose text-on-surface opacity-60 hover:opacity-100 hover:text-secondary transition-opacity" href="#">Privacy Policy</a></li>
+<li><a class="font-sans text-xs uppercase tracking-widest leading-loose text-on-surface opacity-60 hover:opacity-100 hover:text-secondary transition-opacity" href="#">Terms of Service</a></li>
+<li><a class="font-sans text-xs uppercase tracking-widest leading-loose text-on-surface opacity-60 hover:opacity-100 hover:text-secondary transition-opacity" href="#">Accessibility</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label text-xs uppercase tracking-[0.2em] font-bold mb-8 text-secondary">Social</h5>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">public</span>
+</a>
+<a class="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">share</span>
+</a>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-8 pb-12">
+<p class="font-sans text-[10px] uppercase tracking-[0.3em] text-on-surface opacity-40 text-center border-t border-outline-variant/10 pt-12">
+                © 2024 THE CURATED EDITORIAL. ALL RIGHTS RESERVED.
+            </p>
+</div>
+</footer>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-lg shadow-[0_-4px_20px_rgba(0,0,0,0.05)] h-20 px-4 pb-safe flex justify-around items-center rounded-t-xl">
+<a class="text-secondary flex flex-col items-center justify-center pt-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-sans text-[10px] uppercase tracking-widest mt-1">Shop</span>
+</a>
+<a class="text-on-surface/40 flex flex-col items-center justify-center pt-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-sans text-[10px] uppercase tracking-widest mt-1">Search</span>
+</a>
+<a class="text-on-surface/40 flex flex-col items-center justify-center pt-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-sans text-[10px] uppercase tracking-widest mt-1">Wishlist</span>
+</a>
+<a class="text-on-surface/40 flex flex-col items-center justify-center pt-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-sans text-[10px] uppercase tracking-widest mt-1">Account</span>
+</a>
+</nav>
+</body></html>

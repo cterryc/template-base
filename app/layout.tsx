@@ -12,7 +12,20 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { ConfigProvider } from '@/contexts/ConfigContext'
 import { ecommerceLogo, ecommerceName } from '@/lib/constants'
 
-const inter = Inter({ subsets: ['latin'] })
+import { Noto_Serif, Manrope } from 'next/font/google'
+
+const notoSerif = Noto_Serif({
+  subsets: ['latin'],
+  variable: '--font-noto-serif',
+  weight: ['400', '700'],
+  style: ['normal', 'italic']
+})
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-manrope',
+  weight: ['400', '500', '600', '700']
+})
 
 export const metadata: Metadata = {
   title: `${ecommerceName} | Calidad y Estilo`,
@@ -76,7 +89,15 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={customEs} afterSignOutUrl={SIGN_OUT_URL}>
       <html lang='es' suppressHydrationWarning>
-        <body className={`${inter.className} body`}>
+        <head>
+          <link
+            href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap'
+            rel='stylesheet'
+          />
+        </head>
+        <body
+          className={`${notoSerif.variable} ${manrope.variable} font-body bg-background text-on-background antialiased`}
+        >
           <ThemeProvider attribute='class' defaultTheme='light' enableSystem>
             <CartProvider>
               <AuthProvider>

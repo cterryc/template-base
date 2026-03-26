@@ -1,28 +1,21 @@
-.header {
-  @apply border-b fixed z-30 w-full sm:px-10;
+/* Ya no es necesario porque usamos Tailwind directamente */
+/* El archivo header.css puede ser eliminado o mantener solo estilos específicos */
+
+/* Si necesitas mantener algunos estilos, usa esto: */
+.header-cart-badge {
+  @apply absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-lg;
 }
 
-.header::before {
-  content: '';
-  @apply backdrop-blur-md absolute inset-0 bg-secondary -z-10 opacity-95;
-}
-
-.loader {
-  width: 28px;
-  height: 28px;
-  border: 3px solid #000000;
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
-}
-
-@keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
+@keyframes float {
+  0%,
   100% {
-    transform: rotate(360deg);
+    transform: translateY(0);
   }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-float {
+  animation: float 2s ease-in-out infinite;
 }

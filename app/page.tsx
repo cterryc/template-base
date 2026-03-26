@@ -7,13 +7,13 @@ import './globals.css'
 
 export default function Home() {
   return (
-    <div className='container'>
+    <div className='w-full'>
       {/* <HeroCarousel /> */}
       <HeroSection />
       <FeaturedProducts />
       <BestSellers />
       <HeroFooterSection />
-      <div className='containerBenefits'>
+      <div className='w-full'>
         <Benefits />
       </div>
       {/* <Newsletter /> */}

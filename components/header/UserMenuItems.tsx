@@ -1,8 +1,7 @@
 'use client'
 
 import { UserButton } from '@clerk/nextjs'
-import { ClipboardList } from 'lucide-react'
-import { GrUserAdmin } from 'react-icons/gr'
+import { LayoutDashboard, Package, ShoppingBag, Settings } from 'lucide-react'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useTheme } from 'next-themes'
 import { dark } from '@clerk/themes'
@@ -13,25 +12,29 @@ interface UserMenuItemsProps {
 
 /**
  * Componente para los MenuItem del UserButton de Clerk
- * 
+ *
  * @param showNavigationLinks - Si es true, muestra los enlaces de navegación (Home, Productos, etc.)
  *                              Solo para mobile
  */
-export function UserMenuItems({ showNavigationLinks = false }: UserMenuItemsProps) {
+export function UserMenuItems({
+  showNavigationLinks = false
+}: UserMenuItemsProps) {
   const { isAdminOrEditor } = useUserRole()
   const { theme } = useTheme()
 
-  const adminIcon = (
-    <GrUserAdmin className='w-full h-5 pb-1 justify-center items-center' />
-  )
-
-  const ordersIcon = (
-    <ClipboardList className='w-full pb-2 justify-center items-center' />
-  )
+  const adminIcon = <LayoutDashboard className='w-4 h-4' />
+  const ordersIcon = <ShoppingBag className='w-4 h-4' />
 
   return (
     <UserButton
-      appearance={{ theme: theme === 'dark' ? dark : undefined }}
+      appearance={{
+        theme: theme === 'dark' ? dark : undefined,
+        elements: {
+          userButtonAvatarBox:
+            'w-9 h-9 rounded-full ring-2 ring-primary/20 hover:ring-primary/40 transition-all',
+          userButtonTrigger: 'focus:shadow-none'
+        }
+      }}
       userProfileProps={{
         appearance: { theme: theme === 'dark' ? dark : undefined }
       }}
@@ -39,24 +42,20 @@ export function UserMenuItems({ showNavigationLinks = false }: UserMenuItemsProp
       <UserButton.MenuItems>
         {showNavigationLinks && (
           <>
-            <UserButton.Link
-              label='Inicio'
-              labelIcon={adminIcon}
-              href='/'
-            />
+            <UserButton.Link label='Inicio' labelIcon={ordersIcon} href='/' />
             <UserButton.Link
               label='Productos'
-              labelIcon={adminIcon}
+              labelIcon={ordersIcon}
               href='/collection'
             />
             <UserButton.Link
               label='Nosotros'
-              labelIcon={adminIcon}
+              labelIcon={ordersIcon}
               href='/about'
             />
             <UserButton.Link
-              label='Contactanos'
-              labelIcon={adminIcon}
+              label='Contáctanos'
+              labelIcon={ordersIcon}
               href='/contact'
             />
           </>
@@ -64,7 +63,7 @@ export function UserMenuItems({ showNavigationLinks = false }: UserMenuItemsProp
 
         {isAdminOrEditor ? (
           <UserButton.Link
-            label='Admin Panel'
+            label='Panel de Administración'
             labelIcon={adminIcon}
             href='/admin-panel'
           />

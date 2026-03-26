@@ -10,7 +10,6 @@ import {
   SelectContent,
   SelectItem
 } from '@/components/ui/select'
-import { RiArrowUpDoubleLine } from 'react-icons/ri'
 import './page.css'
 import { ProductsProps } from './interface'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -157,15 +156,6 @@ export default function Collection() {
           </button>
         </div>
       )}
-
-      {/* Botón scroll to top */}
-      <button
-        onClick={scrollToTop}
-        className='buttonUp'
-        aria-label='Volver arriba'
-      >
-        <RiArrowUpDoubleLine className='w-10 h-10' />
-      </button>
     </div>
   )
 }

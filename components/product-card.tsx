@@ -5,9 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useCart } from '@/contexts/CartContext'
 import { useState } from 'react'
 import Link from 'next/link'
-import { MdOutlineShoppingCart } from 'react-icons/md'
-import { FiCheckCircle } from 'react-icons/fi'
-import { ImSpinner2 } from 'react-icons/im'
+import { ShoppingCart, CheckCircle, Loader2, Eye } from 'lucide-react'
 import { optimizeCloudinaryUrl } from '@/lib/utils/image-optimizer'
 
 interface Product {
@@ -23,19 +21,24 @@ interface Product {
 
 export default function ProductCard({
   product,
-  from
+  from,
+  isLoading = false
 }: {
   product: Product
   from?: string
+  isLoading?: boolean
 }) {
   const { addToCart } = useCart()
   const [image, setImage] = useState<string>(product.image)
-  const [selectedSize, setSelectedSize] = useState<string>('') // Estado para el tamañ
+  const [selectedSize, setSelectedSize] = useState<string>('')
   const [buttonState, setButtonState] = useState<
     'idle' | 'loading' | 'success'
   >('idle')
+  const [isHovered, setIsHovered] = useState(false)
 
   const handleAddToCart = async () => {
+    if (product.estado === 'NO DISPONIBLE' || product.stock === 0) return
+
     setButtonState('loading')
     setTimeout(() => {
       addToCart({
@@ -53,131 +56,180 @@ export default function ProductCard({
     }, 500)
   }
 
+  // Skeleton loading state
+  if (isLoading) {
+    return (
+      <div className='group flex flex-col w-full h-full animate-pulse'>
+        <div className='relative overflow-hidden rounded-2xl bg-neutral-200 dark:bg-neutral-800 aspect-[4/5] mb-4 skeletonShimmer' />
+        <div className='flex flex-col flex-grow space-y-3'>
+          <div className='h-5 bg-neutral-200 dark:bg-neutral-800 rounded-full w-3/4 skeletonShimmer' />
+          <div className='h-4 bg-neutral-200 dark:bg-neutral-800 rounded-full w-1/3 skeletonShimmer' />
+          <div className='h-10 bg-neutral-200 dark:bg-neutral-800 rounded-lg w-full skeletonShimmer' />
+        </div>
+      </div>
+    )
+  }
+
+  // Variante para Best Sellers
   if (from === 'bestSellers') {
     return (
-      <div className='bg-white overflow-hidden w-full dark:bg-[#0a0a0a]'>
-        <Link href={`/collection?category=${product.name}`}>
-          <div className='cardAspectRatioBestSellers'>
+      <div
+        className='group flex flex-col items-center text-center cursor-pointer w-full'
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <Link href={`/collection?category=${product.name}`} className='w-full'>
+          <div className='relative w-full aspect-[3/4] mb-6 overflow-hidden rounded-2xl bg-muted shadow-lg group-hover:shadow-xl transition-all duration-300'>
             <Image
               src={optimizeCloudinaryUrl(image, 600, 85) || '/placeholder.svg'}
               alt={product.name}
               fill
-              className='object-cover transition-opacity duration-300 ease-in-out shadow-md'
+              className='object-cover transition-transform duration-700 group-hover:scale-110'
               onMouseEnter={() =>
                 setImage(product.image2 ? product.image2 : product.image)
               }
               onMouseLeave={() => setImage(product.image)}
             />
+            {/* Overlay con ícono de vista */}
+            <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>
+              <Eye className='w-8 h-8 text-white' />
+            </div>
           </div>
-          <div className='px-2 pt-4 pb-0 flex mb-2'>
-            <h3 className={'cardBestSellersTitle dark:text-white'}>
-              Ver {product.name}
-            </h3>
-          </div>
+          <h3 className='font-medium text-lg mb-1 group-hover:text-primary transition-colors text-white dark:text-black'>
+            Ver {product.name}
+          </h3>
         </Link>
       </div>
     )
   }
 
+  // Variante principal para Featured Products
+  const isDisabled = product.estado === 'NO DISPONIBLE' || product.stock === 0
+  const needsSize = product.size && !selectedSize && product.size !== ''
+
   return (
-    <div className='bg-white shadow-md rounded-sm overflow-hidden w-full'>
-      {/* Imagen con link a detalle */}
-      <Link href={`/collection/${product.id}`} className='block'>
-        <div
-          className={`relative ${
-            from === 'featured'
-              ? 'cardAspectRatioFeatured'
-              : 'lg:h-80 max-[400px]:h-[400px] max-[460px]:h-[400px] h-[450px] 2xl:h-[450px]'
-          }`}
-        >
+    <div
+      className='group flex flex-col w-full h-full'
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Contenedor de imagen con efectos mejorados */}
+      <Link href={`/collection/${product.id}`} className='block w-full'>
+        <div className='relative overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800 aspect-[4/5] shadow-md group-hover:shadow-xl transition-all duration-300'>
           <Image
             src={optimizeCloudinaryUrl(image, 600, 85) || '/placeholder.svg'}
             alt={product.name}
             fill
-            className='object-cover transition-opacity duration-300 ease-in-out'
+            className='object-cover transition-all duration-700 group-hover:scale-110'
             onMouseEnter={() =>
               setImage(product.image2 ? product.image2 : product.image)
             }
             onMouseLeave={() => setImage(product.image)}
           />
+
+          {/* Badge de disponibilidad */}
+          {isDisabled && (
+            <div className='absolute top-3 right-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-lg z-10'>
+              Agotado
+            </div>
+          )}
+
+          {/* Badge de "Nuevo" simulado */}
+          {!isDisabled && product.id % 3 === 0 && (
+            <div className='absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded-full shadow-lg z-10'>
+              Nuevo
+            </div>
+          )}
+
+          {/* Overlay con acción rápida */}
+          <div
+            className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4`}
+          >
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleAddToCart()
+              }}
+              disabled={isDisabled || needsSize || buttonState !== 'idle'}
+              className={`bg-white hover:text-green-100 dark:hover:text-green-800 text-neutral-900 hover:bg-primary rounded-full px-6 py-2 text-sm font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300`}
+            >
+              {buttonState === 'loading' && (
+                <Loader2 className='w-4 h-4 animate-spin' />
+              )}
+              {buttonState === 'success' && (
+                <CheckCircle className='w-4 h-4 text-green-500' />
+              )}
+              {buttonState === 'idle' && (
+                <>
+                  <ShoppingCart className='w-4 h-4 mr-2' />
+                  Añadir al Carrito
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </Link>
-      <div
-        className={`${
-          from === 'featured' ? 'px-2 pt-2 pb-0' : 'pt-1 pb-2 px-2'
-        }`}
-      >
-        {/* Título con link a detalle */}
+
+      {/* Información del producto */}
+      <div className='flex flex-col flex-grow mt-4 space-y-2'>
         <Link href={`/collection/${product.id}`}>
-          <h3
-            className={`${
-              from === 'featured' ? 'text-sm' : 'text-lg'
-            } font-semibold text-sm mb-0 text-[#31302e] hover:underline`}
-          >
+          <h3 className='font-medium text-base dark:text-white dark:hover:text-slate-300 md:text-lg hover:text-primary transition-colors line-clamp-2'>
             {product.name}
           </h3>
         </Link>
-        {
-          <div className='text-gray-600 mb-1 w-full flex justify-between'>
-            <p className='text-sm'>S/ {Number(product.price).toFixed(2)}</p>
 
-            <div className='flex justify-between mt-0'>
-              <form className='flex gap-2'>
-                {product.size &&
-                  product.size?.split(' - ').map((ele, index) => (
-                    <div
-                      className='radio-container gap-[2px] flex items-center'
-                      key={index}
-                    >
-                      <input
-                        type='radio'
-                        id={ele}
-                        value={ele}
-                        name='size'
-                        onChange={() => setSelectedSize(ele)}
-                        checked={selectedSize === ele}
-                        className="appearance-none w-3 h-3 border-2 border-gray-400 rounded-full checked:border-4 checked:border-blue-800 focus:outline-none transition duration-200 relative after:content-[''] after:absolute after:hidden checked:after:block after:w-0 after:h-0 after:bg-blue-800 after:rounded-full after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 cursor-pointer"
-                      />
-                      <label className='m-0 text-sm'>{ele}</label>
-                    </div>
-                  ))}
-              </form>
-            </div>
+        <p className='text-xl font-bold text-primary'>
+          S/ {Number(product.price).toFixed(2)}
+        </p>
+
+        {/* Selector de tallas */}
+        {product.size && (
+          <div className='flex flex-wrap gap-2 mt-2'>
+            {product.size.split(' - ').map((size) => (
+              <button
+                key={size}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setSelectedSize(size)
+                }}
+                className={`px-3 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+                  selectedSize === size
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-300 dark:hover:bg-neutral-700'
+                }`}
+              >
+                {size}
+              </button>
+            ))}
           </div>
-        }
-        {/* Botón de carrito - SIN LINK, con stopPropagation */}
+        )}
+
+        {/* Botón principal de compra (visible en móvil o como respaldo) */}
         <Button
-          className={`w-full ${
-            from === 'featured' ? 'mb-2' : 'mb-0'
-          } flex items-center justify-center gap-2 text-white bg-black hover:bg-gray-700`}
+          className='w-full mt-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-medium transition-all active:scale-95 md:hidden'
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
             handleAddToCart()
           }}
           disabled={
-            product.estado === 'NO DISPONIBLE' || product.stock == 0
-              ? true
-              : buttonState === 'loading' ||
-                buttonState === 'success' ||
-                (selectedSize ? false : !product.size ? false : true)
+            isDisabled ||
+            (product.size ? !selectedSize : false) ||
+            buttonState !== 'idle'
           }
         >
           {buttonState === 'loading' && (
-            <ImSpinner2 className='animate-spin h-5 w-5' />
+            <Loader2 className='w-4 h-4 animate-spin mr-2' />
           )}
           {buttonState === 'success' && (
-            <FiCheckCircle className='h-5 w-5 text-green-600' />
+            <CheckCircle className='w-4 h-4 mr-2' />
           )}
           {buttonState === 'idle' && (
             <>
-              {product.estado === 'NO DISPONIBLE' || product.stock === 0 ? (
-                'NO DISPONIBLE'
-              ) : (
-                <>
-                  Añadir al carrito <MdOutlineShoppingCart />
-                </>
-              )}
+              <ShoppingCart className='w-4 h-4 mr-2' />
+              {isDisabled ? 'Agotado' : 'Añadir al carrito'}
             </>
           )}
         </Button>
