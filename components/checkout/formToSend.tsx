@@ -21,7 +21,7 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { ToastAction } from '../ui/toast'
-import InteractiveMap from '../maps/Maps'
+import InteractiveMap from '../maps/maps'
 import { RiLoader4Line } from 'react-icons/ri'
 import { X } from 'lucide-react'
 import { agencias } from '../../data/agencias'
@@ -55,10 +55,7 @@ const FormToSend = ({
   const { toast } = useToast()
   const { getMinimoDelivery, getMaximoDelivery, getTelefono, isLoading } =
     useConfigData()
-  const {
-    couponCode,
-    discount: cuponDiscount
-  } = useCouponValidator()
+  const { couponCode, discount: cuponDiscount } = useCouponValidator()
 
   const [hasFullNameOverride, setHasFullNameOverride] = useState(false)
   const [isSavingOrder, setIsSavingOrder] = useState(false)
